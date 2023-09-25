@@ -622,7 +622,7 @@ bool MeshInfoData::getMeshInfoXML( std::string& rInfoXML ){
     infoStr+="<TotalNumberOfVertices>"+std::to_string(this->mCountULong[MeshInfoData::VERTICES_TOTAL])+"</TotalNumberOfVertices>\n";
     infoStr+="<NaNVertices>"+std::to_string(this->mCountULong[MeshInfoData::VERTICES_NAN])+"</NaNVertices>\n";
     infoStr+="<NormalLengthVertices>"+std::to_string(this->mCountULong[MeshInfoData::VERTICES_NORMAL_LEN_NORMAL])+"</NormalLengthVertices>\n";
-    infoStr+="<PolylineVertices>"+std::to_string(rMeshInfoPrevious.mCountULong[MeshInfoData::VERTICES_POLYLINE])+"</PolylineVertices>\n";
+    infoStr+="<PolylineVertices>"+std::to_string(this->mCountULong[MeshInfoData::VERTICES_POLYLINE])+"</PolylineVertices>\n";
     infoStr+="<IsolatedVertices>"+std::to_string(this->mCountULong[MeshInfoData::VERTICES_SOLO])+"</IsolatedVertices>\n";
     infoStr+="<BorderVertices>"+std::to_string(this->mCountULong[MeshInfoData::VERTICES_BORDER])+"</BorderVertices>\n";
     infoStr+="<NonManifoldVertices>"+std::to_string(this->mCountULong[MeshInfoData::VERTICES_NONMANIFOLD])+"</NonManifoldVertices>\n";
@@ -663,7 +663,7 @@ bool MeshInfoData::getMeshInfoXML( std::string& rInfoXML ){
     infoStr+="<MaximumZCoordinate>"+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_MAX_Z])+"</MaximumZCoordinate>\n";
     infoStr+="<BoundingBoxWidth>"+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_WIDTH])+"</BoundingBoxWidth>\n";
     infoStr+="<BoundingBoxHeight>"+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_HEIGHT])+"</BoundingBoxHeight>\n";
-    xmlMeta+="<BoundingBoxThickness>"+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_THICK])+"</BoundingBoxThickness>\n";
+    infoStr+="<BoundingBoxThickness>"+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_THICK])+"</BoundingBoxThickness>\n";
     infoStr+="</BoundingBox>\n";    
     infoStr+="<MetadataObject>\n";
     infoStr+="<Filename>"+this->mStrings[MeshInfoData::FILENAME]+"</Filename>\n";
@@ -1340,6 +1340,7 @@ bool MeshInfoData::getMeshInfoHTML(
 	//-----------------------------------------------------------
 
 	std::string tableBorder = "0"; // For visual debugging set to 1 - 0 (zero) for release!
+    std::string indid;
     indid=urlEncode(this->mStrings[MeshInfoData::FILENAME]);
 	std::string infoStr = "<!DOCTYPE html>\n";
 	infoStr += "<html about=\""+indid+"\" typeof=\"http://www.gigamesh.eu/ont#Mesh\">\n";
@@ -1389,7 +1390,7 @@ bool MeshInfoData::getMeshInfoHTML(
 	infoStr += "<table align=\"center\" width=\"99%\" border='" + tableBorder + "'>\n";
 	infoStr += "<tr>\n";
 	infoStr += "<td align=\"left\" property=\"https://www.w3.org/2003/12/exif/resolution\" resource=\""+indid+"_avgmres\"><b>Resolution,&nbsp;average:</b></td>";
-	infoStr += "<td align=\"right\" about=\""+indid+"_avgmres\" property=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#value" datatype=\"http://www.w3.org/2001/XMLSchema#double\">" + avgResMetric + "</td>";
+    infoStr += "<td align=\"right\" about=\""+indid+"_avgmres\" property=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#value\" datatype=\"http://www.w3.org/2001/XMLSchema#double\">" + avgResMetric + "</td>";
 	infoStr += "<td align=\"left\"  about=\""+indid+"_avgmres\" property=\"http://www.ontology-of-units-of-measure.org/resource/om-2/hasUnit\" resource=\"http://www.ontology-of-units-of-measure.org/resource/om-2/squareCentimetre\">cm<sup>-2</sup></td>";
 	infoStr += "</tr>\n";
 	infoStr += "<tr>\n";
