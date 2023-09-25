@@ -5,6 +5,7 @@ set(OpenGL_GL_PREFERENCE GLVND)
 #list(APPEND CMAKE_PREFIX_PATH "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake/Qt6HostInfo")
 #set(QT_HOST_PATH "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake/Qt6HostInfo")
 #set(Qt6ShaderTools_DIR "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake")
+set(CMAKE_PREFIX_PATH "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake")
 
 find_package(OpenGL REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets ShaderTools OpenGLWidgets Gui OpenGL Network)
