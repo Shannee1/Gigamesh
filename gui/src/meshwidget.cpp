@@ -3865,7 +3865,7 @@ bool MeshWidget::getViewSettingsTTL(
     rSettingsStr += QString(uri+" giga:projectionMatrix \"");
     for( unsigned int i=0; i<16; i++ ) {
 		rSettingsStr += QString("%1").arg( matProjection[i] );
-        rSettingsStr += " ";
+        rSettingsStr += ";";
 	}
 	rSettingsStr+="\"^^xsd:string .\n"; 
 	rSettingsStr += "giga:modelViewMatrix rdf:type owl:DatatypeProperty .\n";
@@ -3874,7 +3874,7 @@ bool MeshWidget::getViewSettingsTTL(
 	const float* matModelView = mMatModelView.constData();
 	for( unsigned int i=0; i<16; i++ ) {
 		rSettingsStr += QString("%1").arg( matModelView[i] );
-        rSettingsStr += " ";
+        rSettingsStr += ";";
 	}
 	rSettingsStr+="\"^^xsd:string .\n"; 
 	// As well as further parameters (again):
