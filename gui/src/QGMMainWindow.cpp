@@ -367,33 +367,6 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	}
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
-	// --- Check external Tools i.e. Inkscape and convert/ImageMagick --------------------------------------------------------------------------------------
-	auto inkscapePath = settings.value("Inkscape_Path", "").toString();
-	if(inkscapePath.length() == 0)
-	    inkscapePath = "inkscape";
-	bool checkInkscapeFailed = false;
-	QProcess testRunInkscape;
-	testRunInkscape.start( inkscapePath + " --version" );
-	if( !testRunInkscape.waitForFinished() ) {
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had a timeout!" << endl;
-		checkInkscapeFailed = true;
-	}
-	if( testRunInkscape.exitStatus() != QProcess::NormalExit ) {
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had no normal exit!" << endl;
-		checkInkscapeFailed = true;
-	}
-	if( testRunInkscape.exitCode() != 0 ) {
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR Inkscape exit code: " << testRunInkscape.exitCode() << endl;
-		QString outInkscapeErr( testRunInkscape.readAllStandardError() );
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape error: " << outInkscapeErr.toStdString().c_str() << endl;
-		checkInkscapeFailed = true;
-	}
-	QString outInkscape( testRunInkscape.readAllStandardOutput() );
-	cout << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape check: " << outInkscape.simplified().toStdString().c_str() << endl;
-	if( checkInkscapeFailed ) {
-		SHOW_MSGBOX_WARN_TIMEOUT( tr("Inkscape error"), tr("Checking Inkscape for presence and functionality failed!"), 5000 );
-	}
-	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 #ifdef REQUIRE_CONVERT_IMAGEMAGICK_OPTION
 	// Due to DPI set within PNGs by Qt this is currently not required. Maybe for writings TIFFs, which need some source revision.
 	bool checkConvertFailed = false;

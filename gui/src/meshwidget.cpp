@@ -4739,10 +4739,44 @@ bool MeshWidget::screenshotSVG( const QString& rFileName, const QString& rFileNa
 	return( true );
 }
 
+//! Check if inkscape is available/installed
+//! @returns false in case of error or no inkscape on the system
+bool MeshWidget::checkInkscapeAvailability() {
+    // --- Check external Tools i.e. Inkscape and convert/ImageMagick --------------------------------------------------------------------------------------
+    QSettings settings;
+    auto inkscapePath = settings.value("Inkscape_Path", "").toString();
+    if(inkscapePath.length() == 0)
+        inkscapePath = "inkscape";
+    bool checkInkscapeFailed = false;
+    QProcess testRunInkscape;
+    testRunInkscape.start( inkscapePath + " --version" );
+    if( !testRunInkscape.waitForFinished() ) {
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had a timeout!" << endl;
+        checkInkscapeFailed = true;
+    }
+    if( testRunInkscape.exitStatus() != QProcess::NormalExit ) {
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had no normal exit!" << endl;
+        checkInkscapeFailed = true;
+    }
+    if( testRunInkscape.exitCode() != 0 ) {
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR Inkscape exit code: " << testRunInkscape.exitCode() << endl;
+        QString outInkscapeErr( testRunInkscape.readAllStandardError() );
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape error: " << outInkscapeErr.toStdString().c_str() << endl;
+        checkInkscapeFailed = true;
+    }
+    QString outInkscape( testRunInkscape.readAllStandardOutput() );
+    cout << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape check: " << outInkscape.simplified().toStdString().c_str() << endl;
+    if( checkInkscapeFailed ) {
+        SHOW_MSGBOX_WARN_TIMEOUT( tr("Inkscape error"), tr("Checking Inkscape for presence and functionality failed!"), 5000 );
+    }
+    return( true );
+}
+
 //! Export polylines defined by an intersecting plane as SVG.
 //!
 //! @returns false in case of an error or user abort or no qualified polylines present. True otherwise.
 bool MeshWidget::exportPlaneIntersectPolyLinesSVG() {
+
 	// 0.) Sanity check
 	if( mMeshVisual == nullptr ) {
 		SHOW_MSGBOX_CRIT( tr("ERROR"), tr("No mesh present.") );
@@ -4751,6 +4785,11 @@ bool MeshWidget::exportPlaneIntersectPolyLinesSVG() {
 
 	std::set<unsigned int> axisPolylines;
 	std::set<unsigned int> planePolylines;
+
+    // 0.5.) Is Inkscape available?
+    if(!checkInkscapeAvailability()){
+        return( false );
+    }
 
 	// 1.) get qualified polylines and store their ID's into the appropriate set
 	for(unsigned int i = 0; i<mMeshVisual->getPolyLineNr(); ++i)
