@@ -866,6 +866,19 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 		return false;
 	}
 
+    bool continueWithMesh;
+    bool userCancel;
+    uint64_t nrOfFaces = mMeshVisual->getFaceNr();
+    if (nrOfFaces > 35000000){
+        SHOW_QUESTION( tr("You are loading a large mesh"), tr("This may cause a crash if there is not enough video RAM available.") + QString("<br /><br />") + tr("Do you want to continue?"), continueWithMesh, userCancel );
+        if( !continueWithMesh || userCancel ) {
+            //stop rendering the mesh to prevent a crash
+            delete mMeshVisual;
+            mMeshVisual = nullptr;
+            return false;
+        }
+    }
+
 	QObject::connect( this,        SIGNAL(sParamFlagMesh(MeshGLParams::eParamFlag,bool)), mMeshVisual, SLOT(setParamFlagMeshGL(MeshGLParams::eParamFlag,bool)) );
 	QObject::connect( this,        SIGNAL(sSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(selectPoly(std::vector<QPoint>&))                       );
 	QObject::connect( mMeshVisual, SIGNAL(updateGL()),                                    this,        SLOT(update())                                          );
