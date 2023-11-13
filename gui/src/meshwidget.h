@@ -249,6 +249,7 @@ public slots:
 	bool screenshotSVG();
 	bool screenshotSVG(const QString& rFileName, const QString& rFileNamePNG );
 
+    bool checkInkscapeAvailability();
 	bool exportPlaneIntersectPolyLinesSVG();
 	bool screenshotSVGexportPlaneIntersections( double rOffsetX, double rOffsetY, double rPolyLineWidth, double axisOffset, SvgWriter& svgWriter, const std::set<unsigned int>& polylineIDs );
 

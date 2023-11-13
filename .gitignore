@@ -6,6 +6,9 @@
 *~
 *.linkinfo
 
+# ignore secret key file 
+/gui/src/analyticsConfig.h
+
 # Qt
 /Makefile
 ui_*.h
@@ -123,3 +126,6 @@ latex_report_template/*.pdf
 .vs/
 out/
 CMakeSettings.json
+.gitsecret/keys/random_seed
+!*.secret
+gui/src/analyticsConfig.h

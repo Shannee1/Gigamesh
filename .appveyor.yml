@@ -13,6 +13,11 @@ for:
   matrix:
     only:
       - image: Ubuntu
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
+  script:
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+
   install:
   - export Qt5_DIR="$HOME/Qt/latest/gcc_64"
   - export PATH="$Qt5_DIR/bin:$PATH"
@@ -35,6 +40,10 @@ for:
   matrix:
     only:
       - image: Visual Studio 2019
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
+  script:
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
   install:
   - cmd: set QTDIR=C:\Qt\5.15.2\msvc2019_64
   - cmd: set PATH=%QTDIR%\bin;C:\Qt\Tools\msvc2019_64\bin;%PATH%;
@@ -52,7 +61,10 @@ for:
   matrix:
     only:
       - image: macOS
-      
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
+  script:
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
   install:
   #- brew update > /dev/null
   #- brew install qt5
