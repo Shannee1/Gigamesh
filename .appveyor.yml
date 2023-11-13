@@ -13,10 +13,6 @@ for:
   matrix:
     only:
       - image: Ubuntu
-  variables:
-    SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
-  script:
-    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
 
   install:
   - export Qt5_DIR="$HOME/Qt/latest/gcc_64"
@@ -40,10 +36,7 @@ for:
   matrix:
     only:
       - image: Visual Studio 2019
-  variables:
-    SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
-  script:
-    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+ 
   install:
   - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
   - cmd: appveyor-tools\secure-file -decrypt gui\src\analyticsConfig.h.enc -secret %my_secret% -salt %my_salt%
@@ -63,10 +56,7 @@ for:
   matrix:
     only:
       - image: macOS
-  variables:
-    SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
-  script:
-    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+  
   install:
   #- brew update > /dev/null
   #- brew install qt5
