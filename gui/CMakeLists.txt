@@ -59,9 +59,8 @@ set(GUI_SOURCES src/main.cpp
 				src/normalSphereSelection/NormalSphereSelectionRenderWidget.cpp
 				src/normalSphereSelection/NormalSphereSelectionRenderWidget.h
                                 src/automaticalignmentpyinterface.cpp src/automaticalignmentpyinterface.h
-)
-
-
+                                src/analyticsConfig.h
+                                )
 #add ui files, so they appear it qtcreator projects view
 set(GUI_UI_FILES
 	src/normalSphereSelection/NormalSphereSelectionDialog.ui
