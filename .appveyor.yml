@@ -45,6 +45,8 @@ for:
   script:
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
   install:
+  - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
+  - cmd: appveyor-tools\secure-file -decrypt gui\src\analyticsConfig.h.enc -secret %my_secret% -salt %my_salt%
   - cmd: set QTDIR=C:\Qt\5.15.2\msvc2019_64
   - cmd: set PATH=%QTDIR%\bin;C:\Qt\Tools\msvc2019_64\bin;%PATH%;
   after_build:
