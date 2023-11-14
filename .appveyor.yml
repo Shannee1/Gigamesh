@@ -5,13 +5,14 @@ branches:
 
 image:
   - macOS
-  - Ubuntu2204
+  #- Ubuntu2204
   - Visual Studio 2019
 
 for:
 -
   matrix:
     only:
+    #ubuntu crashs due to appveyor-tools
       - image: Ubuntu2204
 
   install:
