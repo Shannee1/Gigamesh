@@ -6,13 +6,13 @@ branches:
 image:
   - Visual Studio 2019
   - macOS
-  - Ubuntu
+  - Ubuntu2204
 
 for:
 -
   matrix:
     only:
-      - image: Ubuntu
+      - image: Ubuntu2204
 
   install:
   - export Qt5_DIR="$HOME/Qt/latest/gcc_64"
