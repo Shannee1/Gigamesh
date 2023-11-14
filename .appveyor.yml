@@ -21,6 +21,7 @@ for:
   - sudo apt-get update
   - sudo apt-get -y install build-essential libtiff5-dev
   - sudo apt-get -y install libgl-dev g++-10 gcc-9
+  - sudo apt-get install -y dotnet-runtime-7.0
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-8
   - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
   - sh: ./appveyor-tools/secure-file -decrypt gui\src\analyticsConfig.h.enc -secret $my_secret -salt $my_salt
