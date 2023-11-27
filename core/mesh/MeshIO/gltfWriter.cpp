@@ -124,6 +124,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     //string indexBuffer = "";
     std::vector<BYTE> indexBuffer;
     std::vector<BYTE> vertexBuffer;
+    std::vector<BYTE> normalsBuffer;
 
     //save min max of the vectors for the accessors
     float minX = (float) rVertexProps[0].mCoordX;
@@ -132,6 +133,12 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     float maxY = (float) rVertexProps[0].mCoordY;
     float minZ = (float) rVertexProps[0].mCoordZ;
     float maxZ = (float) rVertexProps[0].mCoordZ;
+    float minNormalX = (float) rVertexProps[0].mNormalX;
+    float maxNormalX = (float) rVertexProps[0].mNormalX;
+    float minNormalY = (float) rVertexProps[0].mNormalY;
+    float maxNormalY = (float) rVertexProps[0].mNormalY;
+    float minNormalZ = (float) rVertexProps[0].mNormalZ;
+    float maxNormalZ = (float) rVertexProps[0].mNormalZ;
 
     //add all faces to file buffer
     for( const auto& faceProp : rFaceProps) {
@@ -155,6 +162,10 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
             indexBuffer.push_back(part3Byte);
             indexBuffer.push_back(part2Byte);
             indexBuffer.push_back(part1Byte);
+
+            //---------------------
+            //Vertices
+            //---------------------
 
             //save vertex coords as float
             float coordX = (float) rVertexProps[faceVertexIndex].mCoordX;
@@ -181,8 +192,6 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
                 maxZ = coordZ;
             }
 
-
-
             char const * coordXStream = (char const *)&coordX;
             for (size_t i = 0; i != sizeof(float); ++i)
             {
@@ -208,6 +217,60 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
                 vertexBuffer.push_back(byteAsChar);
             }
 
+            //--------------------------
+            //Normals
+            //--------------------------
+
+            //save vertex coords as float
+            float normalX = (float) rVertexProps[faceVertexIndex].mNormalX;
+            float normalY = (float) rVertexProps[faceVertexIndex].mNormalY;
+            float normalZ = (float) rVertexProps[faceVertexIndex].mNormalZ;
+
+            //update min max
+            if (normalX < minNormalX){
+                minNormalX = normalX;
+            }
+            if (normalY < minNormalY){
+                minNormalY = normalY;
+            }
+            if (normalZ < minNormalZ){
+                minNormalZ = normalZ;
+            }
+            if (normalX > maxNormalX){
+                maxNormalX = normalX;
+            }
+            if (normalY > maxNormalY){
+                maxNormalY = normalY;
+            }
+            if (normalZ > maxNormalZ){
+                maxNormalZ = normalZ;
+            }
+
+            char const * normalXStream = (char const *)&normalX;
+            for (size_t i = 0; i != sizeof(float); ++i)
+            {
+                int byteValue = (int)normalXStream[i];
+                unsigned char byteAsChar = byteValue;
+                normalsBuffer.push_back(byteAsChar);
+            }
+
+            //first z for gltf
+            char const * normalZStream = (char const *)&normalZ;
+            for (size_t i = 0; i != sizeof(float); ++i)
+            {
+                int byteValue = (int)normalZStream[i];
+                unsigned char byteAsChar = byteValue;
+                normalsBuffer.push_back(byteAsChar);
+            }
+
+            char const * normalYStream = (char const *)&normalY;
+            for (size_t i = 0; i != sizeof(float); ++i)
+            {
+                int byteValue = (int)normalYStream[i];
+                unsigned char byteAsChar = byteValue;
+                normalsBuffer.push_back(byteAsChar);
+            }
+
             index++;
         }
     }
@@ -219,11 +282,14 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     indexBuffer.push_back(zeroBytes);
     int nrOfBytesIndexBufferPlusOffset = indexBuffer.size();
 
-
+    //Every buffer are concatenated to the final buffer
+    //and base64 encoded
     std::vector<BYTE> entireBuffer = indexBuffer;
     entireBuffer.insert(entireBuffer.end(), vertexBuffer.begin(), vertexBuffer.end());
+    entireBuffer.insert(entireBuffer.end(), normalsBuffer.begin(), normalsBuffer.end());
     std::string entireBufferEncoded = base64_encode(&entireBuffer[0], entireBuffer.size());
     int nrOfBytesVertexBuffer = vertexBuffer.size();
+    int nrOfBytesNormalsBuffer = normalsBuffer.size();
     int nrOfBytes = entireBuffer.size();
 
 
@@ -247,12 +313,13 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "{" << '\n';
     filestr << "\"buffer\" : 0," << '\n';
     filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset) << "," << '\n';
-    filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexBuffer) << "," << '\n';
+    filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexBuffer + nrOfBytesNormalsBuffer) << "," << '\n';
     filestr << "\"target\" : 34962" << '\n';
     filestr << "}" << '\n';
     filestr << "]," << '\n';
 
     //accessors
+    //index accessor
     filestr << "\"accessors\" : [" << '\n';
     filestr << "{" << '\n';
     filestr << "\"bufferView\" : 0," << '\n';
@@ -263,6 +330,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"max\" : [" << std::to_string(index) << "]," << '\n';
     filestr << "\"min\" : [ 0 ]" << '\n';
     filestr << "}," << '\n';
+    //vertex accessor
     filestr << "{" << '\n';
     filestr << "\"bufferView\" : 1," << '\n';
     filestr << "\"byteOffset\" : 0," << '\n';
@@ -271,6 +339,17 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"type\" : \"VEC3\"," << '\n';
     filestr << "\"max\" : [ " << std::to_string(maxX) << "," << std::to_string(maxZ) << "," << std::to_string(maxY) << "]," << '\n';
     filestr << "\"min\" : [ " << std::to_string(minX) << "," << std::to_string(minZ) << "," << std::to_string(minY) << "]" << '\n';
+    filestr << "}," << '\n';
+    filestr << "{" << '\n';
+    //normal accesor
+    filestr << "\"bufferView\" : 1," << '\n';
+    //byte offset inside the second buffer view
+    filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesVertexBuffer) << "," << '\n';
+    filestr << "\"componentType\" : 5126," << '\n';
+    filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
+    filestr << "\"type\" : \"VEC3\"," << '\n';
+    filestr << "\"max\" : [ " << std::to_string(maxNormalX) << "," << std::to_string(maxNormalZ) << "," << std::to_string(maxNormalY) << "]," << '\n';
+    filestr << "\"min\" : [ " << std::to_string(minNormalX) << "," << std::to_string(minNormalZ) << "," << std::to_string(minNormalY) << "]" << '\n';
     filestr << "}" << '\n';
     filestr << "]," << '\n';
 
