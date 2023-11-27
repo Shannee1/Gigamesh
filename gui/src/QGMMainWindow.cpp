@@ -357,7 +357,7 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	QSettings settings;
 	timeLast = settings.value( "lastVersionCheck" ).toLongLong();
 	double daysSinceLastCheck = difftime( timeNow, timeLast ) / ( 24.0 * 3600.0 );
-    daysSinceLastCheck = 356.0; // for testing (1/2)
+    //daysSinceLastCheck = 356.0; // for testing (1/2)
 	std::cout << "[QGMMainWindow::" << __FUNCTION__ << "] Last check " << daysSinceLastCheck << " days ago." << std::endl;
 	if( daysSinceLastCheck > 3.0 ) {
         mNetworkManagerVersion = new QNetworkAccessManager( this );
@@ -377,11 +377,11 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 
         QString apiUrl = QString( "https://www.google-analytics.com/mp/collect?measurement_id=G-CJ9E5M832W&api_secret=%1" ).arg(KEY);
         analyticsRequest.setUrl( QUrl( apiUrl ));
-        //analyticsRequest.setRawHeader( "User-Agent", QString( "GigaMesh/%1" ).arg( VERSION_PACKAGE ).toStdString().c_str() );
+
         analyticsRequest.setRawHeader("Content-Type", "application/json");
 
         QString bodyText = QString( "{\"client_id\":\"gigamesh.application\",\"events\":[{ \"name\": \"login\", \"params\": {\"method\": \"%1\"}}]}" ).arg( VERSION_PACKAGE ).toStdString().c_str();
-        //QString bodyText = QString( "{\"client_id\":\"gigamesh.application\",\"events\":[{ \"name\": \"login\", \"params\": {\"method\": \"ByQT\"}}]}" );
+
         QByteArray body = bodyText.toUtf8();
         std::cout << bodyText.toStdString() << std::endl;
         mNetworkManagerAnalytics->post(analyticsRequest,body);

@@ -54,6 +54,8 @@
 #include "MeshIO/ObjWriter.h"
 #include "MeshIO/VRMLWriter.h"
 #include "MeshIO/TxtWriter.h"
+#include "MeshIO/gltfWriter.h"
+
 
 #include "util/triangulation.h"
 
@@ -448,6 +450,10 @@ bool MeshIO::writeFilePrimProps(
 	else if( fileExtension == "ply" ) {
 		writer = std::make_unique<PlyWriter>();
 	}
+    else if( fileExtension == "gltf" ) {
+        writer = std::make_unique<GltfWriter>();
+    }
+
 
 	if(writer != nullptr)
 	{
