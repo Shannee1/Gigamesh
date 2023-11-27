@@ -112,7 +112,16 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "{" << '\n';
     filestr << "\"primitives\" : [ {" << '\n';
     filestr << "\"attributes\" : {" << '\n';
-    filestr << "\"POSITION\" : 1" << '\n';
+    filestr << "\"POSITION\" : 1," << '\n';
+
+    if (mExportTextureCoordinates){
+       filestr << "\"NORMAL\" : 2," << '\n';
+       filestr << "\"TEXCOORD_0\" : 3" << '\n';
+    }
+    else
+    {
+       filestr << "\"NORMAL\" : 2" << '\n';
+    }
     filestr << "}," << '\n';
     filestr << "\"indices\" : 0" << '\n';
     filestr << "} ]" << '\n';
@@ -254,6 +263,14 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
                 normalsBuffer.push_back(byteAsChar);
             }
 
+            char const * normalYStream = (char const *)&normalY;
+            for (size_t i = 0; i != sizeof(float); ++i)
+            {
+                int byteValue = (int)normalYStream[i];
+                unsigned char byteAsChar = byteValue;
+                normalsBuffer.push_back(byteAsChar);
+            }
+
             //first z for gltf
             char const * normalZStream = (char const *)&normalZ;
             for (size_t i = 0; i != sizeof(float); ++i)
@@ -263,13 +280,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
                 normalsBuffer.push_back(byteAsChar);
             }
 
-            char const * normalYStream = (char const *)&normalY;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)normalYStream[i];
-                unsigned char byteAsChar = byteValue;
-                normalsBuffer.push_back(byteAsChar);
-            }
+
 
             index++;
         }
@@ -337,8 +348,22 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"componentType\" : 5126," << '\n';
     filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
     filestr << "\"type\" : \"VEC3\"," << '\n';
-    filestr << "\"max\" : [ " << std::to_string(maxX) << "," << std::to_string(maxZ) << "," << std::to_string(maxY) << "]," << '\n';
-    filestr << "\"min\" : [ " << std::to_string(minX) << "," << std::to_string(minZ) << "," << std::to_string(minY) << "]" << '\n';
+    //keep the dot save in the export. Location configuration of the system could lead to comma export of floats
+    std::string maxXString = std::to_string(maxX);
+    std::replace( maxXString.begin(), maxXString.end(), ',', '.');
+    std::string maxYString = std::to_string(maxY);
+    std::replace( maxYString.begin(), maxYString.end(), ',', '.');
+    std::string maxZString = std::to_string(maxZ);
+    std::replace( maxZString.begin(), maxZString.end(), ',', '.');
+    std::string minXString = std::to_string(minX);
+    std::replace( minXString.begin(), minXString.end(), ',', '.');
+    std::string minYString = std::to_string(minY);
+    std::replace( minYString.begin(), minYString.end(), ',', '.');
+    std::string minZString = std::to_string(minZ);
+    std::replace( minZString.begin(), minZString.end(), ',', '.');
+
+    filestr << "\"max\" : [ " << maxXString << "," << maxZString << "," << maxYString << "]," << '\n';
+    filestr << "\"min\" : [ " << minXString << "," << minZString << "," << minYString << "]" << '\n';
     filestr << "}," << '\n';
     filestr << "{" << '\n';
     //normal accesor
@@ -348,8 +373,22 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"componentType\" : 5126," << '\n';
     filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
     filestr << "\"type\" : \"VEC3\"," << '\n';
-    filestr << "\"max\" : [ " << std::to_string(maxNormalX) << "," << std::to_string(maxNormalZ) << "," << std::to_string(maxNormalY) << "]," << '\n';
-    filestr << "\"min\" : [ " << std::to_string(minNormalX) << "," << std::to_string(minNormalZ) << "," << std::to_string(minNormalY) << "]" << '\n';
+    std::string maxNormalXString = std::to_string(maxNormalX);
+    std::replace( maxNormalXString.begin(), maxNormalXString.end(), ',', '.');
+    std::string maxNormalYString = std::to_string(maxNormalY);
+    std::replace( maxNormalYString.begin(), maxNormalYString.end(), ',', '.');
+    std::string maxNormalZString = std::to_string(maxNormalZ);
+    std::replace( maxNormalZString.begin(), maxNormalZString.end(), ',', '.');
+    std::string minNormalXString = std::to_string(minNormalX);
+    std::replace( minNormalXString.begin(), minNormalXString.end(), ',', '.');
+    std::string minNormalYString = std::to_string(minNormalY);
+    std::replace( minNormalYString.begin(), minNormalYString.end(), ',', '.');
+    std::string minNormalZString = std::to_string(minNormalZ);
+    std::replace( minNormalZString.begin(), minNormalZString.end(), ',', '.');
+
+
+    filestr << "\"max\" : [ " << maxNormalXString << "," << maxNormalYString << "," << maxNormalZString  << "]," << '\n';
+    filestr << "\"min\" : [ " << minNormalXString << "," << minNormalYString << "," << minNormalZString  << "]" << '\n';
     filestr << "}" << '\n';
     filestr << "]," << '\n';
 
