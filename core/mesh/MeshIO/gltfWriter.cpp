@@ -120,7 +120,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "]," << '\n';
     //Buffer contains the actual data
 
-    uint16_t index = 0;
+    unsigned int index = 0;
     //string indexBuffer = "";
     std::vector<BYTE> indexBuffer;
     std::vector<BYTE> vertexBuffer;
@@ -133,79 +133,83 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     float minZ = (float) rVertexProps[0].mCoordZ;
     float maxZ = (float) rVertexProps[0].mCoordZ;
 
-    for( const auto& vertexProp : rVertexProps) {
-        //indexHexStream << std::hex << index;
-        // convert tolittle endian
-        int a = (index >>  8) & 0xff;  // next byte, bits 8-15
-        int b = index         & 0xff;  // low-order byte: bits 0-7
-        //std::stringstream indexHexStream;
-        //indexHexStream << hex << setfill('0') << setw(2) << a;
-        //string indexHexPart1 = indexHexStream.str();
-        //std::stringstream indexHexStream2;
-        //indexHexStream2 << hex << setfill('0') << setw(2) << b;
-        //string indexHexPart2 = indexHexStream2.str();
+    //add all faces to file buffer
+    for( const auto& faceProp : rFaceProps) {
+        //add for each face the assigned vertices
+        for( const auto& faceVertexIndex: faceProp.vertexIndices){
 
-        //change the parts to achieve little endian stringt
-        //indexBuffer += indexHexPart2;
-        //indexBuffer += indexHexPart1;
-        unsigned char part1Byte = a;
-        unsigned char part2Byte = b;
-        indexBuffer.push_back(part2Byte);
-        indexBuffer.push_back(part1Byte);
+            // get the bytes
+            int a = (index >>  24) & 0xff;  // next byte, bits 24-32
+            int b = (index >>  16) & 0xff;  // next byte, bits 16-23
+            int c = (index >>  8) & 0xff;  // next byte, bits 8-15
+            int d = index         & 0xff;  // low-order byte: bits 0-7
 
-        //save vertex coords as float
-        float coordX = (float) vertexProp.mCoordX;
-        float coordY = (float) vertexProp.mCoordY;
-        float coordZ = (float) vertexProp.mCoordZ;
+            //change the parts to achieve little endian stringt
+            //indexBuffer += indexHexPart2;
+            //indexBuffer += indexHexPart1;
+            unsigned char part1Byte = a;
+            unsigned char part2Byte = b;
+            unsigned char part3Byte = c;
+            unsigned char part4Byte = d;
+            indexBuffer.push_back(part4Byte);
+            indexBuffer.push_back(part3Byte);
+            indexBuffer.push_back(part2Byte);
+            indexBuffer.push_back(part1Byte);
 
-        //update min max
-        if (coordX < minX){
-            minX = coordX;
-        }
-        if (coordY < minY){
-            minY = coordY;
-        }
-        if (coordZ < minZ){
-            minZ = coordZ;
-        }
-        if (coordX > maxX){
-            maxX = coordX;
-        }
-        if (coordY > maxY){
-            maxY = coordY;
-        }
-        if (coordZ > maxZ){
-            maxZ = coordZ;
-        }
+            //save vertex coords as float
+            float coordX = (float) rVertexProps[faceVertexIndex].mCoordX;
+            float coordY = (float) rVertexProps[faceVertexIndex].mCoordY;
+            float coordZ = (float) rVertexProps[faceVertexIndex].mCoordZ;
+
+            //update min max
+            if (coordX < minX){
+                minX = coordX;
+            }
+            if (coordY < minY){
+                minY = coordY;
+            }
+            if (coordZ < minZ){
+                minZ = coordZ;
+            }
+            if (coordX > maxX){
+                maxX = coordX;
+            }
+            if (coordY > maxY){
+                maxY = coordY;
+            }
+            if (coordZ > maxZ){
+                maxZ = coordZ;
+            }
 
 
 
-        char const * coordXStream = (char const *)&coordX;
-        for (size_t i = 0; i != sizeof(float); ++i)
-        {
-            int byteValue = (int)coordXStream[i];
-            unsigned char byteAsChar = byteValue;
-            vertexBuffer.push_back(byteAsChar);
-        }
+            char const * coordXStream = (char const *)&coordX;
+            for (size_t i = 0; i != sizeof(float); ++i)
+            {
+                int byteValue = (int)coordXStream[i];
+                unsigned char byteAsChar = byteValue;
+                vertexBuffer.push_back(byteAsChar);
+            }
 
-        //first z for gltf
-        char const * coordZStream = (char const *)&coordZ;
-        for (size_t i = 0; i != sizeof(float); ++i)
-        {
-            int byteValue = (int)coordZStream[i];
-            unsigned char byteAsChar = byteValue;
-            vertexBuffer.push_back(byteAsChar);
-        }
+            //first z for gltf
+            char const * coordZStream = (char const *)&coordZ;
+            for (size_t i = 0; i != sizeof(float); ++i)
+            {
+                int byteValue = (int)coordZStream[i];
+                unsigned char byteAsChar = byteValue;
+                vertexBuffer.push_back(byteAsChar);
+            }
 
-        char const * coordYStream = (char const *)&coordY;
-        for (size_t i = 0; i != sizeof(float); ++i)
-        {
-            int byteValue = (int)coordYStream[i];
-            unsigned char byteAsChar = byteValue;
-            vertexBuffer.push_back(byteAsChar);
-        }
+            char const * coordYStream = (char const *)&coordY;
+            for (size_t i = 0; i != sizeof(float); ++i)
+            {
+                int byteValue = (int)coordYStream[i];
+                unsigned char byteAsChar = byteValue;
+                vertexBuffer.push_back(byteAsChar);
+            }
 
-        index++;
+            index++;
+        }
     }
 
     int nrOfBytesIndexBuffer = indexBuffer.size();
@@ -253,7 +257,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "{" << '\n';
     filestr << "\"bufferView\" : 0," << '\n';
     filestr << "\"byteOffset\" : 0," << '\n';
-    filestr << "\"componentType\" : 5123," << '\n';
+    filestr << "\"componentType\" : 5125," << '\n';
     filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
     filestr << "\"type\" : \"SCALAR\"," << '\n';
     filestr << "\"max\" : [" << std::to_string(index) << "]," << '\n';
@@ -263,7 +267,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"bufferView\" : 1," << '\n';
     filestr << "\"byteOffset\" : 0," << '\n';
     filestr << "\"componentType\" : 5126," << '\n';
-    filestr << "\"count\" : " << std::to_string(rVertexProps.size()) << "," << '\n';
+    filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
     filestr << "\"type\" : \"VEC3\"," << '\n';
     filestr << "\"max\" : [ " << std::to_string(maxX) << "," << std::to_string(maxZ) << "," << std::to_string(maxY) << "]," << '\n';
     filestr << "\"min\" : [ " << std::to_string(minX) << "," << std::to_string(minZ) << "," << std::to_string(minY) << "]" << '\n';
