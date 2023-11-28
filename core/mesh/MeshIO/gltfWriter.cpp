@@ -123,10 +123,55 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
        filestr << "\"NORMAL\" : 2" << '\n';
     }
     filestr << "}," << '\n';
-    filestr << "\"indices\" : 0" << '\n';
+    if (!mExportTextureCoordinates){
+        filestr << "\"indices\" : 0" << '\n';
+    }
+    else{
+         filestr << "\"indices\" : 0," << '\n';
+         filestr << "\"material\" : 0" << '\n';
+    }
     filestr << "} ]" << '\n';
     filestr << "}" << '\n';
     filestr << "]," << '\n';
+
+
+    //add texture configuration
+    //uv coordinates are in the buffer
+    if (mExportTextureCoordinates){
+        //TODO Add PBR parameter
+        filestr << "\"materials\" : [ {" << '\n';
+        filestr << "\"pbrMetallicRoughness\" : {" << '\n';
+        filestr << "\"baseColorTexture\" : {" << '\n';
+        filestr << "\"index\" : 0" << '\n';
+        filestr << " }," << '\n';
+        filestr << "\"metallicFactor\" : 0.0," << '\n';
+        filestr << "\"roughnessFactor\" : 1.0" << '\n';
+        filestr << "}" << '\n';
+        filestr << "} ]," << '\n';
+        //set file system to the mesh file, otherwise the relative dir based on the GigaMesh build dir
+        auto prevPath = std::filesystem::current_path();
+        std::filesystem::current_path(std::filesystem::absolute(rFilename).parent_path());
+        //TODO multiple texture files
+        std::vector<std::filesystem::path>& textureFiles = MeshWriter::getModelMetaDataRef().getTexturefilesRef();
+
+        filestr << "\"textures\" : [ {" << '\n';
+        filestr << "\"sampler\" : 0," << '\n';
+        filestr << "\"source\" : 0" << '\n';
+        filestr << "} ]," << '\n';
+        filestr << "\"images\" : [ {" << '\n';
+        filestr << "\"uri\" : \"" << std::filesystem::relative(textureFiles[0]).string() << "\"" << '\n';
+        filestr << "} ]," << '\n';
+        filestr << "\"samplers\" : [ {" << '\n';
+        filestr << "\"magFilter\" : 9729," << '\n';
+        filestr << "\"minFilter\" : 9987," << '\n';
+        filestr << "\"wrapS\" : 33648," << '\n';
+        filestr << "\"wrapT\" : 33648" << '\n';
+        filestr << "} ]," << '\n';
+        //reset filesystem
+        std::filesystem::current_path(prevPath);
+    }
+
+
     //Buffer contains the actual data
 
     unsigned int index = 0;
@@ -134,6 +179,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     std::vector<BYTE> indexBuffer;
     std::vector<BYTE> vertexBuffer;
     std::vector<BYTE> normalsBuffer;
+    std::vector<BYTE> uvCoordsBuffer;
 
     //save min max of the vectors for the accessors
     float minX = (float) rVertexProps[0].mCoordX;
@@ -149,9 +195,26 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     float minNormalZ = (float) rVertexProps[0].mNormalZ;
     float maxNormalZ = (float) rVertexProps[0].mNormalZ;
 
+    //the variables have to be declared outside the 'if'
+    //otherwise it leads to a compiler error in the section below (texture coords buffer)
+    float minU;
+    float minV;
+    float maxU;
+    float maxV;
+    if(mExportTextureCoordinates){
+        float minU = 1.0 - (float) rFaceProps[0].textureCoordinates[0];
+        float minV = (float) rFaceProps[0].textureCoordinates[1];
+        float maxU = 1.0 - (float) rFaceProps[0].textureCoordinates[0];
+        float maxV = (float) rFaceProps[0].textureCoordinates[1];
+    }
+
     //add all faces to file buffer
     for( const auto& faceProp : rFaceProps) {
         //add for each face the assigned vertices
+
+        //the texture coordinates are saved in a face property
+        //therefore, the textureIndex serves to access them
+        unsigned int textureIndex = 0;
         for( const auto& faceVertexIndex: faceProp.vertexIndices){
 
             // get the bytes
@@ -209,19 +272,19 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
                 vertexBuffer.push_back(byteAsChar);
             }
 
-            //first z for gltf
-            char const * coordZStream = (char const *)&coordZ;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)coordZStream[i];
-                unsigned char byteAsChar = byteValue;
-                vertexBuffer.push_back(byteAsChar);
-            }
 
             char const * coordYStream = (char const *)&coordY;
             for (size_t i = 0; i != sizeof(float); ++i)
             {
                 int byteValue = (int)coordYStream[i];
+                unsigned char byteAsChar = byteValue;
+                vertexBuffer.push_back(byteAsChar);
+            }
+
+            char const * coordZStream = (char const *)&coordZ;
+            for (size_t i = 0; i != sizeof(float); ++i)
+            {
+                int byteValue = (int)coordZStream[i];
                 unsigned char byteAsChar = byteValue;
                 vertexBuffer.push_back(byteAsChar);
             }
@@ -271,7 +334,6 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
                 normalsBuffer.push_back(byteAsChar);
             }
 
-            //first z for gltf
             char const * normalZStream = (char const *)&normalZ;
             for (size_t i = 0; i != sizeof(float); ++i)
             {
@@ -280,8 +342,48 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
                 normalsBuffer.push_back(byteAsChar);
             }
 
+            //--------------------------
+            //Texture Coords (UV)
+            //--------------------------
+            if (mExportTextureCoordinates){
+                //save texture coords as float
+                //mirrow the values
+                float coordU = (float) faceProp.textureCoordinates[2*textureIndex];
+                float coordV = 1.0- (float) faceProp.textureCoordinates[2*textureIndex + 1];
+
+                //update min max
+                if (coordU < minU){
+                    minU = coordU;
+                }
+                if (coordV < minV){
+                    minV = coordV;
+                }
+                if (coordU > maxU){
+                    maxU = coordU;
+                }
+                if (coordV > maxV){
+                    maxV = coordV;
+                }
 
 
+                char const * coordUStream = (char const *)&coordU;
+                for (size_t i = 0; i != sizeof(float); ++i)
+                {
+                    int byteValue = (int)coordUStream[i];
+                    unsigned char byteAsChar = byteValue;
+                    uvCoordsBuffer.push_back(byteAsChar);
+                }
+
+                char const * coordVStream = (char const *)&coordV;
+                for (size_t i = 0; i != sizeof(float); ++i)
+                {
+                    int byteValue = (int)coordVStream[i];
+                    unsigned char byteAsChar = byteValue;
+                    uvCoordsBuffer.push_back(byteAsChar);
+                }
+
+            }
+            textureIndex++;
             index++;
         }
     }
@@ -298,9 +400,13 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     std::vector<BYTE> entireBuffer = indexBuffer;
     entireBuffer.insert(entireBuffer.end(), vertexBuffer.begin(), vertexBuffer.end());
     entireBuffer.insert(entireBuffer.end(), normalsBuffer.begin(), normalsBuffer.end());
+    if (mExportTextureCoordinates){
+        entireBuffer.insert(entireBuffer.end(), uvCoordsBuffer.begin(), uvCoordsBuffer.end());
+    }
     std::string entireBufferEncoded = base64_encode(&entireBuffer[0], entireBuffer.size());
     int nrOfBytesVertexBuffer = vertexBuffer.size();
     int nrOfBytesNormalsBuffer = normalsBuffer.size();
+    int nrOfBytesUVBuffer = uvCoordsBuffer.size();
     int nrOfBytes = entireBuffer.size();
 
 
@@ -324,7 +430,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "{" << '\n';
     filestr << "\"buffer\" : 0," << '\n';
     filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset) << "," << '\n';
-    filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexBuffer + nrOfBytesNormalsBuffer) << "," << '\n';
+    filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexBuffer + nrOfBytesNormalsBuffer + nrOfBytesUVBuffer) << "," << '\n';
     filestr << "\"target\" : 34962" << '\n';
     filestr << "}" << '\n';
     filestr << "]," << '\n';
@@ -341,6 +447,8 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"max\" : [" << std::to_string(index) << "]," << '\n';
     filestr << "\"min\" : [ 0 ]" << '\n';
     filestr << "}," << '\n';
+
+    //-----------------------------------------------------
     //vertex accessor
     filestr << "{" << '\n';
     filestr << "\"bufferView\" : 1," << '\n';
@@ -362,10 +470,11 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     std::string minZString = std::to_string(minZ);
     std::replace( minZString.begin(), minZString.end(), ',', '.');
 
-    filestr << "\"max\" : [ " << maxXString << "," << maxZString << "," << maxYString << "]," << '\n';
-    filestr << "\"min\" : [ " << minXString << "," << minZString << "," << minYString << "]" << '\n';
+    filestr << "\"max\" : [ " << maxXString << "," << maxYString << "," << maxZString << "]," << '\n';
+    filestr << "\"min\" : [ " << minXString << "," << minYString << "," << minZString << "]" << '\n';
     filestr << "}," << '\n';
     filestr << "{" << '\n';
+    //------------------------------------------------------
     //normal accesor
     filestr << "\"bufferView\" : 1," << '\n';
     //byte offset inside the second buffer view
@@ -389,7 +498,34 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
 
     filestr << "\"max\" : [ " << maxNormalXString << "," << maxNormalYString << "," << maxNormalZString  << "]," << '\n';
     filestr << "\"min\" : [ " << minNormalXString << "," << minNormalYString << "," << minNormalZString  << "]" << '\n';
-    filestr << "}" << '\n';
+    if (!mExportTextureCoordinates){
+        filestr << "}" << '\n';
+    }
+    //-----------------------------------------------------------
+    //uv buffer / texture coords accesor
+    else{
+        filestr << "}," << '\n';
+        filestr << "{" << '\n';
+        filestr << "\"bufferView\" : 1," << '\n';
+        //byte offset inside the second buffer view
+        filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesVertexBuffer+nrOfBytesNormalsBuffer) << "," << '\n';
+        filestr << "\"componentType\" : 5126," << '\n';
+        filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
+        filestr << "\"type\" : \"VEC2\"," << '\n';
+        std::string maxUString = std::to_string(maxU);
+        std::replace( maxUString.begin(), maxUString.end(), ',', '.');
+        std::string maxVString = std::to_string(maxV);
+        std::replace( maxVString.begin(), maxVString.end(), ',', '.');
+        std::string minUString = std::to_string(minU);
+        std::replace( minUString.begin(), minUString.end(), ',', '.');
+        std::string minVString= std::to_string(minV);
+        std::replace( minVString.begin(), minVString.end(), ',', '.');
+
+        filestr << "\"max\" : [ " << maxUString << "," << maxVString << "]," << '\n';
+        filestr << "\"min\" : [ " << minUString << "," << minVString << "]" << '\n';
+        filestr << "}" << '\n';
+    }
+
     filestr << "]," << '\n';
 
     //GLTF version
@@ -397,10 +533,6 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"version\" : \"2.0\"" << '\n';
     filestr << "}" << '\n';
     filestr << "}" << '\n';
-
-
-
-
 
     filestr.close();
 
