@@ -4644,7 +4644,7 @@ bool MeshQt::writeFileUserInteract() {
 	fileSuggest += ".ply";
 
 	QStringList filters;
-	filters << tr("3D-Data (*.ply *.obj)")
+    filters << tr("3D-Data (*.ply *.obj *.gltf)")
 			<< tr("3D-Data outdated (*.wrl *.txt *.xyz)");
 
 	QFileDialog dialog( mMainWindow );

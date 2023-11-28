@@ -1,3 +1,4 @@
++) New: GLTF Export
 +) Improved: Warning when a user has loaded a large mesh (35000000 faces) 
 +) Changed: Inkscape warning only appears when using method 'Export Plane Intersections (SVG)'
 +) Bugfix: added separator for view and projection matrix values in screenshot ttl file

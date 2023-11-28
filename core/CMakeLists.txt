@@ -46,6 +46,7 @@ set(SOURCES_CORE mesh/geodentry.cpp
 	mesh/MeshIO/TxtWriter.cpp
 	mesh/MeshIO/VRMLWriter.cpp
 	mesh/MeshIO/MtlParser.cpp
+        mesh/MeshIO/gltfWriter.cpp
 	logging/Logging.cpp
 	logging/Logger.cpp
 	normalSphere/IcoSphereTree.cpp
@@ -65,6 +66,7 @@ set(HEADERS_CORE
 	mesh/MeshIO/VRMLWriter.h
 	mesh/MeshIO/PlyEnums.h
 	mesh/MeshIO/MtlParser.h
+        mesh/MeshIO/gltfWriter.h
 	mesh/util/triangulation.h
 	)
 
