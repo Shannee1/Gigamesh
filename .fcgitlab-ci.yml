@@ -3,8 +3,8 @@ stages:
   - test
 
 ubuntu bionic:
-  variables:
-    SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
+  #variables:
+  #  SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
   # Use ubuntu 18.04 LTS
   image: ubuntu:bionic
   stage: build
@@ -15,12 +15,8 @@ ubuntu bionic:
    - apk add bash
   script:
     #add file with google analytics key 
-    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+    - curl "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
     - ls -lah .secure_files
-    - echo "------"
-    - ls -lah ./gui/src/
-    - echo "------"
-    - ls 
 
     # Make sure g++-8, gcc-8 is default
     - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
