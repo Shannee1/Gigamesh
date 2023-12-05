@@ -4,7 +4,7 @@ stages:
 
 ubuntu bionic:
   variables:
-    SECURE_FILES_DOWNLOAD_PATH: '.gui/src/'
+    SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
   # Use ubuntu 18.04 LTS
   image: ubuntu:bionic
   stage: build
@@ -12,9 +12,11 @@ ubuntu bionic:
   before_script:
    - apt update && apt -y install make autoconf g++ git cmake unzip
    - apt -y install qtbase5-dev libtiff5-dev g++-8 sudo
+   - apk add bash
   script:
     #add file with google analytics key 
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+
     # Make sure g++-8, gcc-8 is default
     - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
@@ -49,7 +51,7 @@ ubuntu bionic:
 
 manjaro arch:
   variables:
-    SECURE_FILES_DOWNLOAD_PATH: '.gui/src/'
+    SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
   # Use latest manjaro release
   image: archlinux/base
   stage: build
