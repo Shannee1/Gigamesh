@@ -13,10 +13,11 @@ ubuntu bionic:
    - apt update && apt -y install make autoconf g++ git cmake unzip
    - apt -y install qtbase5-dev libtiff5-dev g++-8 sudo
    - apk add bash
+   #add file with google analytics key 
+   - curl "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+   - ls -lah .secure_files
   script:
-    #add file with google analytics key 
-    - curl "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
-    - ls -lah .secure_files
+    - echo "test" 
 
     # Make sure g++-8, gcc-8 is default
     - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
