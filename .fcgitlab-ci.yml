@@ -3,8 +3,8 @@ stages:
   - test
 
 ubuntu bionic:
-  #variables:
-  #  SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: './gui/src/'
   # Use ubuntu 18.04 LTS
   image: ubuntu:bionic
   stage: build
@@ -12,10 +12,10 @@ ubuntu bionic:
   before_script:
    - apt update && apt -y install make autoconf g++ git cmake unzip
    - apt -y install qtbase5-dev libtiff5-dev g++-8 sudo
-   - apk add bash
+   - apt -y install curl 
    #add file with google analytics key 
-   - curl "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
-   - ls -lah .secure_files
+   - curl -s "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+   
   script:
     - echo "test" 
 
