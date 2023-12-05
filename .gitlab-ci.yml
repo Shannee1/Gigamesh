@@ -65,6 +65,7 @@ manjaro arch:
    - pacman -Sy
    - pacman -S gcc glibc cmake boost unzip qtcreator qt5-base make git libffi --noconfirm
    - pacman -S --needed curl libcurl-compat bash --noconfirm
+   - pacman -Qi curl
 
   script:
     - export Qt5_DIR="$HOME/Qt/latest/gcc_64"
