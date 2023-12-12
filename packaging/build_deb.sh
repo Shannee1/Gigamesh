@@ -10,6 +10,9 @@ P_VERSION=$(git log -1 --format=%ci | cut -b3,4,6,7,9,10)
 echo Version is $P_VERSION
 cd packaging
 
+#copy google analytics key to tmp
+cp ./analyticsConfig.h /tmp/analyticsConfig.h 
+
 if test "$DEBSIGN_KEYID"; then
 	# only build a source package, and sign it
 	DPKG_BUILPACKAGE_OPTS="-sa -S -k$DEBSIGN_KEYID"
@@ -42,7 +45,10 @@ NAME=gigamesh$(uuidgen)
 git clone https://gitlab.com/fcgl/GigaMesh.git $NAME
 wait
 cd $NAME
-git checkout releasePreparation # <= Uncomment for testing the package build with the develop branch.
+#git checkout develop # <= Uncomment for testing the package build with the develop branch.
+
+#copy key from tmp to the actual position 
+cp ../analyticsConfig.h ./gui/src/analyticsConfig.h 
 
 DEBIAN_FILES="$PWD/packaging/debian"
 DEBIAN_FILES_VENDOR="$PWD/packaging/$DEBCHANGE_VENDOR"

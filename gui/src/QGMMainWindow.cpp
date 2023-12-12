@@ -36,6 +36,7 @@
 #include "qgmdockview.h"
 #include "ExternalProgramsDialog.h"
 #include "dialogGridCenterSelect.h"
+#include "analyticsConfig.h"
 
 using namespace std;
 
@@ -47,7 +48,8 @@ using namespace std;
 	mDockInfo( nullptr ),             \
 	mMeshWidgetFlag( nullptr ),       \
 	mRecentFiles( nullptr ),          \
-	mNetworkManager( nullptr )
+    mNetworkManagerVersion( nullptr ),\
+    mNetworkManagerAnalytics( nullptr )
 
 //! Constructor
 QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
@@ -358,42 +360,34 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
     //daysSinceLastCheck = 356.0; // for testing (1/2)
 	std::cout << "[QGMMainWindow::" << __FUNCTION__ << "] Last check " << daysSinceLastCheck << " days ago." << std::endl;
 	if( daysSinceLastCheck > 3.0 ) {
-		mNetworkManager = new QNetworkAccessManager( this );
-		QObject::connect( mNetworkManager, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpCheckVersion );
+        mNetworkManagerVersion = new QNetworkAccessManager( this );
+        QObject::connect( mNetworkManagerVersion, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpCheckVersion );
 		QNetworkRequest request;
         request.setUrl( QUrl( "https://gigamesh.eu/api.php/currentversion/" ) );
 		request.setRawHeader( "User-Agent", QString( "GigaMesh/%1" ).arg( VERSION_PACKAGE ).toStdString().c_str() );
-		mNetworkManager->get( request );
+        mNetworkManagerVersion->get( request );
+
+        //send to google analytics
+        //Caution! This request is not working in some network e. g. Eduroam
+
+        //Using different managers, since the first manager is waiting for a response --> gigaMesh stops until the response is received
+        mNetworkManagerAnalytics = new QNetworkAccessManager( this );
+        QObject::connect( mNetworkManagerAnalytics, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpAnalytics );
+        QNetworkRequest analyticsRequest;
+
+        QString apiUrl = QString( "https://www.google-analytics.com/mp/collect?measurement_id=G-CJ9E5M832W&api_secret=%1" ).arg(KEY);
+        analyticsRequest.setUrl( QUrl( apiUrl ));
+
+        analyticsRequest.setRawHeader("Content-Type", "application/json");
+
+        QString bodyText = QString( "{\"client_id\":\"gigamesh.application\",\"events\":[{ \"name\": \"login\", \"params\": {\"method\": \"%1\"}}]}" ).arg( VERSION_PACKAGE ).toStdString().c_str();
+
+        QByteArray body = bodyText.toUtf8();
+        std::cout << bodyText.toStdString() << std::endl;
+        mNetworkManagerAnalytics->post(analyticsRequest,body);
 	}
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
-	// --- Check external Tools i.e. Inkscape and convert/ImageMagick --------------------------------------------------------------------------------------
-	auto inkscapePath = settings.value("Inkscape_Path", "").toString();
-	if(inkscapePath.length() == 0)
-	    inkscapePath = "inkscape";
-	bool checkInkscapeFailed = false;
-	QProcess testRunInkscape;
-	testRunInkscape.start( inkscapePath + " --version" );
-	if( !testRunInkscape.waitForFinished() ) {
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had a timeout!" << endl;
-		checkInkscapeFailed = true;
-	}
-	if( testRunInkscape.exitStatus() != QProcess::NormalExit ) {
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had no normal exit!" << endl;
-		checkInkscapeFailed = true;
-	}
-	if( testRunInkscape.exitCode() != 0 ) {
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR Inkscape exit code: " << testRunInkscape.exitCode() << endl;
-		QString outInkscapeErr( testRunInkscape.readAllStandardError() );
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape error: " << outInkscapeErr.toStdString().c_str() << endl;
-		checkInkscapeFailed = true;
-	}
-	QString outInkscape( testRunInkscape.readAllStandardOutput() );
-	cout << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape check: " << outInkscape.simplified().toStdString().c_str() << endl;
-	if( checkInkscapeFailed ) {
-		SHOW_MSGBOX_WARN_TIMEOUT( tr("Inkscape error"), tr("Checking Inkscape for presence and functionality failed!"), 5000 );
-	}
-	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 #ifdef REQUIRE_CONVERT_IMAGEMAGICK_OPTION
 	// Due to DPI set within PNGs by Qt this is currently not required. Maybe for writings TIFFs, which need some source revision.
 	bool checkConvertFailed = false;
@@ -1321,7 +1315,7 @@ bool QGMMainWindow::fileOpen( QAction* rFileAction ){
 //! Handles the dialog for importing function values (per vertex AKA quality).
 //! see also QGMMainWindow:: and MeshQt::importFunctionValues
 void QGMMainWindow::menuImportFunctionValues() {
-	QSettings settings;
+    QSettings settings;
 	QString fileNames = QFileDialog::getOpenFileName( this,
 													  tr( "Import Function Values (per Vertex)" ),
 	                                                  settings.value( "lastPath" ).toString(),
@@ -2313,6 +2307,13 @@ void QGMMainWindow::slotHttpCheckVersion( QNetworkReply* rReply ) {
 	time( &timeNow );
 	QSettings settings;
 	settings.setValue( "lastVersionCheck", qlonglong( timeNow ) );
+}
+
+//called after the Post request to google analytics
+void QGMMainWindow::slotHttpAnalytics( QNetworkReply* rReply ) {
+    if( rReply->error() != QNetworkReply::NoError ) {
+        std::cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR: Code " << rReply->error() << ": " << rReply->errorString().toStdString() << std::endl;
+    }
 }
 
 void QGMMainWindow::slotChangeLanguage(QAction* action)

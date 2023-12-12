@@ -154,7 +154,7 @@ public slots:
 private slots:
 	// --- Network communication ---------------------------------------------------------------------------------------------------------------------------
 	void slotHttpCheckVersion( QNetworkReply* rReply );
-
+    void slotHttpAnalytics( QNetworkReply* rReply );
 	// --- Language changes ---------------------------------------------------------------------------------------------------------------------------
 	void slotChangeLanguage(QAction* action);
 
@@ -484,7 +484,9 @@ private:
 	QActionGroup* mRecentFiles;                      //! Group to open recent files.
 
 	// Network access e.g. for checking the version number.
-	QNetworkAccessManager* mNetworkManager;          //! manages simple http-request (cf. version number)
+    QNetworkAccessManager* mNetworkManagerVersion;          //! manages simple http-request of the version number
+    QNetworkAccessManager* mNetworkManagerAnalytics;          //! manages simple http-POST-request to Google Analytics
+
 
 	// QWidget interface
 	protected:

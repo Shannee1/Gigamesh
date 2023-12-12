@@ -241,7 +241,11 @@ bool parseAscii(const std::array<uint64_t, PLY_SECTIONS_COUNT>& plyElements, std
 						rFaceProps[facesRead].vertexIndices.shrink_to_fit();
 						for(uint64_t j = 0; j < elementCount; ++j)
 						{
-							const uint64_t vertexIndexNr = atoll( tokens[++i].c_str() );
+                            const uint64_t vertexIndexNr = atoll( tokens[++i].c_str() );
+                            if(vertexIndexNr > plyElements[PLY_VERTEX]) {
+                                LOG::error() << "[PlyReader::" << __FUNCTION__ << "] Bad index for face!\n";
+                                return( false );
+                            }
 							rFaceProps[facesRead].vertexIndices[j] = static_cast<uint64_t>(vertexIndexNr);
 						}
 				    } break;
@@ -573,7 +577,11 @@ bool parseBinary(const std::array<uint64_t, PLY_SECTIONS_COUNT>& plyElements, st
 
 						for(uint64_t j = 0; j<listNrChar; ++j)
 						{
-							READ_IN_PROPER_BYTE_ORDER( filestr, &someInt, (*plyPropListSize), reverseByteOrder );
+                            READ_IN_PROPER_BYTE_ORDER( filestr, &someInt, (*plyPropListSize), reverseByteOrder );
+                            if(someInt > plyElements[PLY_VERTEX]) {
+                                LOG::error() << "[PlyReader::" << __FUNCTION__ << "] Bad index for face!\n";
+                                return( false );
+                            }
 							rFaceProps[facesRead].vertexIndices[j] = someInt;
 						}
 						break;
