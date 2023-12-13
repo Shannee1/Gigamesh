@@ -3,6 +3,10 @@
 # exit if error occurs
 set -e
 STARTDIR=$(pwd)
+
+#copy google analytics key to tmp
+cp ./analyticsConfig.h /tmp/analyticsConfig.h 
+
 cd /tmp/
 NAME=gigamesh$(uuidgen)
 git clone --recurse-submodules https://gitlab.com/fcgl/GigaMesh.git $NAME
@@ -12,6 +16,10 @@ cd $NAME
 git submodule foreach git pull origin master
 #git checkout develop                          # <= Uncomment 1/2 for testing using the develop branch.
 #git submodule foreach git pull origin develop # <= Uncomment 2/2 for testing using the develop branch.
+
+#copy key from tmp to the actual position 
+cp ../analyticsConfig.h ./gui/src/analyticsConfig.h 
+
 cd ..
 # end update of submodule
 wait

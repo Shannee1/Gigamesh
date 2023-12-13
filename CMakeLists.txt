@@ -116,3 +116,4 @@ set(CPACK_DEBIAN_PACKAGE_SECTION "science")
 
 include(CPack)
 
+find_package(Threads REQUIRED)
