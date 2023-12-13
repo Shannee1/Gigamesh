@@ -5,6 +5,7 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-pthread")
 
 add_executable(gigamesh-featurevectors-sl src/standalone.cpp)
 add_executable(gigamesh-sphere-profiles src/profiles.cpp)
