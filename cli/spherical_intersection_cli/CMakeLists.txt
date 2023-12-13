@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.10)
 project(Spherical_intersection_standalones VERSION 1.0.0 DESCRIPTION "mesh sphere intersection standalone tools")
 
 #set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-#set(THREADS_PREFER_PTHREAD_FLAG ON)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 add_executable(gigamesh-featurevectors-sl src/standalone.cpp)

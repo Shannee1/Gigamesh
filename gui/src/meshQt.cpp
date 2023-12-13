@@ -4691,6 +4691,17 @@ bool MeshQt::writeFile( const filesystem::path& rFileName ) {
 	}
 
 	std::cout << "[MeshQt::" << __FUNCTION__ << "] to: " << rFileName << std::endl;
+    std::string fileExtension = rFileName.extension();
+    if(fileExtension == ".gltf"){
+        bool userContinue;
+        if( showQuestion( &userContinue, tr("Continue?").toStdString(), \
+                          tr("The GLTF results in a larger file and cannot be read by GigaMesh. Do you want to continue?").toStdString() ) ) {
+            if( !userContinue ) {
+                // User cancel.
+                return( false );
+            }
+        }
+    }
 	if( !MeshGL::writeFile( rFileName ) ) {
 		std::cerr << "[MeshQt::" << __FUNCTION__ << "] could not write to file '" << rFileName << "'! " << std::endl;
 		return( false );
