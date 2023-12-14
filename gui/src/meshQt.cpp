@@ -4691,7 +4691,7 @@ bool MeshQt::writeFile( const filesystem::path& rFileName ) {
 	}
 
 	std::cout << "[MeshQt::" << __FUNCTION__ << "] to: " << rFileName << std::endl;
-    std::string fileExtension = rFileName.extension();
+    std::string fileExtension = rFileName.extension().string();
     if(fileExtension == ".gltf"){
         bool userContinue;
         if( showQuestion( &userContinue, tr("Continue?").toStdString(), \
