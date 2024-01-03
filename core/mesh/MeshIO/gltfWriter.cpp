@@ -92,6 +92,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     } else {
         LOG::debug() << "[ObjWriter::" << __FUNCTION__ << "] File open for writing: '" << rFilename << "'." << '\n';
     }
+
     //following https://github.khronos.org/glTF-Tutorials/gltfTutorial/gltfTutorial_003_MinimalGltfFile.html
     //basic structure as JSON
     //Mesh and scene description
@@ -112,16 +113,29 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "{" << '\n';
     filestr << "\"primitives\" : [ {" << '\n';
     filestr << "\"attributes\" : {" << '\n';
-    filestr << "\"POSITION\" : 1," << '\n';
 
-    if (mExportTextureCoordinates){
-       filestr << "\"NORMAL\" : 2," << '\n';
-       filestr << "\"TEXCOORD_0\" : 3" << '\n';
+    if(mExportVertNormal){
+        filestr << "\"POSITION\" : 1," << '\n';
+        if (mExportTextureCoordinates){
+                filestr << "\"NORMAL\" : 2," << '\n';
+                filestr << "\"TEXCOORD_0\" : 3" << '\n';
+        }
+        else
+        {
+           filestr << "\"NORMAL\" : 2" << '\n';
+        }
     }
-    else
-    {
-       filestr << "\"NORMAL\" : 2" << '\n';
+    else{
+        if (mExportTextureCoordinates){
+                filestr << "\"POSITION\" : 1," << '\n';
+                filestr << "\"TEXCOORD_0\" : 2" << '\n';
+        }
+        else
+        {
+            filestr << "\"POSITION\" : 1" << '\n';
+        }
     }
+
     filestr << "}," << '\n';
     if (!mExportTextureCoordinates){
         filestr << "\"indices\" : 0" << '\n';
@@ -292,57 +306,57 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
             //--------------------------
             //Normals
             //--------------------------
+            if(mExportVertNormal){
+                //save vertex coords as float
+                float normalX = (float) rVertexProps[faceVertexIndex].mNormalX;
+                float normalY = (float) rVertexProps[faceVertexIndex].mNormalY;
+                float normalZ = (float) rVertexProps[faceVertexIndex].mNormalZ;
 
-            //save vertex coords as float
-            float normalX = (float) rVertexProps[faceVertexIndex].mNormalX;
-            float normalY = (float) rVertexProps[faceVertexIndex].mNormalY;
-            float normalZ = (float) rVertexProps[faceVertexIndex].mNormalZ;
 
+                //update min max
+                if (normalX < minNormalX){
+                    minNormalX = normalX;
+                }
+                if (normalY < minNormalY){
+                    minNormalY = normalY;
+                }
+                if (normalZ < minNormalZ){
+                    minNormalZ = normalZ;
+                }
+                if (normalX > maxNormalX){
+                    maxNormalX = normalX;
+                }
+                if (normalY > maxNormalY){
+                    maxNormalY = normalY;
+                }
+                if (normalZ > maxNormalZ){
+                    maxNormalZ = normalZ;
+                }
 
-            //update min max
-            if (normalX < minNormalX){
-                minNormalX = normalX;
-            }
-            if (normalY < minNormalY){
-                minNormalY = normalY;
-            }
-            if (normalZ < minNormalZ){
-                minNormalZ = normalZ;
-            }
-            if (normalX > maxNormalX){
-                maxNormalX = normalX;
-            }
-            if (normalY > maxNormalY){
-                maxNormalY = normalY;
-            }
-            if (normalZ > maxNormalZ){
-                maxNormalZ = normalZ;
-            }
+                char const * normalXStream = (char const *)&normalX;
+                for (size_t i = 0; i != sizeof(float); ++i)
+                {
+                    int byteValue = (int)normalXStream[i];
+                    unsigned char byteAsChar = byteValue;
+                    normalsBuffer.push_back(byteAsChar);
+                }
 
-            char const * normalXStream = (char const *)&normalX;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)normalXStream[i];
-                unsigned char byteAsChar = byteValue;
-                normalsBuffer.push_back(byteAsChar);
-            }
+                char const * normalYStream = (char const *)&normalY;
+                for (size_t i = 0; i != sizeof(float); ++i)
+                {
+                    int byteValue = (int)normalYStream[i];
+                    unsigned char byteAsChar = byteValue;
+                    normalsBuffer.push_back(byteAsChar);
+                }
 
-            char const * normalYStream = (char const *)&normalY;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)normalYStream[i];
-                unsigned char byteAsChar = byteValue;
-                normalsBuffer.push_back(byteAsChar);
+                char const * normalZStream = (char const *)&normalZ;
+                for (size_t i = 0; i != sizeof(float); ++i)
+                {
+                    int byteValue = (int)normalZStream[i];
+                    unsigned char byteAsChar = byteValue;
+                    normalsBuffer.push_back(byteAsChar);
+                }
             }
-
-            char const * normalZStream = (char const *)&normalZ;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)normalZStream[i];
-                unsigned char byteAsChar = byteValue;
-                normalsBuffer.push_back(byteAsChar);
-            }
-
             //--------------------------
             //Texture Coords (UV)
             //--------------------------
@@ -439,27 +453,36 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     //filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexBuffer + nrOfBytesNormalsBuffer + nrOfBytesUVBuffer) << "," << '\n';
     filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexBuffer) << "," << '\n';
     filestr << "\"target\" : 34962" << '\n';
-    filestr << "}," << '\n';
-
-    //normals buffer
-    filestr << "{" << '\n';
-    filestr << "\"buffer\" : 0," << '\n';
-    filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer) << "," << '\n';
-    filestr << "\"byteLength\" : " << std::to_string(nrOfBytesNormalsBuffer) << "," << '\n';
-    filestr << "\"target\" : 34962" << '\n';
-
-    if (!mExportTextureCoordinates){
+    if (!mExportVertNormal && !mExportTextureCoordinates){
+        //no further value buffers --> last entry
         filestr << "}" << '\n';
     }
-    else {
+    else{
         filestr << "}," << '\n';
-        //uv buffer
-        filestr << "{" << '\n';
-        filestr << "\"buffer\" : 0," << '\n';
-        filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer+nrOfBytesNormalsBuffer) << "," << '\n';
-        filestr << "\"byteLength\" : " << std::to_string(nrOfBytesUVBuffer) << "," << '\n';
-        filestr << "\"target\" : 34962" << '\n';
-        filestr << "}" << '\n';
+
+        if(mExportVertNormal){
+            //normals buffer
+            filestr << "{" << '\n';
+            filestr << "\"buffer\" : 0," << '\n';
+            filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer) << "," << '\n';
+            filestr << "\"byteLength\" : " << std::to_string(nrOfBytesNormalsBuffer) << "," << '\n';
+            filestr << "\"target\" : 34962" << '\n';
+            if (!mExportTextureCoordinates){
+                filestr << "}" << '\n';
+            }
+            else {
+                filestr << "}," << '\n';
+            }
+        }
+        if (mExportTextureCoordinates){
+            //uv buffer
+            filestr << "{" << '\n';
+            filestr << "\"buffer\" : 0," << '\n';
+            filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer+nrOfBytesNormalsBuffer) << "," << '\n';
+            filestr << "\"byteLength\" : " << std::to_string(nrOfBytesUVBuffer) << "," << '\n';
+            filestr << "\"target\" : 34962" << '\n';
+            filestr << "}" << '\n';
+        }
     }
     filestr << "]," << '\n';
 
@@ -500,60 +523,74 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
 
     filestr << "\"max\" : [ " << maxXString << "," << maxYString << "," << maxZString << "]," << '\n';
     filestr << "\"min\" : [ " << minXString << "," << minYString << "," << minZString << "]" << '\n';
-    filestr << "}," << '\n';
-    filestr << "{" << '\n';
-    //------------------------------------------------------
-    //normal accesor
-    filestr << "\"bufferView\" : 2," << '\n';
-    filestr << "\"byteOffset\" : 0," << '\n';
-    filestr << "\"componentType\" : 5126," << '\n';
-    filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
-    filestr << "\"type\" : \"VEC3\"," << '\n';
-    std::setprecision(16);
-    std::string maxNormalXString = std::to_string(maxNormalX);
-    std::replace( maxNormalXString.begin(), maxNormalXString.end(), ',', '.');
-    std::string maxNormalYString = std::to_string(maxNormalY);
-    std::replace( maxNormalYString.begin(), maxNormalYString.end(), ',', '.');
-    std::string maxNormalZString = std::to_string(maxNormalZ);
-    std::replace( maxNormalZString.begin(), maxNormalZString.end(), ',', '.');
-    std::string minNormalXString = std::to_string(minNormalX);
-    std::replace( minNormalXString.begin(), minNormalXString.end(), ',', '.');
-    std::string minNormalYString = std::to_string(minNormalY);
-    std::replace( minNormalYString.begin(), minNormalYString.end(), ',', '.');
-    std::string minNormalZString = std::to_string(minNormalZ);
-    std::replace( minNormalZString.begin(), minNormalZString.end(), ',', '.');
-    std::setprecision(6);
-
-    filestr << "\"max\" : [ " << maxNormalXString << "," << maxNormalYString << "," << maxNormalZString  << "]," << '\n';
-    filestr << "\"min\" : [ " << minNormalXString << "," << minNormalYString << "," << minNormalZString  << "]" << '\n';
-
-    if (!mExportTextureCoordinates){
+    if (!mExportVertNormal && !mExportTextureCoordinates){
         filestr << "}" << '\n';
     }
-    //-----------------------------------------------------------
-    //uv buffer / texture coords accesor
     else{
         filestr << "}," << '\n';
-        filestr << "{" << '\n';
-        filestr << "\"bufferView\" : 3," << '\n';
-        filestr << "\"byteOffset\" : 0," << '\n';
-        filestr << "\"componentType\" : 5126," << '\n';
-        filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
-        filestr << "\"type\" : \"VEC2\"," << '\n';
-        std::string maxUString = std::to_string(maxU);
-        std::replace( maxUString.begin(), maxUString.end(), ',', '.');
-        std::string maxVString = std::to_string(maxV);
-        std::replace( maxVString.begin(), maxVString.end(), ',', '.');
-        std::string minUString = std::to_string(minU);
-        std::replace( minUString.begin(), minUString.end(), ',', '.');
-        std::string minVString= std::to_string(minV);
-        std::replace( minVString.begin(), minVString.end(), ',', '.');
+        if(mExportVertNormal){
+            filestr << "{" << '\n';
+            //------------------------------------------------------
+            //normal accesor
+            filestr << "\"bufferView\" : 2," << '\n';
+            filestr << "\"byteOffset\" : 0," << '\n';
+            filestr << "\"componentType\" : 5126," << '\n';
+            filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
+            filestr << "\"type\" : \"VEC3\"," << '\n';
+            std::setprecision(16);
+            std::string maxNormalXString = std::to_string(maxNormalX);
+            std::replace( maxNormalXString.begin(), maxNormalXString.end(), ',', '.');
+            std::string maxNormalYString = std::to_string(maxNormalY);
+            std::replace( maxNormalYString.begin(), maxNormalYString.end(), ',', '.');
+            std::string maxNormalZString = std::to_string(maxNormalZ);
+            std::replace( maxNormalZString.begin(), maxNormalZString.end(), ',', '.');
+            std::string minNormalXString = std::to_string(minNormalX);
+            std::replace( minNormalXString.begin(), minNormalXString.end(), ',', '.');
+            std::string minNormalYString = std::to_string(minNormalY);
+            std::replace( minNormalYString.begin(), minNormalYString.end(), ',', '.');
+            std::string minNormalZString = std::to_string(minNormalZ);
+            std::replace( minNormalZString.begin(), minNormalZString.end(), ',', '.');
+            std::setprecision(6);
 
-        filestr << "\"max\" : [ " << maxUString << "," << maxVString << "]," << '\n';
-        filestr << "\"min\" : [ " << minUString << "," << minVString << "]" << '\n';
-        filestr << "}" << '\n';
+            filestr << "\"max\" : [ " << maxNormalXString << "," << maxNormalYString << "," << maxNormalZString  << "]," << '\n';
+            filestr << "\"min\" : [ " << minNormalXString << "," << minNormalYString << "," << minNormalZString  << "]" << '\n';
+
+            if (!mExportTextureCoordinates){
+                filestr << "}" << '\n';
+            }
+            else{
+                filestr << "}," << '\n';
+            }
+        }
+        //-----------------------------------------------------------
+        //uv buffer / texture coords accesor
+        if(mExportTextureCoordinates){
+            filestr << "{" << '\n';
+            //bufferView ID depends on the normals export decision
+            if (mExportVertNormal){
+                filestr << "\"bufferView\" : 3," << '\n';
+            }
+            else{
+                filestr << "\"bufferView\" : 2," << '\n';
+            }
+            filestr << "\"byteOffset\" : 0," << '\n';
+            filestr << "\"componentType\" : 5126," << '\n';
+            filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
+            filestr << "\"type\" : \"VEC2\"," << '\n';
+            std::string maxUString = std::to_string(maxU);
+            std::replace( maxUString.begin(), maxUString.end(), ',', '.');
+            std::string maxVString = std::to_string(maxV);
+            std::replace( maxVString.begin(), maxVString.end(), ',', '.');
+            std::string minUString = std::to_string(minU);
+            std::replace( minUString.begin(), minUString.end(), ',', '.');
+            std::string minVString= std::to_string(minV);
+            std::replace( minVString.begin(), minVString.end(), ',', '.');
+
+            filestr << "\"max\" : [ " << maxUString << "," << maxVString << "]," << '\n';
+            filestr << "\"min\" : [ " << minUString << "," << minVString << "]" << '\n';
+            filestr << "}" << '\n';
+        }
     }
-
     filestr << "]," << '\n';
 
     //GLTF version

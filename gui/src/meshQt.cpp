@@ -4705,6 +4705,21 @@ bool MeshQt::writeFile( const filesystem::path& rFileName ) {
                 return( false );
             }
         }
+        bool exportNormals;
+        if( showQuestion( &exportNormals, tr("Normal Export?").toStdString(), \
+                          tr("Do you want to export the normals per vertex? This will result in a larger file!").toStdString() ) ) {
+            if( exportNormals ) {
+                // User cancel.
+                MeshIO::setFlagExport(EXPORT_VERT_NORMAL,true);
+            }
+            else{
+                MeshIO::setFlagExport(EXPORT_VERT_NORMAL,false);
+            }
+        }
+        else{
+            return( false );
+        }
+
     }
 	if( !MeshGL::writeFile( rFileName ) ) {
 		std::cerr << "[MeshQt::" << __FUNCTION__ << "] could not write to file '" << rFileName << "'! " << std::endl;
