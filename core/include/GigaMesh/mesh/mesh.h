@@ -189,6 +189,10 @@ class Mesh : public Primitive, public MeshIO, public MeshParams,
 		virtual bool          addToSelection( const std::set<Vertex*>& rVertsToAdd );
 		virtual bool          addToSelection( const std::set<Face*>& rFaceToAdd );
 		//.
+        //Deselection ----------------------------------------------------------------------------------------------------------------------------------
+        virtual bool          removeFromSelection( const std::set<Vertex*>& rVertsToRemove );
+        virtual bool          removeFromSelection( std::vector<Vertex*>* const rVertsToRemove );
+        //.
 		virtual int    selectVertFuncValLowerThan( double rVal );
 		virtual int    selectVertFuncValGreatThan( double rVal );
 		//.

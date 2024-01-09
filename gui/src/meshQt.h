@@ -232,6 +232,7 @@ class MeshQt : public QObject, public MeshGLShader, public MeshQtCSVImportExport
 		virtual bool   selectPolyNotLabeled();
 
 		virtual bool       selectPoly( std::vector<QPoint>& rPixelCoords );
+        virtual bool       deselectPoly( std::vector<QPoint>& rPixelCoords );
 		virtual Primitive* selectPrimitiveAt( int primitiveTypeToSelect, int xPixel, int yPixel, bool addToList );
 		// Selection - Plane definition:
 		virtual bool   getPlanePosToSet( int* rPosID );

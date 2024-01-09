@@ -516,6 +516,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	mGroupSelPrimitive = new QActionGroup( this );
 	actionSelMVertsGUIPinPoint->setActionGroup( mGroupSelPrimitive );
 	actionSelMVertsGUILasso->setActionGroup(    mGroupSelPrimitive );
+    actionDeSelMVertsGUILasso->setActionGroup(    mGroupSelPrimitive );
 	actionSelMFacesGUIPinPoint->setActionGroup( mGroupSelPrimitive );
 	actionSelectVertex->setActionGroup(    mGroupSelPrimitive );
 	actionSelectFace->setActionGroup(      mGroupSelPrimitive );
@@ -527,6 +528,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 
 	actionSelMVertsGUIPinPoint->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
+    actionDeSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelMFacesGUIPinPoint->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelectVertex->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelectFace->setProperty(      "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
@@ -537,6 +539,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 
 	actionSelMVertsGUIPinPoint->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTICES  );
 	actionSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO  );
+    actionDeSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO  );
 	actionSelMFacesGUIPinPoint->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_MULTI_FACES  );
 	actionSelectVertex->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTEX    );
 	actionSelectFace->setProperty(      "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_FACE      );

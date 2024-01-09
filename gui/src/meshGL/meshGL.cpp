@@ -1478,7 +1478,7 @@ bool MeshGL::callTriangle(vector<PixCoord> &p, vector<PixCoord> &tri) {
 //!
 //! @arg pixel coordinates defining a polygon, which is the base of a prism enclosing the vertices to be selected.
 bool MeshGL::selectPrism(
-                vector<PixCoord>& rTri
+                vector<PixCoord>& rTri, bool rDeselection
 ) {
 
 	// Determine processing time - START
@@ -1588,9 +1588,14 @@ bool MeshGL::selectPrism(
 	tInterStart = high_resolution_clock::now();
 
 	// Add to selection
-	Mesh::addToSelection( &realvertexlist );
-	Mesh::addToSelection( cvertexlist );
-
+    if (!rDeselection){
+        Mesh::addToSelection( &realvertexlist );
+        Mesh::addToSelection( cvertexlist );
+    }
+    else{
+        Mesh::removeFromSelection( &realvertexlist );
+        Mesh::removeFromSelection( cvertexlist );
+    }
 	// Determine processing time - INTERMEDIATE
 	tInterEnd = high_resolution_clock::now();
 	time_span = duration_cast<duration<double>>( tInterEnd - tInterStart );
@@ -1607,7 +1612,7 @@ bool MeshGL::selectPrism(
 }
 
 //! Polygonal/prismatic selection of vertices.
-bool MeshGL::selectPoly( vector<PixCoord> &rPixels ) {
+bool MeshGL::selectPoly( vector<PixCoord> &rPixels, bool rDeselection ) {
 #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
         cout << "[MeshGL::" << __FUNCTION__ << "]" << endl;
 #endif
@@ -1619,7 +1624,7 @@ bool MeshGL::selectPoly( vector<PixCoord> &rPixels ) {
 
 				callTriangle( rPixels, tri );
         //	cout<<"SIZE OF TRIANGULATION VECTOR tri  "<<tri.size()<<endl<<endl;
-				return selectPrism( tri );
+                return selectPrism( tri, rDeselection );
 		}
 
 		return false;

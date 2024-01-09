@@ -172,6 +172,7 @@ class MeshWidgetParams {
 			SELECTION_MODE_FACE,       //!< Select a (single!) Face.
 			SELECTION_MODE_VERTICES,   //!< Select multiple Vertices by pinpointing (SelMVerts).
 			SELECTION_MODE_VERTICES_LASSO,   //!< Selects all/multiple vertices in a polygonal area (SelMVerts).
+            DESELECTION_MODE_VERTICES_LASSO,   //!< Deselects all/multiple vertices in a polygonal area (SelMVerts).
 			SELECTION_MODE_MULTI_FACES,      //!< Select multiple Vertices by pinpointing (SelMFaces).
 			SELECTION_MODE_PLANE_3FP,  //!< Select 3 point for a plane.
 			SELECTION_MODE_CONE,       //!< Selects points for a cone.
@@ -225,6 +226,7 @@ class MeshWidgetParams {
 			// Multiple selections:
 			GUIDE_SELECT_SELMVERTS,           //!< Select multiple vertices by pinpointing (SelMVerts).
 			GUIDE_SELECT_SELMVERTS_LASSO,     //!< Select multiple vertices using a polygonal area (SelMVerts).
+            GUIDE_DESELECT_SELMVERTS_LASSO,     //!< Deselect multiple vertices using a polygonal area (SelMVerts).
 			GUIDE_SELECT_SELMFACES,           //!< Select multiple faces by pinpointing (SelMVerts).
 			// Positions:
 			GUIDE_SELECT_POSITIONS,           //! Select multiple positions on the mesh.
