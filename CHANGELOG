@@ -1,3 +1,7 @@
++) Changed: Suggested suffixes for mesh export as a drop-down list by type
++) Improved: GLTF Export without normals
+
+Version 231215
 +) New: GLTF Export (only vertices, normals and single texture) 
 +) Improved: Warning when a user has loaded a large mesh (35000000 faces) 
 +) Changed: Inkscape warning only appears when using method 'Export Plane Intersections (SVG)'
