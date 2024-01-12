@@ -89,8 +89,8 @@ void GltfWriter::addFloatHexStringToBuffer(std::vector<BYTE> *buffer, float valu
     }
 }
 
-void GltfWriter::createBuffersWithoutTextureCoords( std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *normalsBuffer,
-                                                    float minPosition[3], float maxPosition[3], float minNormals[3], float maxNormals[3],
+void GltfWriter::createBuffersWithoutTextureCoords( std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *vertexColorBuffer, std::vector<BYTE> *normalsBuffer,
+                                                    float minPosition[3], float maxPosition[3], float minColor[3], float maxColor[3], float minNormals[3], float maxNormals[3],
                                                     const std::vector<sVertexProperties>& rVertexProps, const std::vector<sFaceProperties>& rFaceProps)
 {
 
@@ -161,6 +161,40 @@ void GltfWriter::createBuffersWithoutTextureCoords( std::vector<BYTE> *indexBuff
         addFloatHexStringToBuffer(vertexBuffer,coordY);
         addFloatHexStringToBuffer(vertexBuffer,coordZ);
 
+        //-----------------------------------
+        //Vertex Color
+        //-----------------------------------
+        //save vertex color as float and ignore alpha value
+        //convert the 8 bit color to values between 0 and 1
+        float colorBle = (float) vertProp.mColorBle/255.0;
+        float colorGrn = (float) vertProp.mColorGrn/255.0;
+        float colorRed = (float) vertProp.mColorRed/255.0;
+
+        //update min max
+        if (colorBle < minColor[0]){
+            minColor[0] = colorBle;
+        }
+        if (colorGrn < minColor[1]){
+            minColor[1] = colorGrn;
+        }
+        if (colorRed < minColor[2]){
+            minColor[2] = colorRed;
+        }
+        if (colorBle > maxColor[0]){
+            maxColor[0] = colorBle;
+        }
+        if (colorGrn > maxColor[1]){
+            maxColor[1] = colorGrn;
+        }
+        if (colorRed > maxColor[2]){
+            maxColor[2] = colorRed;
+        }
+
+
+        addFloatHexStringToBuffer(vertexColorBuffer,colorRed);
+        addFloatHexStringToBuffer(vertexColorBuffer,colorGrn);
+        addFloatHexStringToBuffer(vertexColorBuffer,colorBle);
+
         //--------------------------
         //Normals
         //--------------------------
@@ -199,8 +233,8 @@ void GltfWriter::createBuffersWithoutTextureCoords( std::vector<BYTE> *indexBuff
     }
 }
 
-void GltfWriter::createBuffersIncludingTextureCoords(std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *normalsBuffer, std::vector<BYTE> *uvCoordsBuffer,
-                                                     float minPosition[3], float maxPosition[3], float minNormals[3], float maxNormals[3], float minTextureCoords[2], float maxTextureCoords[2],
+void GltfWriter::createBuffersIncludingTextureCoords(std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *vertexColorBuffer, std::vector<BYTE> *normalsBuffer, std::vector<BYTE> *uvCoordsBuffer,
+                                                     float minPosition[3], float maxPosition[3], float minColor[3], float maxColor[3],float minNormals[3], float maxNormals[3], float minTextureCoords[2], float maxTextureCoords[2],
                                                       const std::vector<sVertexProperties>& rVertexProps, const std::vector<sFaceProperties>& rFaceProps)
 {
     //initialize min and max
@@ -267,6 +301,39 @@ void GltfWriter::createBuffersIncludingTextureCoords(std::vector<BYTE> *indexBuf
             addFloatHexStringToBuffer(vertexBuffer,coordY);
             addFloatHexStringToBuffer(vertexBuffer,coordZ);
 
+            //-----------------------------------
+            //Vertex Color
+            //-----------------------------------
+            //save vertex color as float and ignore alpha value
+            //convert the 8 bit color to values between 0 and 1
+            float colorBle = (float) rVertexProps[faceVertexIndex].mColorBle/255.0;
+            float colorGrn = (float) rVertexProps[faceVertexIndex].mColorGrn/255.0;
+            float colorRed = (float) rVertexProps[faceVertexIndex].mColorRed/255.0;
+
+            //update min max
+            if (colorBle < minColor[0]){
+                minColor[0] = colorBle;
+            }
+            if (colorGrn < minColor[1]){
+                minColor[1] = colorGrn;
+            }
+            if (colorRed < minColor[2]){
+                minColor[2] = colorRed;
+            }
+            if (colorBle > maxColor[0]){
+                maxColor[0] = colorBle;
+            }
+            if (colorGrn > maxColor[1]){
+                maxColor[1] = colorGrn;
+            }
+            if (colorRed > maxColor[2]){
+                maxColor[2] = colorRed;
+            }
+
+
+            addFloatHexStringToBuffer(vertexColorBuffer,colorRed);
+            addFloatHexStringToBuffer(vertexColorBuffer,colorGrn);
+            addFloatHexStringToBuffer(vertexColorBuffer,colorBle);
 
             //--------------------------
             //Normals
@@ -377,23 +444,26 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
 
     if(mExportVertNormal){
         filestr << "\"POSITION\" : 1," << '\n';
+        filestr << "\"COLOR_0\" : 2," << '\n';
         if (mExportTextureCoordinates){
-                filestr << "\"NORMAL\" : 2," << '\n';
-                filestr << "\"TEXCOORD_0\" : 3" << '\n';
+                filestr << "\"NORMAL\" : 3," << '\n';
+                filestr << "\"TEXCOORD_0\" : 4" << '\n';
         }
         else
         {
-           filestr << "\"NORMAL\" : 2" << '\n';
+           filestr << "\"NORMAL\" : 3" << '\n';
         }
     }
     else{
         if (mExportTextureCoordinates){
                 filestr << "\"POSITION\" : 1," << '\n';
-                filestr << "\"TEXCOORD_0\" : 2" << '\n';
+                filestr << "\"COLOR_0\" : 2," << '\n';
+                filestr << "\"TEXCOORD_0\" : 3" << '\n';
         }
         else
         {
-            filestr << "\"POSITION\" : 1" << '\n';
+            filestr << "\"POSITION\" : 1," << '\n';
+            filestr << "\"COLOR_0\" : 2" << '\n';
         }
     }
 
@@ -452,6 +522,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     unsigned int index = 0;
     std::vector<BYTE> indexBuffer;
     std::vector<BYTE> vertexBuffer;
+    std::vector<BYTE> vertexColorBuffer;
     std::vector<BYTE> normalsBuffer;
     std::vector<BYTE> uvCoordsBuffer;
 
@@ -462,6 +533,17 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     float maxPosition[3] = {(float) rVertexProps[0].mCoordX, (float) rVertexProps[0].mCoordY,(float) rVertexProps[0].mCoordZ};
     float minNormals[3] = {(float) rVertexProps[0].mNormalX, (float) rVertexProps[0].mNormalY,(float) rVertexProps[0].mNormalZ};
     float maxNormals[3] = {(float) rVertexProps[0].mNormalX, (float) rVertexProps[0].mNormalY,(float) rVertexProps[0].mNormalZ};
+    //Color
+    float minColors[3] = {(float) rVertexProps[0].mColorBle, (float) rVertexProps[0].mColorGrn,(float) rVertexProps[0].mColorRed};
+    float maxColors[3] = {(float) rVertexProps[0].mColorBle, (float) rVertexProps[0].mColorGrn,(float) rVertexProps[0].mColorRed};
+    //convert to values between 0 and 1 (8-Bit color)
+    minColors[0] = minColors[0]/255.0;
+    minColors[1] = minColors[1]/255.0;
+    minColors[2] = minColors[2]/255.0;
+    maxColors[0] = maxColors[0]/255.0;
+    maxColors[1] = maxColors[1]/255.0;
+    maxColors[2] = maxColors[2]/255.0;
+
     //will be initialized within the method
     //structure: u, v
     float minTextureCoords[2];
@@ -476,7 +558,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     unsigned int maxIndexValue = 0;
 
     if(!mExportTextureCoordinates){
-        createBuffersWithoutTextureCoords(&indexBuffer,&vertexBuffer,&normalsBuffer, minPosition, maxPosition, minNormals, maxNormals, rVertexProps,rFaceProps);
+        createBuffersWithoutTextureCoords(&indexBuffer,&vertexBuffer,&vertexColorBuffer, &normalsBuffer, minPosition, maxPosition, minColors, maxColors, minNormals, maxNormals, rVertexProps,rFaceProps);
         //the face are described by indices --> each vertex is written once
         nrOfPrimitives = rVertexProps.size();
         maxIndexValue = rVertexProps.size()-1;
@@ -485,7 +567,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
         //if the texture coordinates have to be saved, then the faces must be stored by vertices
         //--> For each face, 3 positions, normals and texture coordinates are saved
         //This is due to the GLTF requirement that primitive buffers (positions, normals and textcoords) must consist of the number of entries.
-        createBuffersIncludingTextureCoords(&indexBuffer,&vertexBuffer,&normalsBuffer,&uvCoordsBuffer, minPosition, maxPosition, minNormals, maxNormals, minTextureCoords, maxTextureCoords, rVertexProps,rFaceProps);
+        createBuffersIncludingTextureCoords(&indexBuffer,&vertexBuffer,&vertexColorBuffer, &normalsBuffer,&uvCoordsBuffer, minPosition, maxPosition, minColors, maxColors, minNormals, maxNormals, minTextureCoords, maxTextureCoords, rVertexProps,rFaceProps);
         //each face is defined by 3 vertices
         nrOfPrimitives = 3*rFaceProps.size();
         maxIndexValue = 3*rFaceProps.size() - 1;
@@ -507,12 +589,14 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     //and base64 encoded
     std::vector<BYTE> entireBuffer = indexBuffer;
     entireBuffer.insert(entireBuffer.end(), vertexBuffer.begin(), vertexBuffer.end());
+    entireBuffer.insert(entireBuffer.end(), vertexColorBuffer.begin(), vertexColorBuffer.end());
     entireBuffer.insert(entireBuffer.end(), normalsBuffer.begin(), normalsBuffer.end());
     if (mExportTextureCoordinates){
         entireBuffer.insert(entireBuffer.end(), uvCoordsBuffer.begin(), uvCoordsBuffer.end());
     }
     std::string entireBufferEncoded = base64_encode(&entireBuffer[0], entireBuffer.size());
     int nrOfBytesVertexBuffer = vertexBuffer.size();
+    int nrOfBytesVertexColorBuffer = vertexColorBuffer.size();
     int nrOfBytesNormalsBuffer = normalsBuffer.size();
     int nrOfBytesUVBuffer = uvCoordsBuffer.size();
     int nrOfBytes = entireBuffer.size();
@@ -539,9 +623,17 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "{" << '\n';
     filestr << "\"buffer\" : 0," << '\n';
     filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset) << "," << '\n';
-    //filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexBuffer + nrOfBytesNormalsBuffer + nrOfBytesUVBuffer) << "," << '\n';
     filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexBuffer) << "," << '\n';
     filestr << "\"target\" : 34962" << '\n';
+    filestr << "}," << '\n';
+
+    //vertex color buffer
+    filestr << "{" << '\n';
+    filestr << "\"buffer\" : 0," << '\n';
+    filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer) << "," << '\n';
+    filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexColorBuffer) << "," << '\n';
+    filestr << "\"target\" : 34962" << '\n';
+
     if (!mExportVertNormal && !mExportTextureCoordinates){
         //no further value buffers --> last entry
         filestr << "}" << '\n';
@@ -553,7 +645,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
             //normals buffer
             filestr << "{" << '\n';
             filestr << "\"buffer\" : 0," << '\n';
-            filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer) << "," << '\n';
+            filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer+nrOfBytesVertexColorBuffer) << "," << '\n';
             filestr << "\"byteLength\" : " << std::to_string(nrOfBytesNormalsBuffer) << "," << '\n';
             filestr << "\"target\" : 34962" << '\n';
             if (!mExportTextureCoordinates){
@@ -567,7 +659,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
             //uv buffer
             filestr << "{" << '\n';
             filestr << "\"buffer\" : 0," << '\n';
-            filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer+nrOfBytesNormalsBuffer) << "," << '\n';
+            filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer+nrOfBytesVertexColorBuffer+nrOfBytesNormalsBuffer) << "," << '\n';
             filestr << "\"byteLength\" : " << std::to_string(nrOfBytesUVBuffer) << "," << '\n';
             filestr << "\"target\" : 34962" << '\n';
             filestr << "}" << '\n';
@@ -613,6 +705,32 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
 
     filestr << "\"max\" : [ " << maxXString << "," << maxYString << "," << maxZString << "]," << '\n';
     filestr << "\"min\" : [ " << minXString << "," << minYString << "," << minZString << "]" << '\n';
+    filestr << "}," << '\n';
+
+    //vertex color accessor
+    filestr << "{" << '\n';
+    filestr << "\"bufferView\" : 2," << '\n';
+    filestr << "\"byteOffset\" : 0," << '\n';
+    filestr << "\"componentType\" : 5126," << '\n';
+    filestr << "\"count\" : " << std::to_string(nrOfPrimitives) << "," << '\n';
+    filestr << "\"type\" : \"VEC3\"," << '\n';
+    //keep the dot save in the export. Location configuration of the system could lead to comma export of floats
+    std::string maxBlueString = std::to_string(maxColors[0]);
+    std::replace( maxBlueString.begin(), maxBlueString.end(), ',', '.');
+    std::string maxGreenString = std::to_string(maxColors[1]);
+    std::replace( maxGreenString.begin(), maxGreenString.end(), ',', '.');
+    std::string maxRedString = std::to_string(maxColors[2]);
+    std::replace( maxRedString.begin(), maxRedString.end(), ',', '.');
+    std::string minBlueString = std::to_string(minColors[0]);
+    std::replace( minBlueString.begin(), minBlueString.end(), ',', '.');
+    std::string minGreenString = std::to_string(minColors[1]);
+    std::replace( minGreenString.begin(), minGreenString.end(), ',', '.');
+    std::string minRedString = std::to_string(minColors[2]);
+    std::replace( minRedString.begin(), minRedString.end(), ',', '.');
+
+    filestr << "\"max\" : [ " << maxRedString << "," << maxGreenString << "," << maxBlueString << "]," << '\n';
+    filestr << "\"min\" : [ " << minRedString << "," << minGreenString << "," << minBlueString << "]" << '\n';
+
     if (!mExportVertNormal && !mExportTextureCoordinates){
         filestr << "}" << '\n';
     }
@@ -622,7 +740,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
             filestr << "{" << '\n';
             //------------------------------------------------------
             //normal accesor
-            filestr << "\"bufferView\" : 2," << '\n';
+            filestr << "\"bufferView\" : 3," << '\n';
             filestr << "\"byteOffset\" : 0," << '\n';
             filestr << "\"componentType\" : 5126," << '\n';
             filestr << "\"count\" : " << std::to_string(nrOfPrimitives) << "," << '\n';
@@ -658,10 +776,10 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
             filestr << "{" << '\n';
             //bufferView ID depends on the normals export decision
             if (mExportVertNormal){
-                filestr << "\"bufferView\" : 3," << '\n';
+                filestr << "\"bufferView\" : 4," << '\n';
             }
             else{
-                filestr << "\"bufferView\" : 2," << '\n';
+                filestr << "\"bufferView\" : 3," << '\n';
             }
             filestr << "\"byteOffset\" : 0," << '\n';
             filestr << "\"componentType\" : 5126," << '\n';
