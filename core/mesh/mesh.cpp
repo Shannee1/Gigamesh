@@ -2400,6 +2400,54 @@ bool Mesh::addToSelection( const set<Face*>& rFaceToAdd ) {
 	return( true );
 }
 
+//--- Vertex deselection ---------------------------------------------------------------------------------------------------------------------------------------
+//! Removes a given set of Vertices from mSelectedMVerts.
+//! @returns false in case of an error. True otherwise.
+bool Mesh::removeFromSelection( const set<Vertex*>& rVertsToRemove ) {
+    //delete all selected vertices which are deselected
+
+    for(  set<Vertex*>::iterator itVertex = rVertsToRemove.begin(); itVertex != rVertsToRemove.end(); itVertex++ ) {
+        //! Find each selected vertex which is not in part of the deselection vector
+        std::set<Vertex*>::iterator selectedVert = mSelectedMVerts.find(*itVertex);
+        if( selectedVert != mSelectedMVerts.end()) {
+            mSelectedMVerts.erase( (*selectedVert) );
+        }
+
+    }
+    selectedMVertsChanged();
+    return( true );
+}
+
+//! Removes a given set of Vertices from mSelectedMVerts.
+//! @returns false in case of an error. True otherwise.
+bool Mesh::removeFromSelection( std::vector<Vertex*>* const rVertsToRemove ) {
+    if( rVertsToRemove == nullptr ) {
+        cerr << "[Mesh::" << __FUNCTION__ << "] ERROR: NULL pointer given!" << endl;
+        return false;
+    }
+    if( rVertsToRemove->empty() ) {
+        cout << "[Mesh::" << __FUNCTION__ << "] No vertices deselected." << endl;
+        return true;
+    }
+
+
+
+    //std::set_difference(mSelectedMVerts.begin(), mSelectedMVerts.end(), rVertsToRemove->begin(), rVertsToRemove->end(),
+//                          std::inserter(difference, difference.begin()));
+
+    vector<Vertex*>::iterator itVertex;
+    for( itVertex=rVertsToRemove->begin(); itVertex!=rVertsToRemove->end(); itVertex++ ) {
+        //! Find each selected vertex which is not in part of the deselection vector
+        std::set<Vertex*>::iterator selectedVert = mSelectedMVerts.find(*itVertex);
+        if( selectedVert != mSelectedMVerts.end()) {
+            mSelectedMVerts.erase( (*selectedVert) );
+        }
+
+    }
+    selectedMVertsChanged();
+    return true;
+}
+
 //--- Vertex selection -----------------------------------------------------------------------------------------------------------------------------------------
 
 int Mesh::selectVertFuncValLowerThan( double rVal ) {

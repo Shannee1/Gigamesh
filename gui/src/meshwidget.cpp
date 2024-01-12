@@ -532,6 +532,9 @@ bool MeshWidget::setParamIntegerMeshWidget( MeshWidgetParams::eParamInt rParam, 
 				case MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO:
 					emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_SELMVERTS_LASSO );
 				break;
+                case MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO:
+                    emit sGuideIDSelection( MeshWidgetParams::GUIDE_DESELECT_SELMVERTS_LASSO );
+                break;
 				case MeshWidgetParams::SELECTION_MODE_MULTI_FACES:
 					emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_SELMFACES );
 				break;
@@ -880,7 +883,8 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
     }
 
 	QObject::connect( this,        SIGNAL(sParamFlagMesh(MeshGLParams::eParamFlag,bool)), mMeshVisual, SLOT(setParamFlagMeshGL(MeshGLParams::eParamFlag,bool)) );
-	QObject::connect( this,        SIGNAL(sSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(selectPoly(std::vector<QPoint>&))                       );
+    QObject::connect( this,        SIGNAL(sSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(selectPoly(std::vector<QPoint>&)) );
+    QObject::connect( this,        SIGNAL(sDeSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(deselectPoly(std::vector<QPoint>&)) );
 	QObject::connect( mMeshVisual, SIGNAL(updateGL()),                                    this,        SLOT(update())                                          );
 	// Interaction -----------------------------------------------------------------------------------------------------------------------------------------
 	QObject::connect( this,        SIGNAL(sApplyTransfromToPlane(Matrix4D)), mMeshVisual, SLOT(applyTransfromToPlane(Matrix4D)) );
@@ -6449,10 +6453,10 @@ void MeshWidget::paintSelection() {
 	}
 	MeshWidgetParams::eSelectionModes selectionMode;
 	getParamIntegerMeshWidget( MeshWidgetParams::SELECTION_MODE, reinterpret_cast<int*>(&selectionMode) );
-	if( selectionMode != MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO ) {
+    if( !(selectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || selectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO) ) {
 		return;
 	}
-	
+
 	QImage imPoly( width(), height(), QImage::Format_ARGB32 );
 	imPoly.fill( QColor( 255, 255, 255, 0 ) );
 
@@ -6676,7 +6680,7 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 	//! Selection of a point of a polyline (left click):
 	if( ( mouseButtonsPressed == Qt::LeftButton ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT ) &&
-	    ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO )
+        ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO )
 	  ) {
 		mSelectionPoly.push_back( mLastPos );
 		if( mSelectionPoly.size() == 1 ) {
@@ -6688,7 +6692,7 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 	//! Close the selection of a polyline by right-click:
 	if( ( mouseButtonsPressed == Qt::RightButton ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT ) &&
-	    ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO ) &&
+        ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO ) &&
 	    ( mSelectionPoly.size() > 1 )
 	  ) {
 		// Check if the last two points are the same, as this can cause a segmentation fault.
@@ -6701,7 +6705,12 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 		for( auto & somePoint: mSelectionPoly ) {
 			somePoint.setY( height() - somePoint.y() );
 		}
-		emit sSelectPoly( mSelectionPoly );
+        if ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO){
+            emit sSelectPoly( mSelectionPoly );
+        }
+        if( currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO ){
+            emit sDeSelectPoly( mSelectionPoly );
+        }
 		mSelectionPoly.clear();
 		return;
 	}
@@ -6710,7 +6719,7 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 	if( ( mouseButtonsPressed & ( Qt::LeftButton | Qt::MiddleButton | Qt::RightButton ) ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT )
 	  ) {
-		if( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO ) {
+        if( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO ) {
 			std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: Wrong selection mode (SELECTION_MODE_POLYLINE)!" << std::endl;
 			return;
 		}
@@ -6787,7 +6796,7 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
 	//! Display the selection of a polyline:
 	if( ( rEvent->buttons() == Qt::NoButton ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT ) &&
-	    ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO )
+        ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO ||  currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO)
 	  ) {
 		if( mSelectionPoly.size()>0 ) {
 			mSelectionPoly.pop_back();
@@ -7307,6 +7316,10 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
 			// Nothing to do.
 			return( true );
 			break;
+        case MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO:
+            // Nothing to do.
+            return( true );
+            break;
 		case MeshWidgetParams::SELECTION_MODE_PLANE_3FP:
 			retVal = mMeshVisual->selectPlaneThreePoints( xPixel, yPixel );
 			break;
@@ -7356,6 +7369,7 @@ bool MeshWidget::userSelectAtMouseRight( const QPoint& rPoint ) {
 		case MeshWidgetParams::SELECTION_MODE_FACE:
 		case MeshWidgetParams::SELECTION_MODE_VERTICES:
 		case MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO:
+        case MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO:
 		case MeshWidgetParams::SELECTION_MODE_MULTI_FACES:
 		case MeshWidgetParams::SELECTION_MODE_PLANE_3FP:
 		case MeshWidgetParams::SELECTION_MODE_CONE:

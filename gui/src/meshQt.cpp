@@ -2351,6 +2351,22 @@ bool MeshQt::selectPolyNotLabeled() {
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
+//! Deselect vertices within a polygonal area defined by the camera view direction (=prism) .
+bool MeshQt::deselectPoly( vector<QPoint> &rPixelCoords ) {
+    vector<PixCoord> polyCoords;
+    for( auto const& polyPoint: rPixelCoords ) {
+        PixCoord someCoord;
+        someCoord.x = polyPoint.x();
+        someCoord.y = polyPoint.y();
+        polyCoords.push_back( someCoord );
+    }
+
+    bool retVal = MeshGL::selectPoly( polyCoords, true );
+    if( !retVal ) {
+        SHOW_MSGBOX_WARN( tr("Deselection aborted"), tr("ERROR occured: No vertices were deselected!") );
+    }
+    return retVal;
+}
 
 //! Select vertices within a polygonal area defined by the camera view direction (=prism) .
 bool MeshQt::selectPoly( vector<QPoint> &rPixelCoords ) {
