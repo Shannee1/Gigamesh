@@ -2405,11 +2405,15 @@ bool Mesh::addToSelection( const set<Face*>& rFaceToAdd ) {
 //! @returns false in case of an error. True otherwise.
 bool Mesh::removeFromSelection( const set<Vertex*>& rVertsToRemove ) {
     //delete all selected vertices which are deselected
-    std::set<Vertex*> difference;
-    std::set_difference(mSelectedMVerts.begin(), mSelectedMVerts.end(), rVertsToRemove.begin(), rVertsToRemove.end(),
-                          std::inserter(difference, difference.begin()));
 
-    mSelectedMVerts = difference;
+    for(  set<Vertex*>::iterator itVertex = rVertsToRemove.begin(); itVertex != rVertsToRemove.end(); itVertex++ ) {
+        //! Find each selected vertex which is not in part of the deselection vector
+        std::set<Vertex*>::iterator selectedVert = mSelectedMVerts.find(*itVertex);
+        if( selectedVert != mSelectedMVerts.end()) {
+            mSelectedMVerts.erase( (*selectedVert) );
+        }
+
+    }
     selectedMVertsChanged();
     return( true );
 }
@@ -2427,11 +2431,19 @@ bool Mesh::removeFromSelection( std::vector<Vertex*>* const rVertsToRemove ) {
     }
 
 
-    std::set<Vertex*> difference;
-    std::set_difference(mSelectedMVerts.begin(), mSelectedMVerts.end(), rVertsToRemove->begin(), rVertsToRemove->end(),
-                          std::inserter(difference, difference.begin()));
 
-    mSelectedMVerts = difference;
+    //std::set_difference(mSelectedMVerts.begin(), mSelectedMVerts.end(), rVertsToRemove->begin(), rVertsToRemove->end(),
+//                          std::inserter(difference, difference.begin()));
+
+    vector<Vertex*>::iterator itVertex;
+    for( itVertex=rVertsToRemove->begin(); itVertex!=rVertsToRemove->end(); itVertex++ ) {
+        //! Find each selected vertex which is not in part of the deselection vector
+        std::set<Vertex*>::iterator selectedVert = mSelectedMVerts.find(*itVertex);
+        if( selectedVert != mSelectedMVerts.end()) {
+            mSelectedMVerts.erase( (*selectedVert) );
+        }
+
+    }
     selectedMVertsChanged();
     return true;
 }
