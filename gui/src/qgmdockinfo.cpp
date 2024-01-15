@@ -195,6 +195,11 @@ void QGMDockInfo::setGuideIDSelection( MeshWidgetParams::eGuideIDSelection rGuid
 			ui->labelGuide->setVisible( true );
 			ui->labelGuide->setPixmap( tmpIcon.pixmap( ui->labelGuide->size() ) );
 		} break;
+        case MeshWidgetParams::GUIDE_SELECT_THREE_POSITIONS: {
+            QIcon tmpIcon( ":/GMToolBar/gigamesh_icon_vertices_select_three_positions.svg" );
+            ui->labelGuide->setVisible( true );
+            ui->labelGuide->setPixmap( tmpIcon.pixmap( ui->labelGuide->size() ) );
+        } break;
 		// --- Plane  -----------------------------------------------------------------------------------------
 		case MeshWidgetParams::GUIDE_SELECT_PLANE_3FP_A:
 			ui->labelGuide->setVisible( true );

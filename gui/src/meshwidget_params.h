@@ -178,6 +178,7 @@ class MeshWidgetParams {
 			SELECTION_MODE_CONE,       //!< Selects points for a cone.
 			SELECTION_MODE_SPHERE,     //!< Selects points for a sphere.
 			SELECTION_MODE_POSITIONS,  //!< Select positions from faces or  (solo) vertices.
+            SELECTION_MODE_THREE_POSITIONS,  //!< Select 3 positions from faces or  (solo) vertices. Special modus of Profile Lines
 			SELECTION_MODE_COUNT       //!< Number of selection choices.
 		};
 
@@ -230,6 +231,7 @@ class MeshWidgetParams {
 			GUIDE_SELECT_SELMFACES,           //!< Select multiple faces by pinpointing (SelMVerts).
 			// Positions:
 			GUIDE_SELECT_POSITIONS,           //! Select multiple positions on the mesh.
+            GUIDE_SELECT_THREE_POSITIONS,     //! Select three positions on the mesh. Used with the profile lines computation
 			// Plane by three points:
 			GUIDE_SELECT_PLANE_3FP_A,  //!< Define plane by three vertices - select vertex A
 			GUIDE_SELECT_PLANE_3FP_B,  //!< Define plane by three vertices - select vertex B

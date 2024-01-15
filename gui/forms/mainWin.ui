@@ -730,6 +730,7 @@
     <addaction name="actionSelectFace"/>
     <addaction name="separator"/>
     <addaction name="actionSelectPositions"/>
+    <addaction name="actionSelectThreePositions"/>
     <addaction name="actionSelectPositionsDeselectAll"/>
     <addaction name="separator"/>
     <addaction name="actionSelectCone"/>
@@ -1128,6 +1129,7 @@
    <addaction name="actionSelectVertex"/>
    <addaction name="actionSelMVertsGUIPinPoint"/>
    <addaction name="actionSelectPositions"/>
+   <addaction name="actionSelectThreePositions"/>
    <addaction name="actionSelMVertsGUILasso"/>
    <addaction name="actionDeSelMVertsGUILasso"/>
    <addaction name="actionSelectCone"/>
@@ -4785,6 +4787,21 @@ The latter will be shown, when the processing has finished.</string>
    </property>
    <property name="toolTip">
     <string>Deselect multiple vertices with a lasso</string>
+   </property>
+  </action>
+  <action name="actionSelectThreePositions">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gigamesh.qrc">
+     <normaloff>:/GMToolBar/gigamesh_icon_vertices_select_three_positions.svg</normaloff>:/GMToolBar/gigamesh_icon_vertices_select_three_positions.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Positions - SelPrims - Select 3 </string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select 3 positions on the mesh i.e. points within triangles.&lt;/p&gt;&lt;p&gt;This selection mode automatically starts a new set of connected points after 3 pins.&lt;/p&gt;&lt;p&gt;These positions are used to calculate circle centers as part of the profile line calculation process.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
  </widget>
