@@ -78,6 +78,334 @@ std::string base64_encode(BYTE const* buf, unsigned int bufLen) {
   return ret;
 }
 
+void GltfWriter::addFloatHexStringToBuffer(std::vector<BYTE> *buffer, float value)
+{
+    char const * valueStream = (char const *)&value;
+    for (size_t i = 0; i != sizeof(float); ++i)
+    {
+        int byteValue = (int)valueStream[i];
+        unsigned char byteAsChar = byteValue;
+        buffer->push_back(byteAsChar);
+    }
+}
+
+void GltfWriter::createBuffersWithoutTextureCoords( std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *vertexColorBuffer, std::vector<BYTE> *normalsBuffer,
+                                                    float minPosition[3], float maxPosition[3], float minColor[3], float maxColor[3], float minNormals[3], float maxNormals[3],
+                                                    const std::vector<sVertexProperties>& rVertexProps, const std::vector<sFaceProperties>& rFaceProps)
+{
+
+    //add all faces to file buffer
+    for( const auto& faceProp : rFaceProps) {
+        //add for each face the assigned vertices
+
+        //the texture coordinates are saved in a face property
+        //therefore, the textureIndex serves to access them
+        unsigned int textureIndex = 0;
+        for( const auto& faceVertexIndex: faceProp.vertexIndices){
+
+            // get the bytes
+            int a = (faceVertexIndex >>  24) & 0xff;  // next byte, bits 24-32
+            int b = (faceVertexIndex >>  16) & 0xff;  // next byte, bits 16-23
+            int c = (faceVertexIndex >>  8) & 0xff;  // next byte, bits 8-15
+            int d = faceVertexIndex         & 0xff;  // low-order byte: bits 0-7
+
+            //change the parts to achieve little endian stringt
+            unsigned char part1Byte = a;
+            unsigned char part2Byte = b;
+            unsigned char part3Byte = c;
+            unsigned char part4Byte = d;
+            indexBuffer->push_back(part4Byte);
+            indexBuffer->push_back(part3Byte);
+            indexBuffer->push_back(part2Byte);
+            indexBuffer->push_back(part1Byte);
+        }
+    }
+
+    //The Vertices and Normals are stored once
+    //the mesh is defined by the faces through the indices
+    //the index refers to a position/normal
+
+
+    for( const auto& vertProp : rVertexProps) {
+
+        //-----------------------------------
+        //Position
+        //-----------------------------------
+
+        //save vertex coords as float
+        float coordX = (float) vertProp.mCoordX;
+        float coordY = (float) vertProp.mCoordY;
+        float coordZ = (float) vertProp.mCoordZ;
+
+        //update min max
+        if (coordX < minPosition[0]){
+            minPosition[0] = coordX;
+        }
+        if (coordY < minPosition[1]){
+            minPosition[1] = coordY;
+        }
+        if (coordZ < minPosition[2]){
+            minPosition[2] = coordZ;
+        }
+        if (coordX > maxPosition[0]){
+            maxPosition[0] = coordX;
+        }
+        if (coordY > maxPosition[1]){
+            maxPosition[1] = coordY;
+        }
+        if (coordZ > maxPosition[2]){
+            maxPosition[2] = coordZ;
+        }
+
+        addFloatHexStringToBuffer(vertexBuffer,coordX);
+        addFloatHexStringToBuffer(vertexBuffer,coordY);
+        addFloatHexStringToBuffer(vertexBuffer,coordZ);
+
+        //-----------------------------------
+        //Vertex Color
+        //-----------------------------------
+        //save vertex color as float and ignore alpha value
+        //convert the 8 bit color to values between 0 and 1
+        float colorBle = (float) vertProp.mColorBle/255.0;
+        float colorGrn = (float) vertProp.mColorGrn/255.0;
+        float colorRed = (float) vertProp.mColorRed/255.0;
+
+        //update min max
+        if (colorBle < minColor[0]){
+            minColor[0] = colorBle;
+        }
+        if (colorGrn < minColor[1]){
+            minColor[1] = colorGrn;
+        }
+        if (colorRed < minColor[2]){
+            minColor[2] = colorRed;
+        }
+        if (colorBle > maxColor[0]){
+            maxColor[0] = colorBle;
+        }
+        if (colorGrn > maxColor[1]){
+            maxColor[1] = colorGrn;
+        }
+        if (colorRed > maxColor[2]){
+            maxColor[2] = colorRed;
+        }
+
+
+        addFloatHexStringToBuffer(vertexColorBuffer,colorRed);
+        addFloatHexStringToBuffer(vertexColorBuffer,colorGrn);
+        addFloatHexStringToBuffer(vertexColorBuffer,colorBle);
+
+        //--------------------------
+        //Normals
+        //--------------------------
+        if(mExportVertNormal){
+            //save vertex coords as float
+            float normalX = (float) vertProp.mNormalX;
+            float normalY = (float) vertProp.mNormalY;
+            float normalZ = (float) vertProp.mNormalZ;
+
+
+            //update min max
+            if (normalX < minNormals[0]){
+                minNormals[0] = normalX;
+            }
+            if (normalY < minNormals[1]){
+                minNormals[1] = normalY;
+            }
+            if (normalZ < minNormals[2]){
+                minNormals[2] = normalZ;
+            }
+            if (normalX > maxNormals[0]){
+                maxNormals[0] = normalX;
+            }
+            if (normalY > maxNormals[1]){
+                maxNormals[1] = normalY;
+            }
+            if (normalZ > maxNormals[2]){
+                maxNormals[2] = normalZ;
+            }
+
+            addFloatHexStringToBuffer(normalsBuffer,normalX);
+            addFloatHexStringToBuffer(normalsBuffer,normalY);
+            addFloatHexStringToBuffer(normalsBuffer,normalZ);
+
+        }
+    }
+}
+
+void GltfWriter::createBuffersIncludingTextureCoords(std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *vertexColorBuffer, std::vector<BYTE> *normalsBuffer, std::vector<BYTE> *uvCoordsBuffer,
+                                                     float minPosition[3], float maxPosition[3], float minColor[3], float maxColor[3],float minNormals[3], float maxNormals[3], float minTextureCoords[2], float maxTextureCoords[2],
+                                                      const std::vector<sVertexProperties>& rVertexProps, const std::vector<sFaceProperties>& rFaceProps)
+{
+    //initialize min and max
+    minTextureCoords[0] = (float) rFaceProps[0].textureCoordinates[0];
+    minTextureCoords[1] = (float) rFaceProps[0].textureCoordinates[1];
+    maxTextureCoords[0] = (float) rFaceProps[0].textureCoordinates[0];
+    maxTextureCoords[1] = (float) rFaceProps[0].textureCoordinates[1];
+    unsigned int index = 0;
+    //add all faces to file buffer
+    for( const auto& faceProp : rFaceProps) {
+        //add for each face the assigned vertices
+
+        //the texture coordinates are saved in a face property
+        //therefore, the textureIndex serves to access them
+        unsigned int textureIndex = 0;
+        for( const auto& faceVertexIndex: faceProp.vertexIndices){
+
+            // get the bytes
+            int a = (index >>  24) & 0xff;  // next byte, bits 24-32
+            int b = (index >>  16) & 0xff;  // next byte, bits 16-23
+            int c = (index >>  8) & 0xff;  // next byte, bits 8-15
+            int d = index         & 0xff;  // low-order byte: bits 0-7
+
+            //change the parts to achieve little endian stringt
+            unsigned char part1Byte = a;
+            unsigned char part2Byte = b;
+            unsigned char part3Byte = c;
+            unsigned char part4Byte = d;
+            indexBuffer->push_back(part4Byte);
+            indexBuffer->push_back(part3Byte);
+            indexBuffer->push_back(part2Byte);
+            indexBuffer->push_back(part1Byte);
+
+            //-----------------------------------
+            //Position
+            //-----------------------------------
+
+            //save vertex coords as float
+            float coordX = (float) rVertexProps[faceVertexIndex].mCoordX;
+            float coordY = (float) rVertexProps[faceVertexIndex].mCoordY;
+            float coordZ = (float) rVertexProps[faceVertexIndex].mCoordZ;
+
+            //update min max
+            if (coordX < minPosition[0]){
+                minPosition[0] = coordX;
+            }
+            if (coordY < minPosition[1]){
+                minPosition[1] = coordY;
+            }
+            if (coordZ < minPosition[2]){
+                minPosition[2] = coordZ;
+            }
+            if (coordX > maxPosition[0]){
+                maxPosition[0] = coordX;
+            }
+            if (coordY > maxPosition[1]){
+                maxPosition[1] = coordY;
+            }
+            if (coordZ > maxPosition[2]){
+                maxPosition[2] = coordZ;
+            }
+
+            addFloatHexStringToBuffer(vertexBuffer,coordX);
+            addFloatHexStringToBuffer(vertexBuffer,coordY);
+            addFloatHexStringToBuffer(vertexBuffer,coordZ);
+
+            //-----------------------------------
+            //Vertex Color
+            //-----------------------------------
+            //save vertex color as float and ignore alpha value
+            //convert the 8 bit color to values between 0 and 1
+            float colorBle = (float) rVertexProps[faceVertexIndex].mColorBle/255.0;
+            float colorGrn = (float) rVertexProps[faceVertexIndex].mColorGrn/255.0;
+            float colorRed = (float) rVertexProps[faceVertexIndex].mColorRed/255.0;
+
+            //update min max
+            if (colorBle < minColor[0]){
+                minColor[0] = colorBle;
+            }
+            if (colorGrn < minColor[1]){
+                minColor[1] = colorGrn;
+            }
+            if (colorRed < minColor[2]){
+                minColor[2] = colorRed;
+            }
+            if (colorBle > maxColor[0]){
+                maxColor[0] = colorBle;
+            }
+            if (colorGrn > maxColor[1]){
+                maxColor[1] = colorGrn;
+            }
+            if (colorRed > maxColor[2]){
+                maxColor[2] = colorRed;
+            }
+
+
+            addFloatHexStringToBuffer(vertexColorBuffer,colorRed);
+            addFloatHexStringToBuffer(vertexColorBuffer,colorGrn);
+            addFloatHexStringToBuffer(vertexColorBuffer,colorBle);
+
+            //--------------------------
+            //Normals
+            //--------------------------
+            if(mExportVertNormal){
+                //save vertex coords as float
+                float normalX = (float) rVertexProps[faceVertexIndex].mNormalX;
+                float normalY = (float) rVertexProps[faceVertexIndex].mNormalY;
+                float normalZ = (float) rVertexProps[faceVertexIndex].mNormalZ;
+
+
+                //update min max
+                if (normalX < minNormals[0]){
+                    minNormals[0] = normalX;
+                }
+                if (normalY < minNormals[1]){
+                    minNormals[1] = normalY;
+                }
+                if (normalZ < minNormals[2]){
+                    minNormals[2] = normalZ;
+                }
+                if (normalX > maxNormals[0]){
+                    maxNormals[0] = normalX;
+                }
+                if (normalY > maxNormals[1]){
+                    maxNormals[1] = normalY;
+                }
+                if (normalZ > maxNormals[2]){
+                    maxNormals[2] = normalZ;
+                }
+
+                addFloatHexStringToBuffer(normalsBuffer,normalX);
+                addFloatHexStringToBuffer(normalsBuffer,normalY);
+                addFloatHexStringToBuffer(normalsBuffer,normalZ);
+
+            }
+            //--------------------------
+            //Texture Coords (UV)
+            //--------------------------
+
+            //save texture coords as float
+            //mirrow the values
+            float coordU = (float) faceProp.textureCoordinates[2*textureIndex];
+            float coordV = 1.0- (float) faceProp.textureCoordinates[2*textureIndex + 1];
+
+            //update min max
+            if (coordU < minTextureCoords[0]){
+                minTextureCoords[0] = coordU;
+            }
+            if (coordV < minTextureCoords[1]){
+                minTextureCoords[1] = coordV;
+            }
+            if (coordU > maxTextureCoords[0]){
+                maxTextureCoords[0] = coordU;
+            }
+            if (coordV > maxTextureCoords[1]){
+                maxTextureCoords[1] = coordV;
+            }
+
+
+            addFloatHexStringToBuffer(uvCoordsBuffer,coordU);
+            addFloatHexStringToBuffer(uvCoordsBuffer,coordV);
+
+            textureIndex++;
+            index++;
+
+        }
+    }
+}
+
+
+
 bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::vector<sVertexProperties>& rVertexProps, const std::vector<sFaceProperties>& rFaceProps, MeshSeedExt& rMeshSeed)
 {
     fstream filestr;
@@ -92,6 +420,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     } else {
         LOG::debug() << "[ObjWriter::" << __FUNCTION__ << "] File open for writing: '" << rFilename << "'." << '\n';
     }
+
     //following https://github.khronos.org/glTF-Tutorials/gltfTutorial/gltfTutorial_003_MinimalGltfFile.html
     //basic structure as JSON
     //Mesh and scene description
@@ -112,16 +441,32 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "{" << '\n';
     filestr << "\"primitives\" : [ {" << '\n';
     filestr << "\"attributes\" : {" << '\n';
-    filestr << "\"POSITION\" : 1," << '\n';
 
-    if (mExportTextureCoordinates){
-       filestr << "\"NORMAL\" : 2," << '\n';
-       filestr << "\"TEXCOORD_0\" : 3" << '\n';
+    if(mExportVertNormal){
+        filestr << "\"POSITION\" : 1," << '\n';
+        filestr << "\"COLOR_0\" : 2," << '\n';
+        if (mExportTextureCoordinates){
+                filestr << "\"NORMAL\" : 3," << '\n';
+                filestr << "\"TEXCOORD_0\" : 4" << '\n';
+        }
+        else
+        {
+           filestr << "\"NORMAL\" : 3" << '\n';
+        }
     }
-    else
-    {
-       filestr << "\"NORMAL\" : 2" << '\n';
+    else{
+        if (mExportTextureCoordinates){
+                filestr << "\"POSITION\" : 1," << '\n';
+                filestr << "\"COLOR_0\" : 2," << '\n';
+                filestr << "\"TEXCOORD_0\" : 3" << '\n';
+        }
+        else
+        {
+            filestr << "\"POSITION\" : 1," << '\n';
+            filestr << "\"COLOR_0\" : 2" << '\n';
+        }
     }
+
     filestr << "}," << '\n';
     if (!mExportTextureCoordinates){
         filestr << "\"indices\" : 0" << '\n';
@@ -175,236 +520,83 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     //Buffer contains the actual data
 
     unsigned int index = 0;
-    //string indexBuffer = "";
     std::vector<BYTE> indexBuffer;
     std::vector<BYTE> vertexBuffer;
+    std::vector<BYTE> vertexColorBuffer;
     std::vector<BYTE> normalsBuffer;
     std::vector<BYTE> uvCoordsBuffer;
 
+
     //save min max of the vectors for the accessors
-    float minX = (float) rVertexProps[0].mCoordX;
-    float maxX = (float) rVertexProps[0].mCoordX;
-    float minY = (float) rVertexProps[0].mCoordY;
-    float maxY = (float) rVertexProps[0].mCoordY;
-    float minZ = (float) rVertexProps[0].mCoordZ;
-    float maxZ = (float) rVertexProps[0].mCoordZ;
-    float minNormalX = (float) rVertexProps[0].mNormalX;
-    float maxNormalX = (float) rVertexProps[0].mNormalX;
-    float minNormalY = (float) rVertexProps[0].mNormalY;
-    float maxNormalY = (float) rVertexProps[0].mNormalY;
-    float minNormalZ = (float) rVertexProps[0].mNormalZ;
-    float maxNormalZ = (float) rVertexProps[0].mNormalZ;
+    //structure: x, y ,z
+    float minPosition[3] = {(float) rVertexProps[0].mCoordX, (float) rVertexProps[0].mCoordY,(float) rVertexProps[0].mCoordZ};
+    float maxPosition[3] = {(float) rVertexProps[0].mCoordX, (float) rVertexProps[0].mCoordY,(float) rVertexProps[0].mCoordZ};
+    float minNormals[3] = {(float) rVertexProps[0].mNormalX, (float) rVertexProps[0].mNormalY,(float) rVertexProps[0].mNormalZ};
+    float maxNormals[3] = {(float) rVertexProps[0].mNormalX, (float) rVertexProps[0].mNormalY,(float) rVertexProps[0].mNormalZ};
+    //Color
+    float minColors[3] = {(float) rVertexProps[0].mColorBle, (float) rVertexProps[0].mColorGrn,(float) rVertexProps[0].mColorRed};
+    float maxColors[3] = {(float) rVertexProps[0].mColorBle, (float) rVertexProps[0].mColorGrn,(float) rVertexProps[0].mColorRed};
+    //convert to values between 0 and 1 (8-Bit color)
+    minColors[0] = minColors[0]/255.0;
+    minColors[1] = minColors[1]/255.0;
+    minColors[2] = minColors[2]/255.0;
+    maxColors[0] = maxColors[0]/255.0;
+    maxColors[1] = maxColors[1]/255.0;
+    maxColors[2] = maxColors[2]/255.0;
 
-    //the variables have to be declared outside the 'if'
-    //otherwise it leads to a compiler error in the section below (texture coords buffer)
-    float minU;
-    float minV;
-    float maxU;
-    float maxV;
-    if(mExportTextureCoordinates){
-        float minU = 1.0 - (float) rFaceProps[0].textureCoordinates[0];
-        float minV = (float) rFaceProps[0].textureCoordinates[1];
-        float maxU = 1.0 - (float) rFaceProps[0].textureCoordinates[0];
-        float maxV = (float) rFaceProps[0].textureCoordinates[1];
+    //will be initialized within the method
+    //structure: u, v
+    float minTextureCoords[2];
+    float maxTextureCoords[2];
+
+    //is required inside the buffer accessor definition
+    //primitives = vertex, face and texture coordinates
+    unsigned int nrOfPrimitives = 0;
+    //similar behavior as above: the maximum value of the indices depends on the export method
+    //if each vertex of each face is written separatly, then the max values is 3 times the number of faces because the index of the primitives are just incremented
+    //otherwise the indices include the actual indices of the vertices
+    unsigned int maxIndexValue = 0;
+
+    if(!mExportTextureCoordinates){
+        createBuffersWithoutTextureCoords(&indexBuffer,&vertexBuffer,&vertexColorBuffer, &normalsBuffer, minPosition, maxPosition, minColors, maxColors, minNormals, maxNormals, rVertexProps,rFaceProps);
+        //the face are described by indices --> each vertex is written once
+        nrOfPrimitives = rVertexProps.size();
+        maxIndexValue = rVertexProps.size()-1;
+    }
+    else{
+        //if the texture coordinates have to be saved, then the faces must be stored by vertices
+        //--> For each face, 3 positions, normals and texture coordinates are saved
+        //This is due to the GLTF requirement that primitive buffers (positions, normals and textcoords) must consist of the number of entries.
+        createBuffersIncludingTextureCoords(&indexBuffer,&vertexBuffer,&vertexColorBuffer, &normalsBuffer,&uvCoordsBuffer, minPosition, maxPosition, minColors, maxColors, minNormals, maxNormals, minTextureCoords, maxTextureCoords, rVertexProps,rFaceProps);
+        //each face is defined by 3 vertices
+        nrOfPrimitives = 3*rFaceProps.size();
+        maxIndexValue = 3*rFaceProps.size() - 1;
     }
 
-    //add all faces to file buffer
-    for( const auto& faceProp : rFaceProps) {
-        //add for each face the assigned vertices
-
-        //the texture coordinates are saved in a face property
-        //therefore, the textureIndex serves to access them
-        unsigned int textureIndex = 0;
-        for( const auto& faceVertexIndex: faceProp.vertexIndices){
-
-            // get the bytes
-            int a = (index >>  24) & 0xff;  // next byte, bits 24-32
-            int b = (index >>  16) & 0xff;  // next byte, bits 16-23
-            int c = (index >>  8) & 0xff;  // next byte, bits 8-15
-            int d = index         & 0xff;  // low-order byte: bits 0-7
-
-            //change the parts to achieve little endian stringt
-            //indexBuffer += indexHexPart2;
-            //indexBuffer += indexHexPart1;
-            unsigned char part1Byte = a;
-            unsigned char part2Byte = b;
-            unsigned char part3Byte = c;
-            unsigned char part4Byte = d;
-            indexBuffer.push_back(part4Byte);
-            indexBuffer.push_back(part3Byte);
-            indexBuffer.push_back(part2Byte);
-            indexBuffer.push_back(part1Byte);
-
-            //---------------------
-            //Vertices
-            //---------------------
-
-            //save vertex coords as float
-            float coordX = (float) rVertexProps[faceVertexIndex].mCoordX;
-            float coordY = (float) rVertexProps[faceVertexIndex].mCoordY;
-            float coordZ = (float) rVertexProps[faceVertexIndex].mCoordZ;
-
-            //update min max
-            if (coordX < minX){
-                minX = coordX;
-            }
-            if (coordY < minY){
-                minY = coordY;
-            }
-            if (coordZ < minZ){
-                minZ = coordZ;
-            }
-            if (coordX > maxX){
-                maxX = coordX;
-            }
-            if (coordY > maxY){
-                maxY = coordY;
-            }
-            if (coordZ > maxZ){
-                maxZ = coordZ;
-            }
-
-            char const * coordXStream = (char const *)&coordX;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)coordXStream[i];
-                unsigned char byteAsChar = byteValue;
-                vertexBuffer.push_back(byteAsChar);
-            }
-
-
-            char const * coordYStream = (char const *)&coordY;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)coordYStream[i];
-                unsigned char byteAsChar = byteValue;
-                vertexBuffer.push_back(byteAsChar);
-            }
-
-            char const * coordZStream = (char const *)&coordZ;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)coordZStream[i];
-                unsigned char byteAsChar = byteValue;
-                vertexBuffer.push_back(byteAsChar);
-            }
-
-            //--------------------------
-            //Normals
-            //--------------------------
-
-            //save vertex coords as float
-            float normalX = (float) rVertexProps[faceVertexIndex].mNormalX;
-            float normalY = (float) rVertexProps[faceVertexIndex].mNormalY;
-            float normalZ = (float) rVertexProps[faceVertexIndex].mNormalZ;
-
-            //update min max
-            if (normalX < minNormalX){
-                minNormalX = normalX;
-            }
-            if (normalY < minNormalY){
-                minNormalY = normalY;
-            }
-            if (normalZ < minNormalZ){
-                minNormalZ = normalZ;
-            }
-            if (normalX > maxNormalX){
-                maxNormalX = normalX;
-            }
-            if (normalY > maxNormalY){
-                maxNormalY = normalY;
-            }
-            if (normalZ > maxNormalZ){
-                maxNormalZ = normalZ;
-            }
-
-            char const * normalXStream = (char const *)&normalX;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)normalXStream[i];
-                unsigned char byteAsChar = byteValue;
-                normalsBuffer.push_back(byteAsChar);
-            }
-
-            char const * normalYStream = (char const *)&normalY;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)normalYStream[i];
-                unsigned char byteAsChar = byteValue;
-                normalsBuffer.push_back(byteAsChar);
-            }
-
-            char const * normalZStream = (char const *)&normalZ;
-            for (size_t i = 0; i != sizeof(float); ++i)
-            {
-                int byteValue = (int)normalZStream[i];
-                unsigned char byteAsChar = byteValue;
-                normalsBuffer.push_back(byteAsChar);
-            }
-
-            //--------------------------
-            //Texture Coords (UV)
-            //--------------------------
-            if (mExportTextureCoordinates){
-                //save texture coords as float
-                //mirrow the values
-                float coordU = (float) faceProp.textureCoordinates[2*textureIndex];
-                float coordV = 1.0- (float) faceProp.textureCoordinates[2*textureIndex + 1];
-
-                //update min max
-                if (coordU < minU){
-                    minU = coordU;
-                }
-                if (coordV < minV){
-                    minV = coordV;
-                }
-                if (coordU > maxU){
-                    maxU = coordU;
-                }
-                if (coordV > maxV){
-                    maxV = coordV;
-                }
-
-
-                char const * coordUStream = (char const *)&coordU;
-                for (size_t i = 0; i != sizeof(float); ++i)
-                {
-                    int byteValue = (int)coordUStream[i];
-                    unsigned char byteAsChar = byteValue;
-                    uvCoordsBuffer.push_back(byteAsChar);
-                }
-
-                char const * coordVStream = (char const *)&coordV;
-                for (size_t i = 0; i != sizeof(float); ++i)
-                {
-                    int byteValue = (int)coordVStream[i];
-                    unsigned char byteAsChar = byteValue;
-                    uvCoordsBuffer.push_back(byteAsChar);
-                }
-
-            }
-            textureIndex++;
-            index++;
-        }
-    }
 
     int nrOfBytesIndexBuffer = indexBuffer.size();
-    //add two zero bytes
-    unsigned char zeroBytes = int(0);
-    indexBuffer.push_back(zeroBytes);
-    indexBuffer.push_back(zeroBytes);
+    //add zero bytes if it isn't a multiple of 4
+    int bytesToBeFilled = nrOfBytesIndexBuffer % 4;
+    if (bytesToBeFilled != 0){
+        unsigned char zeroBytes = int(0);
+        for(int i = 0; i < bytesToBeFilled; i++){
+            indexBuffer.push_back(zeroBytes);
+        }
+    }
     int nrOfBytesIndexBufferPlusOffset = indexBuffer.size();
 
     //Every buffer are concatenated to the final buffer
     //and base64 encoded
     std::vector<BYTE> entireBuffer = indexBuffer;
     entireBuffer.insert(entireBuffer.end(), vertexBuffer.begin(), vertexBuffer.end());
+    entireBuffer.insert(entireBuffer.end(), vertexColorBuffer.begin(), vertexColorBuffer.end());
     entireBuffer.insert(entireBuffer.end(), normalsBuffer.begin(), normalsBuffer.end());
     if (mExportTextureCoordinates){
         entireBuffer.insert(entireBuffer.end(), uvCoordsBuffer.begin(), uvCoordsBuffer.end());
     }
     std::string entireBufferEncoded = base64_encode(&entireBuffer[0], entireBuffer.size());
     int nrOfBytesVertexBuffer = vertexBuffer.size();
+    int nrOfBytesVertexColorBuffer = vertexColorBuffer.size();
     int nrOfBytesNormalsBuffer = normalsBuffer.size();
     int nrOfBytesUVBuffer = uvCoordsBuffer.size();
     int nrOfBytes = entireBuffer.size();
@@ -427,12 +619,52 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"target\" : 34963" << '\n';
     filestr << "}," << '\n';
 
+    //vertex buffer
     filestr << "{" << '\n';
     filestr << "\"buffer\" : 0," << '\n';
     filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset) << "," << '\n';
-    filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexBuffer + nrOfBytesNormalsBuffer + nrOfBytesUVBuffer) << "," << '\n';
+    filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexBuffer) << "," << '\n';
     filestr << "\"target\" : 34962" << '\n';
-    filestr << "}" << '\n';
+    filestr << "}," << '\n';
+
+    //vertex color buffer
+    filestr << "{" << '\n';
+    filestr << "\"buffer\" : 0," << '\n';
+    filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer) << "," << '\n';
+    filestr << "\"byteLength\" : " << std::to_string(nrOfBytesVertexColorBuffer) << "," << '\n';
+    filestr << "\"target\" : 34962" << '\n';
+
+    if (!mExportVertNormal && !mExportTextureCoordinates){
+        //no further value buffers --> last entry
+        filestr << "}" << '\n';
+    }
+    else{
+        filestr << "}," << '\n';
+
+        if(mExportVertNormal){
+            //normals buffer
+            filestr << "{" << '\n';
+            filestr << "\"buffer\" : 0," << '\n';
+            filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer+nrOfBytesVertexColorBuffer) << "," << '\n';
+            filestr << "\"byteLength\" : " << std::to_string(nrOfBytesNormalsBuffer) << "," << '\n';
+            filestr << "\"target\" : 34962" << '\n';
+            if (!mExportTextureCoordinates){
+                filestr << "}" << '\n';
+            }
+            else {
+                filestr << "}," << '\n';
+            }
+        }
+        if (mExportTextureCoordinates){
+            //uv buffer
+            filestr << "{" << '\n';
+            filestr << "\"buffer\" : 0," << '\n';
+            filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesIndexBufferPlusOffset+nrOfBytesVertexBuffer+nrOfBytesVertexColorBuffer+nrOfBytesNormalsBuffer) << "," << '\n';
+            filestr << "\"byteLength\" : " << std::to_string(nrOfBytesUVBuffer) << "," << '\n';
+            filestr << "\"target\" : 34962" << '\n';
+            filestr << "}" << '\n';
+        }
+    }
     filestr << "]," << '\n';
 
     //accessors
@@ -442,9 +674,9 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"bufferView\" : 0," << '\n';
     filestr << "\"byteOffset\" : 0," << '\n';
     filestr << "\"componentType\" : 5125," << '\n';
-    filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
+    filestr << "\"count\" : " << std::to_string(3*rFaceProps.size()) << "," << '\n';
     filestr << "\"type\" : \"SCALAR\"," << '\n';
-    filestr << "\"max\" : [" << std::to_string(index) << "]," << '\n';
+    filestr << "\"max\" : [" << std::to_string(maxIndexValue) << "]," << '\n';
     filestr << "\"min\" : [ 0 ]" << '\n';
     filestr << "}," << '\n';
 
@@ -454,78 +686,119 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"bufferView\" : 1," << '\n';
     filestr << "\"byteOffset\" : 0," << '\n';
     filestr << "\"componentType\" : 5126," << '\n';
-    filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
+    //filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
+    filestr << "\"count\" : " << std::to_string(nrOfPrimitives) << "," << '\n';
     filestr << "\"type\" : \"VEC3\"," << '\n';
     //keep the dot save in the export. Location configuration of the system could lead to comma export of floats
-    std::string maxXString = std::to_string(maxX);
+    std::string maxXString = std::to_string(maxPosition[0]);
     std::replace( maxXString.begin(), maxXString.end(), ',', '.');
-    std::string maxYString = std::to_string(maxY);
+    std::string maxYString = std::to_string(maxPosition[1]);
     std::replace( maxYString.begin(), maxYString.end(), ',', '.');
-    std::string maxZString = std::to_string(maxZ);
+    std::string maxZString = std::to_string(maxPosition[2]);
     std::replace( maxZString.begin(), maxZString.end(), ',', '.');
-    std::string minXString = std::to_string(minX);
+    std::string minXString = std::to_string(minPosition[0]);
     std::replace( minXString.begin(), minXString.end(), ',', '.');
-    std::string minYString = std::to_string(minY);
+    std::string minYString = std::to_string(minPosition[1]);
     std::replace( minYString.begin(), minYString.end(), ',', '.');
-    std::string minZString = std::to_string(minZ);
+    std::string minZString = std::to_string(minPosition[2]);
     std::replace( minZString.begin(), minZString.end(), ',', '.');
 
     filestr << "\"max\" : [ " << maxXString << "," << maxYString << "," << maxZString << "]," << '\n';
     filestr << "\"min\" : [ " << minXString << "," << minYString << "," << minZString << "]" << '\n';
     filestr << "}," << '\n';
+
+    //vertex color accessor
     filestr << "{" << '\n';
-    //------------------------------------------------------
-    //normal accesor
-    filestr << "\"bufferView\" : 1," << '\n';
-    //byte offset inside the second buffer view
-    filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesVertexBuffer) << "," << '\n';
+    filestr << "\"bufferView\" : 2," << '\n';
+    filestr << "\"byteOffset\" : 0," << '\n';
     filestr << "\"componentType\" : 5126," << '\n';
-    filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
+    filestr << "\"count\" : " << std::to_string(nrOfPrimitives) << "," << '\n';
     filestr << "\"type\" : \"VEC3\"," << '\n';
-    std::string maxNormalXString = std::to_string(maxNormalX);
-    std::replace( maxNormalXString.begin(), maxNormalXString.end(), ',', '.');
-    std::string maxNormalYString = std::to_string(maxNormalY);
-    std::replace( maxNormalYString.begin(), maxNormalYString.end(), ',', '.');
-    std::string maxNormalZString = std::to_string(maxNormalZ);
-    std::replace( maxNormalZString.begin(), maxNormalZString.end(), ',', '.');
-    std::string minNormalXString = std::to_string(minNormalX);
-    std::replace( minNormalXString.begin(), minNormalXString.end(), ',', '.');
-    std::string minNormalYString = std::to_string(minNormalY);
-    std::replace( minNormalYString.begin(), minNormalYString.end(), ',', '.');
-    std::string minNormalZString = std::to_string(minNormalZ);
-    std::replace( minNormalZString.begin(), minNormalZString.end(), ',', '.');
+    //keep the dot save in the export. Location configuration of the system could lead to comma export of floats
+    std::string maxBlueString = std::to_string(maxColors[0]);
+    std::replace( maxBlueString.begin(), maxBlueString.end(), ',', '.');
+    std::string maxGreenString = std::to_string(maxColors[1]);
+    std::replace( maxGreenString.begin(), maxGreenString.end(), ',', '.');
+    std::string maxRedString = std::to_string(maxColors[2]);
+    std::replace( maxRedString.begin(), maxRedString.end(), ',', '.');
+    std::string minBlueString = std::to_string(minColors[0]);
+    std::replace( minBlueString.begin(), minBlueString.end(), ',', '.');
+    std::string minGreenString = std::to_string(minColors[1]);
+    std::replace( minGreenString.begin(), minGreenString.end(), ',', '.');
+    std::string minRedString = std::to_string(minColors[2]);
+    std::replace( minRedString.begin(), minRedString.end(), ',', '.');
 
+    filestr << "\"max\" : [ " << maxRedString << "," << maxGreenString << "," << maxBlueString << "]," << '\n';
+    filestr << "\"min\" : [ " << minRedString << "," << minGreenString << "," << minBlueString << "]" << '\n';
 
-    filestr << "\"max\" : [ " << maxNormalXString << "," << maxNormalYString << "," << maxNormalZString  << "]," << '\n';
-    filestr << "\"min\" : [ " << minNormalXString << "," << minNormalYString << "," << minNormalZString  << "]" << '\n';
-    if (!mExportTextureCoordinates){
+    if (!mExportVertNormal && !mExportTextureCoordinates){
         filestr << "}" << '\n';
     }
-    //-----------------------------------------------------------
-    //uv buffer / texture coords accesor
     else{
         filestr << "}," << '\n';
-        filestr << "{" << '\n';
-        filestr << "\"bufferView\" : 1," << '\n';
-        //byte offset inside the second buffer view
-        filestr << "\"byteOffset\" : " << std::to_string(nrOfBytesVertexBuffer+nrOfBytesNormalsBuffer) << "," << '\n';
-        filestr << "\"componentType\" : 5126," << '\n';
-        filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
-        filestr << "\"type\" : \"VEC2\"," << '\n';
-        std::string maxUString = std::to_string(maxU);
-        std::replace( maxUString.begin(), maxUString.end(), ',', '.');
-        std::string maxVString = std::to_string(maxV);
-        std::replace( maxVString.begin(), maxVString.end(), ',', '.');
-        std::string minUString = std::to_string(minU);
-        std::replace( minUString.begin(), minUString.end(), ',', '.');
-        std::string minVString= std::to_string(minV);
-        std::replace( minVString.begin(), minVString.end(), ',', '.');
+        if(mExportVertNormal){
+            filestr << "{" << '\n';
+            //------------------------------------------------------
+            //normal accesor
+            filestr << "\"bufferView\" : 3," << '\n';
+            filestr << "\"byteOffset\" : 0," << '\n';
+            filestr << "\"componentType\" : 5126," << '\n';
+            filestr << "\"count\" : " << std::to_string(nrOfPrimitives) << "," << '\n';
+            filestr << "\"type\" : \"VEC3\"," << '\n';
+            std::setprecision(16);
+            std::string maxNormalXString = std::to_string(maxNormals[0]);
+            std::replace( maxNormalXString.begin(), maxNormalXString.end(), ',', '.');
+            std::string maxNormalYString = std::to_string(maxNormals[1]);
+            std::replace( maxNormalYString.begin(), maxNormalYString.end(), ',', '.');
+            std::string maxNormalZString = std::to_string(maxNormals[2]);
+            std::replace( maxNormalZString.begin(), maxNormalZString.end(), ',', '.');
+            std::string minNormalXString = std::to_string(minNormals[0]);
+            std::replace( minNormalXString.begin(), minNormalXString.end(), ',', '.');
+            std::string minNormalYString = std::to_string(minNormals[1]);
+            std::replace( minNormalYString.begin(), minNormalYString.end(), ',', '.');
+            std::string minNormalZString = std::to_string(minNormals[2]);
+            std::replace( minNormalZString.begin(), minNormalZString.end(), ',', '.');
+            std::setprecision(6);
 
-        filestr << "\"max\" : [ " << maxUString << "," << maxVString << "]," << '\n';
-        filestr << "\"min\" : [ " << minUString << "," << minVString << "]" << '\n';
-        filestr << "}" << '\n';
+            filestr << "\"max\" : [ " << maxNormalXString << "," << maxNormalYString << "," << maxNormalZString  << "]," << '\n';
+            filestr << "\"min\" : [ " << minNormalXString << "," << minNormalYString << "," << minNormalZString  << "]" << '\n';
+
+            if (!mExportTextureCoordinates){
+                filestr << "}" << '\n';
+            }
+            else{
+                filestr << "}," << '\n';
+            }
+        }
+        //-----------------------------------------------------------
+        //uv buffer / texture coords accesor
+        if(mExportTextureCoordinates){
+            filestr << "{" << '\n';
+            //bufferView ID depends on the normals export decision
+            if (mExportVertNormal){
+                filestr << "\"bufferView\" : 4," << '\n';
+            }
+            else{
+                filestr << "\"bufferView\" : 3," << '\n';
+            }
+            filestr << "\"byteOffset\" : 0," << '\n';
+            filestr << "\"componentType\" : 5126," << '\n';
+            filestr << "\"count\" : " << std::to_string(nrOfPrimitives) << "," << '\n';
+            filestr << "\"type\" : \"VEC2\"," << '\n';
+            std::string maxUString = std::to_string(maxTextureCoords[0]);
+            std::replace( maxUString.begin(), maxUString.end(), ',', '.');
+            std::string maxVString = std::to_string(maxTextureCoords[1]);
+            std::replace( maxVString.begin(), maxVString.end(), ',', '.');
+            std::string minUString = std::to_string(minTextureCoords[0]);
+            std::replace( minUString.begin(), minUString.end(), ',', '.');
+            std::string minVString = std::to_string(minTextureCoords[1]);
+            std::replace( minVString.begin(), minVString.end(), ',', '.');
+
+            filestr << "\"max\" : [ " << maxUString << "," << maxVString << "]," << '\n';
+            filestr << "\"min\" : [ " << minUString << "," << minVString << "]" << '\n';
+            filestr << "}" << '\n';
+        }
     }
-
     filestr << "]," << '\n';
 
     //GLTF version
@@ -536,7 +809,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
 
     filestr.close();
 
-    LOG::debug() << "[ObjWriter::" << __FUNCTION__ << "] write ASCII OBJ:      " << static_cast<float>( clock() -timeStart ) / CLOCKS_PER_SEC << " seconds. " << '\n';
+    LOG::debug() << "[GltfWriter::" << __FUNCTION__ << "] write ASCII GLTF:      " << static_cast<float>( clock() -timeStart ) / CLOCKS_PER_SEC << " seconds. " << '\n';
 
     return true;
 }
