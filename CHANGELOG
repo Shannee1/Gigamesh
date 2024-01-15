@@ -1,5 +1,7 @@
++) New: Multiple vertex deselection with a lasso 
++) Improved: GLTF export now includes vertex color
 +) Changed: Suggested suffixes for mesh export as a drop-down list by type
-+) Improved: GLTF Export without normals
++) Improved: GLTF Export option without normals
 
 Version 231215
 +) New: GLTF Export (only vertices, normals and single texture) 
