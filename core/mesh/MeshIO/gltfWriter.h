@@ -47,6 +47,9 @@ private:
                                            float minPosition[3], float maxPosition[3], float minColor[3], float maxColor[3], float minNormals[3], float maxNormals[3], float minTextureCoords[2], float maxTextureCoords[2],
                                             const std::vector<sVertexProperties>& rVertexProps, const std::vector<sFaceProperties>& rFaceProps);
     void addFloatHexStringToBuffer(std::vector<BYTE> *buffer, float value);
+
+    void getBufferByteOffsets(int rPart, std::vector<int> indexBufferSizes, std::vector<int> vertexBufferSizes,std::vector<int> vertexColorBufferSizes, std::vector<int> normalsBufferSizes, std::vector<int> uvCoordsBufferSizes,
+                             int *offsetIndexBuffer, int *offsetVertexBuffer, int *offsetVertexColorBuffer, int *offsetNormalsBuffer, int *offsetTextureCoordsBuffer);
 };
 
 #endif // GLTFWRITER_H
