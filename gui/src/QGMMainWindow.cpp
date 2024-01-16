@@ -524,6 +524,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	actionSelectCone->setActionGroup(      mGroupSelPrimitive );
 	actionSelectSphere->setActionGroup(    mGroupSelPrimitive );
 	actionSelectPositions->setActionGroup( mGroupSelPrimitive );
+    actionSelectThreePositions->setActionGroup( mGroupSelPrimitive );
 	mGroupSelPrimitive->setExclusive( true );
 
 	actionSelMVertsGUIPinPoint->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
@@ -536,6 +537,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	actionSelectCone->setProperty(      "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelectSphere->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelectPositions->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
+    actionSelectThreePositions->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 
 	actionSelMVertsGUIPinPoint->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTICES  );
 	actionSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO  );
@@ -547,6 +549,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	actionSelectCone->setProperty(      "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_CONE      );
 	actionSelectSphere->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_SPHERE    );
 	actionSelectPositions->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_POSITIONS );
+    actionSelectThreePositions->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS );
 
 	// Connect this exclusive group:
 	QObject::connect( mGroupSelPrimitive, SIGNAL(triggered(QAction*)), this, SLOT(setMeshWidgetParamInt(QAction*)) );

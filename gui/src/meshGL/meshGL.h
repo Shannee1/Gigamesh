@@ -104,7 +104,8 @@ class MeshGL : public Mesh, public MeshGLParams {
 		        bool       selectPlaneThreePoints( int rXPixel, int rYPixel );
 		        bool       selectConePoints( int rXPixel, int rYPixel );
 		        bool       selectSpherePoints( int rXPixel, int rYPixel );
-		        bool       selectPositionAt( int rXPixel, int rYPixel, bool rLastPoint );
+                bool       selectPositionAt( int rXPixel, int rYPixel, bool rLastPoint );
+                bool       isMoreThanNconSelPosition( int rN);
         virtual bool       selectPrism( std::vector<PixCoord> &rTri, bool rDeselection = false );
         virtual bool       selectPoly( std::vector<PixCoord>& rPixels, bool rDeselection = false );
 		virtual bool       callTriangle(std::vector<PixCoord> &p, std::vector<PixCoord> &tri);

@@ -592,13 +592,44 @@ bool MeshGL::selectSpherePoints( int rXPixel, int rYPixel ) {
 	return( true );
 }
 
+//! Checks the number of connected selected positions (pins)
+//! This Function is used to select 3 positions as one function
+//! The selections stops after the third pin
+//!
+//! At the future developer: Feel free to rename the method.
+//!
+//! @return true if more than N positions are in connection selected otherwise false
+bool MeshGL::isMoreThanNconSelPosition( int rN){
+     vector<std::tuple<Vector3D, Primitive*, bool>> currentSelectedPositions;
+     getSelectedPosition(&currentSelectedPositions);
+     //reverse loop --> check the last elements
+     unsigned int count = 0;
+     for (auto it = currentSelectedPositions.rbegin(); it != currentSelectedPositions.rend(); ++it)
+     {
+         if (std::next(it) == currentSelectedPositions.rend()){
+             //count the last element too
+             count++;
+         }
+         if(std::get<2>(*it) == true or (std::next(it) == currentSelectedPositions.rend())){
+             //connection is interrupted
+            if(count > rN){
+                return true;
+            }
+            else{
+                return false;
+            }
+         }
+         count++;
+     }
+     return false;
+}
 
 //! Select a position by pixel coordinates in screen space.
 //!
 //! @return false in case of an error. True otherwise.
 bool MeshGL::selectPositionAt( int rXPixel, int rYPixel, bool rLastPoint ) {
 	//! \todo extend to solo vertices and polylines.
-	Vector3D pointIntersect;
+    Vector3D pointIntersect;
 	Face*    currFace;
 	currFace = getFaceAt( rXPixel, rYPixel, &pointIntersect );
 	if( currFace != nullptr ) {
