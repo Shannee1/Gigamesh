@@ -43,7 +43,7 @@ private:
     void createBuffersWithoutTextureCoords(std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *vertexColorBuffer,  std::vector<BYTE> *normalsBuffer,
                                            float minPosition[3], float maxPosition[3], float minColor[3], float maxColor[3], float minNormals[3], float maxNormals[3],
                                             const std::vector<sVertexProperties>& rVertexProps, const std::vector<sFaceProperties>& rFaceProps);
-    void createBuffersIncludingTextureCoords(std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *vertexColorBuffer, std::vector<BYTE> *normalsBuffer, std::vector<BYTE> *uvCoordsBuffer,
+    void createBuffersIncludingTextureCoords(const unsigned int textureId, std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *vertexColorBuffer, std::vector<BYTE> *normalsBuffer, std::vector<BYTE> *uvCoordsBuffer,
                                            float minPosition[3], float maxPosition[3], float minColor[3], float maxColor[3], float minNormals[3], float maxNormals[3], float minTextureCoords[2], float maxTextureCoords[2],
                                             const std::vector<sVertexProperties>& rVertexProps, const std::vector<sFaceProperties>& rFaceProps);
     void addFloatHexStringToBuffer(std::vector<BYTE> *buffer, float value);

@@ -101,9 +101,9 @@ void GltfWriter::getBufferByteOffsets(int rPart, std::vector<int> indexBufferSiz
     *offsetNormalsBuffer = *offsetVertexColorBuffer + vertexColorBufferSizes[0];
     *offsetTextureCoordsBuffer = *offsetNormalsBuffer + normalsBufferSizes[0];
 
-    //sum the other parts, if required
-    for (int i=1; i < rPart; i++){
-        *offsetIndexBuffer = *offsetTextureCoordsBuffer;
+    //sum up the other parts, if required
+    for (int i=1; i <= rPart; i++){
+        *offsetIndexBuffer = *offsetTextureCoordsBuffer + uvCoordsBufferSizes[i-1];
         *offsetVertexBuffer = *offsetIndexBuffer + indexBufferSizes[i];
         *offsetVertexColorBuffer = *offsetVertexBuffer + vertexBufferSizes[i];
         *offsetNormalsBuffer = *offsetVertexColorBuffer + vertexColorBufferSizes[i];
@@ -119,10 +119,6 @@ void GltfWriter::createBuffersWithoutTextureCoords( std::vector<BYTE> *indexBuff
     //add all faces to file buffer
     for( const auto& faceProp : rFaceProps) {
         //add for each face the assigned vertices
-
-        //the texture coordinates are saved in a face property
-        //therefore, the textureIndex serves to access them
-        unsigned int textureIndex = 0;
         for( const auto& faceVertexIndex: faceProp.vertexIndices){
 
             // get the bytes
@@ -255,7 +251,7 @@ void GltfWriter::createBuffersWithoutTextureCoords( std::vector<BYTE> *indexBuff
     }
 }
 
-void GltfWriter::createBuffersIncludingTextureCoords(std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *vertexColorBuffer, std::vector<BYTE> *normalsBuffer, std::vector<BYTE> *uvCoordsBuffer,
+void GltfWriter::createBuffersIncludingTextureCoords(const unsigned int textureId, std::vector<BYTE> *indexBuffer, std::vector<BYTE> *vertexBuffer, std::vector<BYTE> *vertexColorBuffer, std::vector<BYTE> *normalsBuffer, std::vector<BYTE> *uvCoordsBuffer,
                                                      float minPosition[3], float maxPosition[3], float minColor[3], float maxColor[3],float minNormals[3], float maxNormals[3], float minTextureCoords[2], float maxTextureCoords[2],
                                                       const std::vector<sVertexProperties>& rVertexProps, const std::vector<sFaceProperties>& rFaceProps)
 {
@@ -267,6 +263,11 @@ void GltfWriter::createBuffersIncludingTextureCoords(std::vector<BYTE> *indexBuf
     unsigned int index = 0;
     //add all faces to file buffer
     for( const auto& faceProp : rFaceProps) {
+        //skip the faces that belong to another texture
+        if( faceProp.textureId != textureId){
+            continue;
+        }
+
         //add for each face the assigned vertices
 
         //the texture coordinates are saved in a face property
@@ -410,7 +411,7 @@ void GltfWriter::createBuffersIncludingTextureCoords(std::vector<BYTE> *indexBuf
             }
             if (coordU > maxTextureCoords[0]){
                 maxTextureCoords[0] = coordU;
-
+            }
             if (coordV > maxTextureCoords[1]){
                 maxTextureCoords[1] = coordV;
             }
@@ -425,9 +426,9 @@ void GltfWriter::createBuffersIncludingTextureCoords(std::vector<BYTE> *indexBuf
         }
     }
 }
-}
 
-
+//!In this method the entire string of the gltf file is built.
+//! TODO Parts of the filesuvCoordsBuffertream routines can be written in separate methods for better readability.
 bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::vector<sVertexProperties>& rVertexProps, const std::vector<sFaceProperties>& rFaceProps, MeshSeedExt& rMeshSeed)
 {
     fstream filestr;
@@ -450,10 +451,6 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"scene\": 0," << '\n';
     filestr << "\"scenes\" : [" << '\n';
     filestr << "{" << '\n';
-    filestr << "\"nodes\" : [ 0 ]" << '\n';
-    filestr << "}" << '\n';
-    filestr << "]," << '\n';
-
     //DYNAMIC PART
     //If there are more than one texture the mesh has to be split into several parts
     // Due to the restriction that a gltf mesh can not deal with different textures for different parts of the mesh
@@ -462,6 +459,18 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     unsigned int nrPartsOfMesh = textureFiles.size();
     //if there is not texture -> mesh consists of one part
     if (nrPartsOfMesh == 0)nrPartsOfMesh = 1;
+    filestr << "\"nodes\" : [";
+    for(unsigned int indexMeshPart = 0; indexMeshPart < nrPartsOfMesh; indexMeshPart++){
+        filestr << indexMeshPart;
+        if (indexMeshPart+1 != nrPartsOfMesh){
+            filestr << ",";
+        }
+    }
+    filestr << "]" << '\n';
+    filestr << "}" << '\n';
+    filestr << "]," << '\n';
+
+
 
     // add meshes as node: This signalize the gltf that there are n meshes
     // in gltf the meshpart from gigamesh's point of view is an independent mesh
@@ -478,6 +487,13 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
         }
     }
     filestr << "]," << '\n';
+
+    //define how many different buffer types are used
+    //at least 3 (index, vertex position and color)
+    int nrOfBufferTypes = 3;
+    if(mExportVertNormal)nrOfBufferTypes++;
+    if(mExportTextureCoordinates)nrOfBufferTypes++;
+
     //content definition for each mesh
     // each primitive points to another part of the buffer
     // the buffer parts are numbered and defined later
@@ -488,36 +504,36 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
         filestr << "\"attributes\" : {" << '\n';
 
         if(mExportVertNormal){
-            filestr << "\"POSITION\" : "<< std::to_string(indexMeshPart+1) << "," << '\n';
-            filestr << "\"COLOR_0\" : " << std::to_string(indexMeshPart+2) << "," << '\n';
+            filestr << "\"POSITION\" : "<< std::to_string(indexMeshPart*nrOfBufferTypes+1) << "," << '\n';
+            filestr << "\"COLOR_0\" : " << std::to_string(indexMeshPart*nrOfBufferTypes+2) << "," << '\n';
             if (mExportTextureCoordinates){
-                    filestr << "\"NORMAL\" : " << std::to_string(indexMeshPart+3) << "," << '\n';
-                    filestr << "\"TEXCOORD_0\" : " << std::to_string(indexMeshPart+4) << '\n';
+                    filestr << "\"NORMAL\" : " << std::to_string(indexMeshPart*nrOfBufferTypes+3) << "," << '\n';
+                    filestr << "\"TEXCOORD_0\" : " << std::to_string(indexMeshPart*nrOfBufferTypes+4) << '\n';
             }
             else
             {
-               filestr << "\"NORMAL\" : " << std::to_string(indexMeshPart+3) << '\n';
+               filestr << "\"NORMAL\" : " << std::to_string(indexMeshPart*nrOfBufferTypes+3) << '\n';
             }
         }
         else{
             if (mExportTextureCoordinates){
-                    filestr << "\"POSITION\" : "<< std::to_string(indexMeshPart+1) << "," << '\n';
-                    filestr << "\"COLOR_0\" : " << std::to_string(indexMeshPart+2) << "," << '\n';
-                    filestr << "\"TEXCOORD_0\" : " << std::to_string(indexMeshPart+3) << '\n';
+                    filestr << "\"POSITION\" : "<< std::to_string(indexMeshPart*nrOfBufferTypes+1) << "," << '\n';
+                    filestr << "\"COLOR_0\" : " << std::to_string(indexMeshPart*nrOfBufferTypes+2) << "," << '\n';
+                    filestr << "\"TEXCOORD_0\" : " << std::to_string(indexMeshPart*nrOfBufferTypes+3) << '\n';
             }
             else
             {
-                filestr << "\"POSITION\" : "<< std::to_string(indexMeshPart+1) << "," << '\n';
-                filestr << "\"COLOR_0\" : " << std::to_string(indexMeshPart+2) << '\n';
+                filestr << "\"POSITION\" : "<< std::to_string(indexMeshPart*nrOfBufferTypes+1) << "," << '\n';
+                filestr << "\"COLOR_0\" : " << std::to_string(indexMeshPart*nrOfBufferTypes+2) << '\n';
             }
         }
 
         filestr << "}," << '\n';
         if (!mExportTextureCoordinates){
-            filestr << "\"indices\" : " << std::to_string(indexMeshPart) << '\n';
+            filestr << "\"indices\" : " << std::to_string(indexMeshPart*nrOfBufferTypes) << '\n';
         }
         else{
-             filestr << "\"indices\" : " << std::to_string(indexMeshPart) << "," << '\n';
+             filestr << "\"indices\" : " << std::to_string(indexMeshPart*nrOfBufferTypes) << "," << '\n';
              filestr << "\"material\" : "  << std::to_string(indexMeshPart) << '\n';
         }
         filestr << "} ]" << '\n';
@@ -580,7 +596,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
         filestr << "\"images\" : [ " << '\n';
         for(unsigned int indexMeshPart = 0; indexMeshPart < nrPartsOfMesh; indexMeshPart++){
             filestr << "{" << '\n';
-            filestr << "\"uri\" : \"" << std::filesystem::relative(textureFiles[0]).string() << "\"" << '\n';
+            filestr << "\"uri\" : \"" << std::filesystem::relative(textureFiles[indexMeshPart]).string() << "\"" << '\n';
             //last closing brackets aren't allowed to have a comma
             if (indexMeshPart+1 == nrPartsOfMesh){
                 filestr << "}" << '\n';
@@ -601,7 +617,6 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
         filestr << "\"wrapT\" : 33648" << '\n';
         filestr << "} ]," << '\n';
     }
-
     //----------------------------------------------------------------------------------------
     //Buffer creation
     //----------------------------------------------------------------------------------------
@@ -685,11 +700,12 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
             //if the texture coordinates have to be saved, then the faces must be stored by vertices
             //--> For each face, 3 positions, normals and texture coordinates are saved
             //This is due to the GLTF requirement that primitive buffers (positions, normals and textcoords) must consist of the number of entries.
-            createBuffersIncludingTextureCoords(&indexBuffer,&vertexBuffer,&vertexColorBuffer, &normalsBuffer,&uvCoordsBuffer, minPosition, maxPosition, minColors, maxColors, minNormals, maxNormals, minTextureCoords, maxTextureCoords, rVertexProps,rFaceProps);
-            //MOVE TO METHOD
-            nrOfPrimitives = 3*rFaceProps.size();
-            maxIndexValue = 3*rFaceProps.size() - 1;
-            nrOfIndices= 3*rFaceProps.size();
+            //the meshpart refers to the texture id --> each part has its own texture
+            createBuffersIncludingTextureCoords(indexMeshPart, &indexBuffer,&vertexBuffer,&vertexColorBuffer, &normalsBuffer,&uvCoordsBuffer, minPosition, maxPosition, minColors, maxColors, minNormals, maxNormals, minTextureCoords, maxTextureCoords, rVertexProps,rFaceProps);
+            //indexBuffer/4 is the number of saved vertices for this part
+            nrOfPrimitives = indexBuffer.size()/4;
+            maxIndexValue = indexBuffer.size()/4 - 1;
+            nrOfIndices= indexBuffer.size()/4;
         }
         partNrOfPremitives.push_back(nrOfPrimitives);
         partMaxIndices.push_back(maxIndexValue);
@@ -788,7 +804,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
         filestr << "\"target\" : 34962" << '\n';
         filestr << "}," << '\n';
 
-        //vertex color buffer
+        //vertex color bufferr << "}" << '\n';
         filestr << "{" << '\n';
         filestr << "\"buffer\" : 0," << '\n';
         filestr << "\"byteOffset\" : " << std::to_string(offsetVertexColorBuffer) << "," << '\n';
@@ -852,7 +868,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     filestr << "\"accessors\" : [" << '\n';
     for(unsigned int indexMeshPart = 0; indexMeshPart < nrPartsOfMesh; indexMeshPart++){
         filestr << "{" << '\n';
-        filestr << "\"bufferView\" : " << std::to_string(indexMeshPart) << "," << '\n';
+        filestr << "\"bufferView\" : " << std::to_string(indexMeshPart*nrOfBufferTypes) << "," << '\n';
         filestr << "\"byteOffset\" : 0," << '\n';
         filestr << "\"componentType\" : 5125," << '\n';
         filestr << "\"count\" : " << std::to_string(partNrOfIndices[indexMeshPart]) << "," << '\n';
@@ -864,7 +880,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
         //-----------------------------------------------------
         //vertex accessor
         filestr << "{" << '\n';
-        filestr << "\"bufferView\" : " << std::to_string(indexMeshPart +1) << "," <<  '\n';
+        filestr << "\"bufferView\" : " << std::to_string(indexMeshPart*nrOfBufferTypes +1) << "," <<  '\n';
         filestr << "\"byteOffset\" : 0," << '\n';
         filestr << "\"componentType\" : 5126," << '\n';
         //filestr << "\"count\" : " << std::to_string(index) << "," << '\n';
@@ -890,7 +906,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
 
         //vertex color accessor
         filestr << "{" << '\n';
-        filestr << "\"bufferView\" : " << std::to_string(indexMeshPart + 2) << "," <<  '\n';
+        filestr << "\"bufferView\" : " << std::to_string(indexMeshPart*nrOfBufferTypes + 2) << "," <<  '\n';
         filestr << "\"byteOffset\" : 0," << '\n';
         filestr << "\"componentType\" : 5126," << '\n';
         filestr << "\"count\" : " << std::to_string(partNrOfPremitives[indexMeshPart]) << "," << '\n';
@@ -927,7 +943,7 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
                 filestr << "{" << '\n';
                 //------------------------------------------------------
                 //normal accesor
-                filestr << "\"bufferView\" : " << std::to_string(indexMeshPart + 3) << "," <<  '\n';
+                filestr << "\"bufferView\" : " << std::to_string(indexMeshPart*nrOfBufferTypes + 3) << "," <<  '\n';
                 filestr << "\"byteOffset\" : 0," << '\n';
                 filestr << "\"componentType\" : 5126," << '\n';
                 filestr << "\"count\" : " << std::to_string(partNrOfPremitives[indexMeshPart]) << "," << '\n';
@@ -963,10 +979,10 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
                 filestr << "{" << '\n';
                 //bufferView ID depends on the normals export decision
                 if (mExportVertNormal){
-                    filestr << "\"bufferView\" : " << std::to_string(indexMeshPart + 4) << "," <<  '\n';
+                    filestr << "\"bufferView\" : " << std::to_string(indexMeshPart*nrOfBufferTypes + 4) << "," <<  '\n';
                 }
                 else{
-                    filestr << "\"bufferView\" : " << std::to_string(indexMeshPart + 3) << "," <<  '\n';
+                    filestr << "\"bufferView\" : " << std::to_string(indexMeshPart*nrOfBufferTypes + 3) << "," <<  '\n';
                 }
                 filestr << "\"byteOffset\" : 0," << '\n';
                 filestr << "\"componentType\" : 5126," << '\n';
@@ -983,7 +999,14 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
 
                 filestr << "\"max\" : [ " << maxUString << "," << maxVString << "]," << '\n';
                 filestr << "\"min\" : [ " << minUString << "," << minVString << "]" << '\n';
-                filestr << "}" << '\n';
+                //seperate by comma, if there follow buffer of other mesh parts
+                if(indexMeshPart < nrPartsOfMesh-1){
+                    filestr << "}," << '\n';
+                }
+                else{
+                    filestr << "}" << '\n';
+                }
+
             }
         }
     }
