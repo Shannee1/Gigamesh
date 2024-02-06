@@ -112,8 +112,12 @@ bool ModelMetaData::getModelMetaStringId(
         eMetaStrings& rMetaStrID                   //!< Name as string of the meta-data string.
 ) const {
 	for( unsigned i=0; i<META_STRINGS_COUNT ; i++ ) {
-		if( rModelMetaStringName == mMetaDataStringNames[i]) {
-			rMetaStrID = static_cast<eMetaStrings>( i );
+        if( rModelMetaStringName == mMetaDataStringNames[i]) {
+            //rMetaStrID = static_cast<eMetaStrings>( i );
+            //! the constant value is accessed by a modulo operation,
+            //! since this allows us to extend the mMetaDataStringNames with alternative names.
+            //! Therefore we can add external name conventions e.g. defined by 3D printer companies
+            rMetaStrID = static_cast<eMetaStrings>( i%12 );
 			return( true );
 		}
 	}
@@ -142,6 +146,8 @@ bool ModelMetaData::clearModelMetaStrings() {
 	mMetaDataStringNames[META_MODEL_CREATORS]       = "ModelCreators";
 	mMetaDataStringNames[META_MODEL_CONTRIBUTORS]   = "ModelContributors";
 	mMetaDataStringNames[META_TEXTUREFILE]      = "TextureFile";
+    //start with the alternatives
+    mMetaDataStringNames[META_MODEL_UNIT+12]           = "Unit:";
 
 	// Initialze labels for the names of the strings holding meta-data
 	mMetaDataStringLabels[META_MODEL_ID]             = "ID of the model";

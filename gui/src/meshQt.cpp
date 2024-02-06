@@ -4116,7 +4116,7 @@ bool MeshQt::editMetaData() {
 	}
 
 	//! .) Edit Model Unit.
-	/*
+
 	std::string modelUnit = getModelMetaDataRef().getModelMetaString( ModelMetaData::META_MODEL_UNIT );
 	std::string modelUnitLabel;
 	getModelMetaDataRef().getModelMetaStringLabel( ModelMetaData::META_MODEL_UNIT, modelUnitLabel );
@@ -4135,8 +4135,7 @@ bool MeshQt::editMetaData() {
 			return( false );
 		}
 		getModelMetaDataRef().setModelMetaString( ModelMetaData::META_MODEL_UNIT, newUnit.toStdString() );
-	}*/
-	getModelMetaDataRef().setModelMetaString( ModelMetaData::META_MODEL_UNIT, "mm" );
+    }
 
 	return( true );
 }
