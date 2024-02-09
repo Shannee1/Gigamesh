@@ -353,7 +353,7 @@ class MeshQt : public QObject, public MeshGLShader, public MeshQtCSVImportExport
 	// Overloaded from MeshIO
 	//============================
 	public slots:
-	    virtual bool writeFileUserInteract() override;
+        virtual bool writeFileUserInteract(const bool asLegacy = false) override;
 	    virtual bool writeFile( const QString& rFileName );
 	    virtual bool writeFile( const std::filesystem::path& rFileName ) override;
 	// Set flags:

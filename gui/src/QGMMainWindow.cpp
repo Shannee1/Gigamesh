@@ -1028,6 +1028,7 @@ void QGMMainWindow::initMeshSignals() {
 	// === MeshGL/MeshQt - Function/Method CALL ============================================================================================================
 	// ... File load, save, import, export  ................................................................................................................
 	actionFileSaveAs->setProperty(                                "gmMeshFunctionCall", MeshParams::FILE_SAVE_AS                                 );
+    actionFileExportAsLegacy->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_AS_LEGACY                             );
 	actionSaveLabelsSeparated->setProperty(                       "gmMeshFunctionCall", MeshParams::EXPORT_CONNECTED_COMPONENTS                  );
 	actionExportMetaDataHTML->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_METADATA_HTML                         );
 	actionExportMetaDataJSON->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_METADATA_JSON                         );

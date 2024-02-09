@@ -4635,7 +4635,15 @@ bool MeshQt::showInfoAxisHTML() {
 //=============================================================================
 
 //! Write 3D-data to file after asking the user for a filename.
-bool MeshQt::writeFileUserInteract() {
+bool MeshQt::writeFileUserInteract(const bool asLegacy) {
+
+    if (asLegacy){
+        //! Disable the export of Features, flags and labels for the legacy export
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_FLAGS, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_LABEL, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_FTVEC, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_POLYLINE,   false );
+    }
 	QSettings settings;
 
 	QString filePath    = QString( settings.value( "lastPath" ).toString() ); // or: getFileLocation().c_str()
