@@ -161,8 +161,8 @@
     <addaction name="actionFileReload"/>
     <addaction name="actionFileSaveAs"/>
     <addaction name="actionSaveLabelsSeparated"/>
+    <addaction name="actionFileExportAsLegacy"/>
     <addaction name="actionSaveFlagBinary"/>
-    <addaction name="actionSaveFlagGMExtras"/>
     <addaction name="actionSaveFlagTextureExport"/>
     <addaction name="separator"/>
     <addaction name="menuImport"/>
@@ -1179,17 +1179,6 @@
    </property>
    <property name="text">
     <string>&amp;Binary</string>
-   </property>
-  </action>
-  <action name="actionSaveFlagGMExtras">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;GM Extras (Features, Labels, Flags)</string>
    </property>
   </action>
   <action name="actionImportVertexCoordinatesFromCSV">
@@ -4802,6 +4791,25 @@ The latter will be shown, when the processing has finished.</string>
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select 3 positions on the mesh i.e. points within triangles.&lt;/p&gt;&lt;p&gt;This selection mode automatically starts a new set of connected points after 3 pins.&lt;/p&gt;&lt;p&gt;These positions are used to calculate circle centers as part of the profile line calculation process.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionFileExportAsLegacy">
+   <property name="text">
+    <string>Export as Legacy</string>
+   </property>
+   <property name="toolTip">
+    <string>Export as Legacy (without Features, Labels and Flags)</string>
+   </property>
+  </action>
+  <action name="actionSaveFlagGMExtras">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;GM Extras (Features, Labels, Flags)</string>
    </property>
   </action>
  </widget>

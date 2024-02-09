@@ -72,7 +72,7 @@ class MeshIO : public MeshSeedExt {
 
 		// Write:
 		virtual bool setFlagExport( eExportFlags rFlag, bool rSetTo  );
-		virtual bool writeFileUserInteract();
+        virtual bool writeFileUserInteract(const bool asLegacy = false);
 
 	public: //! \todo this should be at least 'protected'.
 		        bool writeFilePrimProps( const std::filesystem::path& rFileName,

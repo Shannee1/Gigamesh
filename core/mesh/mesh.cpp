@@ -321,6 +321,9 @@ bool Mesh::callFunction(
 		case FILE_SAVE_AS:
 			retVal = writeFileUserInteract();
 			break;
+        case EXPORT_AS_LEGACY:
+            retVal = writeFileUserInteract(true);
+            break;
 		case EXPORT_CONNECTED_COMPONENTS:
 			retVal = writeFilesForConnectedComponents();
 			break;

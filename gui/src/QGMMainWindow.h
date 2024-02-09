@@ -188,7 +188,6 @@ signals:
 	void sFileImportFeatureVectors( QString );               //!< passes a filename for import of a file with feature vectors to MeshWidget::importFeatureVectorsFile
 	void sFileImportNormals( QString );                      //!< passes a filename for import of a file with normal vectors to MeshQt::importNormalVectorsFile
 	void sFileSaveFlagBinary( bool );                        //!< passed down to MeshIO. However this has to be revised.
-	void sFileSaveFlagGMExtras( bool );                      //!< passed down to MeshIO. However this has to be revised.
 	void sFileSaveFlagExportTexture( bool );                 //!< passed down to MeshIO. This probably also needs to be revised.
 	void exportFuncVals();                                   //!< signal MeshQt to export the function values.
 	void sExportFeatureVectors();                            //!< signal MeshQt to export the feature vectors.

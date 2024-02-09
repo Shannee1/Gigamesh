@@ -95,7 +95,6 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	QObject::connect( actionFileReload,               SIGNAL(triggered()), this,       SIGNAL(sFileReload())             );
 	//.
 	QObject::connect( actionSaveFlagBinary,           SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagBinary(bool))   );
-	QObject::connect( actionSaveFlagGMExtras,         SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagGMExtras(bool)) );
 	QObject::connect( actionSaveFlagTextureExport,    SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagExportTexture(bool)) );
 	//.
 	QObject::connect( actionImportTexMap,             SIGNAL(triggered()), this,       SLOT(menuImportTexMap())          );
@@ -1028,6 +1027,7 @@ void QGMMainWindow::initMeshSignals() {
 	// === MeshGL/MeshQt - Function/Method CALL ============================================================================================================
 	// ... File load, save, import, export  ................................................................................................................
 	actionFileSaveAs->setProperty(                                "gmMeshFunctionCall", MeshParams::FILE_SAVE_AS                                 );
+    actionFileExportAsLegacy->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_AS_LEGACY                             );
 	actionSaveLabelsSeparated->setProperty(                       "gmMeshFunctionCall", MeshParams::EXPORT_CONNECTED_COMPONENTS                  );
 	actionExportMetaDataHTML->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_METADATA_HTML                         );
 	actionExportMetaDataJSON->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_METADATA_JSON                         );
