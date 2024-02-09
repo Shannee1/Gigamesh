@@ -163,7 +163,6 @@
     <addaction name="actionSaveLabelsSeparated"/>
     <addaction name="actionFileExportAsLegacy"/>
     <addaction name="actionSaveFlagBinary"/>
-    <addaction name="actionSaveFlagGMExtras"/>
     <addaction name="actionSaveFlagTextureExport"/>
     <addaction name="separator"/>
     <addaction name="menuImport"/>
@@ -1180,17 +1179,6 @@
    </property>
    <property name="text">
     <string>&amp;Binary</string>
-   </property>
-  </action>
-  <action name="actionSaveFlagGMExtras">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;GM Extras (Features, Labels, Flags)</string>
    </property>
   </action>
   <action name="actionImportVertexCoordinatesFromCSV">
@@ -4811,6 +4799,17 @@ The latter will be shown, when the processing has finished.</string>
    </property>
    <property name="toolTip">
     <string>Export as Legacy (without Features, Labels and Flags)</string>
+   </property>
+  </action>
+  <action name="actionSaveFlagGMExtras">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;GM Extras (Features, Labels, Flags)</string>
    </property>
   </action>
  </widget>

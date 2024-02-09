@@ -166,7 +166,6 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	QObject::connect( mMainWindow, SIGNAL(sFileImportNormals(QString)),        this, SLOT(importNormalVectorsFile(QString)) );
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagBinary(bool)),          this, SLOT(setFileSaveFlagBinary(bool))      );
-	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagGMExtras(bool)),        this, SLOT(setFileSaveFlagGMExtras(bool))    );
 	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagExportTexture(bool)),this, SLOT(setFileSaveFlagExportTextures(bool)));
 	//.
 	QObject::connect( mMainWindow, SIGNAL(exportPolyLinesCoords()),          this, SLOT(exportPolyLinesCoords())          );
@@ -4756,15 +4755,6 @@ bool MeshQt::writeFile( const filesystem::path& rFileName ) {
 //! Set the MeshIO::EXPORT_BINARY flag.
 bool MeshQt::setFileSaveFlagBinary( bool rSetTo ) {
 	return setFlagExport( MeshIO::EXPORT_BINARY, rSetTo );
-}
-
-//! Set the MeshIO::EXPORT_* flags to contain or discard GigaMesh specific extensions to 3D-files.
-bool MeshQt::setFileSaveFlagGMExtras( bool rSetTo ) {
-	setFlagExport( MeshIO::EXPORT_VERT_FLAGS, rSetTo );
-	setFlagExport( MeshIO::EXPORT_VERT_LABEL, rSetTo );
-	setFlagExport( MeshIO::EXPORT_VERT_FTVEC, rSetTo );
-	setFlagExport( MeshIO::EXPORT_POLYLINE,   rSetTo );
-	return rSetTo;
 }
 
 bool MeshQt::setFileSaveFlagExportTextures(bool setTo)

@@ -95,7 +95,6 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	QObject::connect( actionFileReload,               SIGNAL(triggered()), this,       SIGNAL(sFileReload())             );
 	//.
 	QObject::connect( actionSaveFlagBinary,           SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagBinary(bool))   );
-	QObject::connect( actionSaveFlagGMExtras,         SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagGMExtras(bool)) );
 	QObject::connect( actionSaveFlagTextureExport,    SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagExportTexture(bool)) );
 	//.
 	QObject::connect( actionImportTexMap,             SIGNAL(triggered()), this,       SLOT(menuImportTexMap())          );
