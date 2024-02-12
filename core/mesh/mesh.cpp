@@ -1324,7 +1324,6 @@ bool Mesh::writeFile(
 		currFace->copyFacePropsTo( faceProps[faceIdx] );
 	}
 	//! 3. Write arrays to file.
-    auto vertex = vertexProps[0];
 	bool retVal = MeshIO::writeFilePrimProps( rFileName, vertexProps, faceProps );
 	//! 4. Remove arrays.
 	MeshSeedExt::clear();
