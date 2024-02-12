@@ -49,6 +49,7 @@ All executables provide details by adding `--help` or `-h` on the command line.
 - `gigamesh-border` ... extraction of mesh borders as polylines (ASCII formatted .pline files).
 - `gigamesh-sphere-profiles` ... extraction of spherical intersections with the mesh as polylines. Related to `gigamesh-featurevectors-sl`.
 - `gigamesh-gnsphere` ... exports the Gaussian Normal Sphere (GNS) data of the given mesh.
+- `gigamesh-togltf` ... convert multiple files to Graphic Language Transmission Format files (GLTFs).
 
 ## EXAMPLES 
 
