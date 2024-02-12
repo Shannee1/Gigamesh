@@ -1,3 +1,4 @@
++) New: CLI: gigamesh-togltf --> Converts meshes to the gltf format
 +) Changed: Deconstruction of checkbox 'File->GM Extras (Features,Labels, Flags). Export without GM Extras is now in the 'File->Export as Legacy' function. 
 +) Improved: PLY Import supports the metadata 'Unit:'
 +) Improved: GLTF export supports multiple textures
