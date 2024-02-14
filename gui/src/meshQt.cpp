@@ -200,6 +200,8 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sDatumAddSphere()),            this, SLOT(datumAddSphere())         );
 	//.
+    QObject::connect( mMainWindow, SIGNAL(sDownscaleTexture()),          this, SLOT(downscaleTexture())         );
+    //.
 	QObject::connect( mMainWindow, SIGNAL(sApplyMeltingSphere()),        this, SLOT(applyMeltingSphere())     );
 	//.
     QObject::connect( mMainWindow, SIGNAL(sAutomaticMeshAlignment()),    this, SLOT(applyAutomaticMeshAlignment())     );
@@ -1583,7 +1585,39 @@ bool MeshQt::datumAddSphere( vector<double> rPosAndRadius ) {
 	}
 	Mesh::datumAddSphere( Vector3D( rPosAndRadius[0], rPosAndRadius[1], rPosAndRadius[2], 1.0 ), rPosAndRadius.at(3) );
 	emit updateGL();
-	return true;
+    return true;
+}
+//! Downscale the corresponding textures of the mesh
+//! Asks for the ration of downscaling
+//! Overwrites the original file
+bool MeshQt::downscaleTexture()
+{
+    ModelMetaData modelMetaData = MeshIO::getModelMetaDataRef();
+    std::vector<std::filesystem::path> textures = modelMetaData.getTexturefilesRef();
+    if(!(textures.size() > 0)){
+        cout << "[MeshQt::" << __FUNCTION__ << "] No texture for this mesh available!" << std::endl;
+        return false;
+    }
+    else{
+        QString texturePath = QString::fromStdString(std::filesystem::relative(textures[0]).string());
+        QImage textureImg(texturePath);
+        int width = textureImg.width();
+        int height = textureImg.height();
+        //the scaling factor defines how much the image is scaled down
+        double factor = 0.5;
+        int newWidth = round(factor*width);
+        int newHeight = round(factor*height);
+        QImage textureImgScaled = textureImg.scaled(newWidth, newHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        textureImgScaled.save(texturePath);
+        //simulate the reload click
+        //mMainWindow->actionFileReload->trigger();
+        emit sReloadFile();
+        //set view to texture automatically
+        //mMainWindow->sShowParamIntMeshGL(MeshGLParams::SHADER_CHOICE,5);
+
+    }
+
+    return true;
 }
 
 //! Enter radius and melting with sqrt(r^2-x^2-y^2).

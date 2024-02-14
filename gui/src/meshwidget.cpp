@@ -894,6 +894,7 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 	QObject::connect( mMeshVisual, &MeshQt::sDefaultViewLight,               this,        &MeshWidget::defaultViewLight         );
 	QObject::connect( mMeshVisual, &MeshQt::sDefaultViewLightZoom,           this,        &MeshWidget::defaultViewLightZoom     );
     QObject::connect( mMeshVisual, &MeshQt::sSetDefaultView,                 this,        &MeshWidget::currentViewToDefault    );
+    QObject::connect( mMeshVisual, &MeshQt::sReloadFile,                     this,        [this]{ reloadFile(false); });
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// cheks mesh for problems and fix them
@@ -955,16 +956,18 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 }
 
 //! Reloads the current file from disk.
-bool MeshWidget::reloadFile() {
+bool MeshWidget::reloadFile(const bool askQuestion) {
 	if( mMeshVisual == nullptr ) {
 		return false;
 	}
-	bool userReload;
-	bool userCancel;
-	SHOW_QUESTION( tr("Reload file"), tr("Do you really want to reload this file?"), userReload, userCancel );
-	if( ( userCancel ) || not( userReload ) ) {
-		return false;
-	}
+    if(askQuestion){
+        bool userReload;
+        bool userCancel;
+        SHOW_QUESTION( tr("Reload file"), tr("Do you really want to reload this file?"), userReload, userCancel );
+        if( ( userCancel ) || not( userReload ) ) {
+            return false;
+        }
+    }
 	auto fileName = mMeshVisual->getFullName();
     return fileOpen( QString::fromStdWString( fileName.wstring() ) );
 }

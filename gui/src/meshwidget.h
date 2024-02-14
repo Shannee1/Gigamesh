@@ -111,7 +111,7 @@ private slots:
 public slots:
 	// File menu (and related)
 	bool fileOpen( const QString& rFileName );
-	bool reloadFile();
+    bool reloadFile(const bool askQuestion=true);
 	//.
 	bool saveStillImagesSettings();
 	void saveStillImages360( Vector3D rotCenter, Vector3D rotAxis );

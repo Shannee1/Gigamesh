@@ -169,6 +169,8 @@ class MeshQt : public QObject, public MeshGLShader, public MeshQtCSVImportExport
 		virtual bool   datumAddSphere();
 		virtual bool   datumAddSphere( std::vector<double> rPosAndRadius );
 		//.
+        virtual bool   downscaleTexture();
+        //.
 		virtual bool   applyMeltingSphere();
 		//.
         virtual bool applyAutomaticMeshAlignment(bool askForFront=true);
@@ -382,6 +384,7 @@ class MeshQt : public QObject, public MeshGLShader, public MeshQtCSVImportExport
         void sSetDefaultView();                      //!< signal to meshWidget -> set the mesh after transformation to the camera center and ask for saving the transformation as default.
         void sFileChanged(QString,QString);          //!< emitted when a mesh file was opened or stored (path,basename,extension)
 		void statusMessage(QString);                 //!< emitted when the status changed.
+        void sReloadFile();                          //!< emitted when texture was changed.
 		//.
 		void visualizeFeatureDist(int,double*);  //!< emitted when the distance to a feature vector has to be estimated and reflected as texture-map (see menuVisualizeFeatDistSelected() ).
 		void showFlagState(MeshGLParams::eParamFlag,bool);  //!< emitted when an element of MeshGLParams::showFlagsArr is changed.
