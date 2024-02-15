@@ -4,6 +4,9 @@ cmake_minimum_required(VERSION 3.15, FATAL_ERROR)
 add_executable(gigamesh-tolegacy gigamesh-tolegacy.cpp)
 target_link_libraries(gigamesh-tolegacy PRIVATE gigameshCore)
 
+add_executable(gigamesh-togltf gigamesh-togltf.cpp)
+target_link_libraries(gigamesh-togltf PRIVATE gigameshCore)
+
 add_executable(gigamesh-gnsphere gigamesh-gnsphere.cpp)
 target_link_libraries(gigamesh-gnsphere PRIVATE gigameshCore)
 
@@ -32,6 +35,7 @@ install(TARGETS gigamesh-tolegacy
                 gigamesh-featurevectors
                 gigamesh-borders
                 gigamesh-gnsphere
+                gigamesh-togltf
         DESTINATION bin)
 
 

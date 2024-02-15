@@ -535,6 +535,9 @@ bool MeshWidget::setParamIntegerMeshWidget( MeshWidgetParams::eParamInt rParam, 
 				case MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO:
 					emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_SELMVERTS_LASSO );
 				break;
+                case MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO:
+                    emit sGuideIDSelection( MeshWidgetParams::GUIDE_DESELECT_SELMVERTS_LASSO );
+                break;
 				case MeshWidgetParams::SELECTION_MODE_MULTI_FACES:
 					emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_SELMFACES );
 				break;
@@ -552,6 +555,9 @@ bool MeshWidget::setParamIntegerMeshWidget( MeshWidgetParams::eParamInt rParam, 
 				case MeshWidgetParams::SELECTION_MODE_POSITIONS:
 					emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_POSITIONS );
 				break;
+                case MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS:
+                    emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_THREE_POSITIONS );
+                break;
 				default:
 					// do nothing
 					cerr << "[MeshWidget::" << __FUNCTION__ << "] SELECTION_MODE unknown paramNr: " << rParam << " val: " << rValue << endl;
@@ -869,8 +875,22 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 		return false;
 	}
 
+    bool continueWithMesh;
+    bool userCancel;
+    uint64_t nrOfFaces = mMeshVisual->getFaceNr();
+    if (nrOfFaces > 35000000){
+        SHOW_QUESTION( tr("You are loading a large mesh"), tr("This may cause a crash if there is not enough video RAM available.") + QString("<br /><br />") + tr("Do you want to continue?"), continueWithMesh, userCancel );
+        if( !continueWithMesh || userCancel ) {
+            //stop rendering the mesh to prevent a crash
+            delete mMeshVisual;
+            mMeshVisual = nullptr;
+            return false;
+        }
+    }
+
 	QObject::connect( this,        SIGNAL(sParamFlagMesh(MeshGLParams::eParamFlag,bool)), mMeshVisual, SLOT(setParamFlagMeshGL(MeshGLParams::eParamFlag,bool)) );
-	QObject::connect( this,        SIGNAL(sSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(selectPoly(std::vector<QPoint>&))                       );
+    QObject::connect( this,        SIGNAL(sSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(selectPoly(std::vector<QPoint>&)) );
+    QObject::connect( this,        SIGNAL(sDeSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(deselectPoly(std::vector<QPoint>&)) );
 	QObject::connect( mMeshVisual, SIGNAL(updateGL()),                                    this,        SLOT(update())                                          );
 	// Interaction -----------------------------------------------------------------------------------------------------------------------------------------
 	QObject::connect( this,        SIGNAL(sApplyTransfromToPlane(Matrix4D)), mMeshVisual, SLOT(applyTransfromToPlane(Matrix4D)) );
@@ -936,7 +956,6 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 	cout << "[MeshWidget::" << __FUNCTION__ << "] Done." << endl;
 
 	emit loadedMeshIsTextured( mMeshVisual->getModelMetaDataRef().hasTextureCoordinates() && mMeshVisual->getModelMetaDataRef().hasTextureFiles() );
-
 	return( true );
 }
 
@@ -3885,6 +3904,7 @@ bool MeshWidget::getViewSettingsTTL(
     rSettingsStr += QString(uri+" giga:projectionMatrix \"");
     for( unsigned int i=0; i<16; i++ ) {
 		rSettingsStr += QString("%1").arg( matProjection[i] );
+        rSettingsStr += ";";
 	}
 	rSettingsStr+="\"^^xsd:string .\n"; 
 	rSettingsStr += "giga:modelViewMatrix rdf:type owl:DatatypeProperty .\n";
@@ -3893,6 +3913,7 @@ bool MeshWidget::getViewSettingsTTL(
 	const float* matModelView = mMatModelView.constData();
 	for( unsigned int i=0; i<16; i++ ) {
 		rSettingsStr += QString("%1").arg( matModelView[i] );
+        rSettingsStr += ";";
 	}
 	rSettingsStr+="\"^^xsd:string .\n"; 
 	// As well as further parameters (again):
@@ -4757,10 +4778,44 @@ bool MeshWidget::screenshotSVG( const QString& rFileName, const QString& rFileNa
 	return( true );
 }
 
+//! Check if inkscape is available/installed
+//! @returns false in case of error or no inkscape on the system
+bool MeshWidget::checkInkscapeAvailability() {
+    // --- Check external Tools i.e. Inkscape and convert/ImageMagick --------------------------------------------------------------------------------------
+    QSettings settings;
+    auto inkscapePath = settings.value("Inkscape_Path", "").toString();
+    if(inkscapePath.length() == 0)
+        inkscapePath = "inkscape";
+    bool checkInkscapeFailed = false;
+    QProcess testRunInkscape;
+    testRunInkscape.start( inkscapePath + " --version" );
+    if( !testRunInkscape.waitForFinished() ) {
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had a timeout!" << endl;
+        checkInkscapeFailed = true;
+    }
+    if( testRunInkscape.exitStatus() != QProcess::NormalExit ) {
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had no normal exit!" << endl;
+        checkInkscapeFailed = true;
+    }
+    if( testRunInkscape.exitCode() != 0 ) {
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR Inkscape exit code: " << testRunInkscape.exitCode() << endl;
+        QString outInkscapeErr( testRunInkscape.readAllStandardError() );
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape error: " << outInkscapeErr.toStdString().c_str() << endl;
+        checkInkscapeFailed = true;
+    }
+    QString outInkscape( testRunInkscape.readAllStandardOutput() );
+    cout << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape check: " << outInkscape.simplified().toStdString().c_str() << endl;
+    if( checkInkscapeFailed ) {
+        SHOW_MSGBOX_WARN_TIMEOUT( tr("Inkscape error"), tr("Checking Inkscape for presence and functionality failed!"), 5000 );
+    }
+    return( true );
+}
+
 //! Export polylines defined by an intersecting plane as SVG.
 //!
 //! @returns false in case of an error or user abort or no qualified polylines present. True otherwise.
 bool MeshWidget::exportPlaneIntersectPolyLinesSVG() {
+
 	// 0.) Sanity check
 	if( mMeshVisual == nullptr ) {
 		SHOW_MSGBOX_CRIT( tr("ERROR"), tr("No mesh present.") );
@@ -4769,6 +4824,11 @@ bool MeshWidget::exportPlaneIntersectPolyLinesSVG() {
 
 	std::set<unsigned int> axisPolylines;
 	std::set<unsigned int> planePolylines;
+
+    // 0.5.) Is Inkscape available?
+    if(!checkInkscapeAvailability()){
+        return( false );
+    }
 
 	// 1.) get qualified polylines and store their ID's into the appropriate set
 	for(unsigned int i = 0; i<mMeshVisual->getPolyLineNr(); ++i)
@@ -6421,10 +6481,10 @@ void MeshWidget::paintSelection() {
 	}
 	MeshWidgetParams::eSelectionModes selectionMode;
 	getParamIntegerMeshWidget( MeshWidgetParams::SELECTION_MODE, reinterpret_cast<int*>(&selectionMode) );
-	if( selectionMode != MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO ) {
+    if( !(selectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || selectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO) ) {
 		return;
 	}
-	
+
 	QImage imPoly( width(), height(), QImage::Format_ARGB32 );
 	imPoly.fill( QColor( 255, 255, 255, 0 ) );
 
@@ -6648,7 +6708,7 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 	//! Selection of a point of a polyline (left click):
 	if( ( mouseButtonsPressed == Qt::LeftButton ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT ) &&
-	    ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO )
+        ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO )
 	  ) {
 		mSelectionPoly.push_back( mLastPos );
 		if( mSelectionPoly.size() == 1 ) {
@@ -6660,7 +6720,7 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 	//! Close the selection of a polyline by right-click:
 	if( ( mouseButtonsPressed == Qt::RightButton ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT ) &&
-	    ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO ) &&
+        ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO ) &&
 	    ( mSelectionPoly.size() > 1 )
 	  ) {
 		// Check if the last two points are the same, as this can cause a segmentation fault.
@@ -6673,7 +6733,12 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 		for( auto & somePoint: mSelectionPoly ) {
 			somePoint.setY( height() - somePoint.y() );
 		}
-		emit sSelectPoly( mSelectionPoly );
+        if ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO){
+            emit sSelectPoly( mSelectionPoly );
+        }
+        if( currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO ){
+            emit sDeSelectPoly( mSelectionPoly );
+        }
 		mSelectionPoly.clear();
 		return;
 	}
@@ -6682,7 +6747,7 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 	if( ( mouseButtonsPressed & ( Qt::LeftButton | Qt::MiddleButton | Qt::RightButton ) ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT )
 	  ) {
-		if( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO ) {
+        if( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO ) {
 			std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: Wrong selection mode (SELECTION_MODE_POLYLINE)!" << std::endl;
 			return;
 		}
@@ -6759,7 +6824,7 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
 	//! Display the selection of a polyline:
 	if( ( rEvent->buttons() == Qt::NoButton ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT ) &&
-	    ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO )
+        ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO ||  currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO)
 	  ) {
 		if( mSelectionPoly.size()>0 ) {
 			mSelectionPoly.pop_back();
@@ -7279,12 +7344,27 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
 			// Nothing to do.
 			return( true );
 			break;
+        case MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO:
+            // Nothing to do.
+            return( true );
+            break;
 		case MeshWidgetParams::SELECTION_MODE_PLANE_3FP:
 			retVal = mMeshVisual->selectPlaneThreePoints( xPixel, yPixel );
 			break;
 		case MeshWidgetParams::SELECTION_MODE_POSITIONS:
 			retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, false );
 			break;
+        case MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS:
+            if (mMeshVisual->isMoreThanNconSelPosition(1)){
+                //last point of the position set --> start automatically a new one
+                retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, true );
+            }
+            else{
+                //add point to the same set
+                retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, false );
+            }
+
+            break;
 		case MeshWidgetParams::SELECTION_MODE_CONE: {
 			retVal = mMeshVisual->selectConePoints( xPixel, yPixel );
 			break;
@@ -7328,6 +7408,7 @@ bool MeshWidget::userSelectAtMouseRight( const QPoint& rPoint ) {
 		case MeshWidgetParams::SELECTION_MODE_FACE:
 		case MeshWidgetParams::SELECTION_MODE_VERTICES:
 		case MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO:
+        case MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO:
 		case MeshWidgetParams::SELECTION_MODE_MULTI_FACES:
 		case MeshWidgetParams::SELECTION_MODE_PLANE_3FP:
 		case MeshWidgetParams::SELECTION_MODE_CONE:
@@ -7338,6 +7419,10 @@ bool MeshWidget::userSelectAtMouseRight( const QPoint& rPoint ) {
 		case MeshWidgetParams::SELECTION_MODE_POSITIONS:
 			retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, true );
 			break;
+        case MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS:
+            // Nothing to do.
+            retVal = true;
+            break;
 		default:
 			std::cerr << "[MeshGL::" << __FUNCTION__ << "] invalid selection mode: " << selectionMode << "!" << std::endl;
 			retVal = false;

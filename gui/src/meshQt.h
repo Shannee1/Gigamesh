@@ -232,6 +232,7 @@ class MeshQt : public QObject, public MeshGLShader, public MeshQtCSVImportExport
 		virtual bool   selectPolyNotLabeled();
 
 		virtual bool       selectPoly( std::vector<QPoint>& rPixelCoords );
+        virtual bool       deselectPoly( std::vector<QPoint>& rPixelCoords );
 		virtual Primitive* selectPrimitiveAt( int primitiveTypeToSelect, int xPixel, int yPixel, bool addToList );
 		// Selection - Plane definition:
 		virtual bool   getPlanePosToSet( int* rPosID );
@@ -352,12 +353,11 @@ class MeshQt : public QObject, public MeshGLShader, public MeshQtCSVImportExport
 	// Overloaded from MeshIO
 	//============================
 	public slots:
-	    virtual bool writeFileUserInteract() override;
+        virtual bool writeFileUserInteract(const bool asLegacy = false) override;
 	    virtual bool writeFile( const QString& rFileName );
 	    virtual bool writeFile( const std::filesystem::path& rFileName ) override;
 	// Set flags:
 		virtual bool setFileSaveFlagBinary( bool rSetTo );
-		virtual bool setFileSaveFlagGMExtras( bool rSetTo );
 		virtual bool setFileSaveFlagExportTextures( bool setTo );
 
 	// Related to MeshIO

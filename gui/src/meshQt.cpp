@@ -166,7 +166,6 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	QObject::connect( mMainWindow, SIGNAL(sFileImportNormals(QString)),        this, SLOT(importNormalVectorsFile(QString)) );
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagBinary(bool)),          this, SLOT(setFileSaveFlagBinary(bool))      );
-	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagGMExtras(bool)),        this, SLOT(setFileSaveFlagGMExtras(bool))    );
 	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagExportTexture(bool)),this, SLOT(setFileSaveFlagExportTextures(bool)));
 	//.
 	QObject::connect( mMainWindow, SIGNAL(exportPolyLinesCoords()),          this, SLOT(exportPolyLinesCoords())          );
@@ -2351,6 +2350,22 @@ bool MeshQt::selectPolyNotLabeled() {
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
+//! Deselect vertices within a polygonal area defined by the camera view direction (=prism) .
+bool MeshQt::deselectPoly( vector<QPoint> &rPixelCoords ) {
+    vector<PixCoord> polyCoords;
+    for( auto const& polyPoint: rPixelCoords ) {
+        PixCoord someCoord;
+        someCoord.x = polyPoint.x();
+        someCoord.y = polyPoint.y();
+        polyCoords.push_back( someCoord );
+    }
+
+    bool retVal = MeshGL::selectPoly( polyCoords, true );
+    if( !retVal ) {
+        SHOW_MSGBOX_WARN( tr("Deselection aborted"), tr("ERROR occured: No vertices were deselected!") );
+    }
+    return retVal;
+}
 
 //! Select vertices within a polygonal area defined by the camera view direction (=prism) .
 bool MeshQt::selectPoly( vector<QPoint> &rPixelCoords ) {
@@ -4100,7 +4115,7 @@ bool MeshQt::editMetaData() {
 	}
 
 	//! .) Edit Model Unit.
-	/*
+
 	std::string modelUnit = getModelMetaDataRef().getModelMetaString( ModelMetaData::META_MODEL_UNIT );
 	std::string modelUnitLabel;
 	getModelMetaDataRef().getModelMetaStringLabel( ModelMetaData::META_MODEL_UNIT, modelUnitLabel );
@@ -4119,8 +4134,7 @@ bool MeshQt::editMetaData() {
 			return( false );
 		}
 		getModelMetaDataRef().setModelMetaString( ModelMetaData::META_MODEL_UNIT, newUnit.toStdString() );
-	}*/
-	getModelMetaDataRef().setModelMetaString( ModelMetaData::META_MODEL_UNIT, "mm" );
+    }
 
 	return( true );
 }
@@ -4620,7 +4634,15 @@ bool MeshQt::showInfoAxisHTML() {
 //=============================================================================
 
 //! Write 3D-data to file after asking the user for a filename.
-bool MeshQt::writeFileUserInteract() {
+bool MeshQt::writeFileUserInteract(const bool asLegacy) {
+
+    if (asLegacy){
+        //! Disable the export of Features, flags and labels for the legacy export
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_FLAGS, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_LABEL, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_FTVEC, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_POLYLINE,   false );
+    }
 	QSettings settings;
 
 	QString filePath    = QString( settings.value( "lastPath" ).toString() ); // or: getFileLocation().c_str()
@@ -4644,8 +4666,12 @@ bool MeshQt::writeFileUserInteract() {
 	fileSuggest += ".ply";
 
 	QStringList filters;
-	filters << tr("3D-Data (*.ply *.obj)")
-			<< tr("3D-Data outdated (*.wrl *.txt *.xyz)");
+    filters << tr("3D-Data (*.ply)")
+            << tr("3D-Data (*.obj)")
+            << tr("3D-Data (*.gltf)")
+            << tr("3D-Data outdated (*.wrl)")
+            << tr("3D-Data outdated (*.txt)")
+            << tr("3D-Data outdated (*.xyz)");
 
 	QFileDialog dialog( mMainWindow );
 	dialog.setWindowTitle( tr("Save 3D-model as:") );
@@ -4691,6 +4717,32 @@ bool MeshQt::writeFile( const filesystem::path& rFileName ) {
 	}
 
 	std::cout << "[MeshQt::" << __FUNCTION__ << "] to: " << rFileName << std::endl;
+    std::string fileExtension = rFileName.extension().string();
+    if(fileExtension == ".gltf"){
+        bool userContinue;
+        if( showQuestion( &userContinue, tr("Continue?").toStdString(), \
+                          tr("The GLTF results in a larger file and cannot be read by GigaMesh. Do you want to continue?").toStdString() ) ) {
+            if( !userContinue ) {
+                // User cancel.
+                return( false );
+            }
+        }
+        bool exportNormals;
+        if( showQuestion( &exportNormals, tr("Normal Export?").toStdString(), \
+                          tr("Do you want to export the normals per vertex? This will result in a larger file!").toStdString() ) ) {
+            if( exportNormals ) {
+                // User cancel.
+                MeshIO::setFlagExport(EXPORT_VERT_NORMAL,true);
+            }
+            else{
+                MeshIO::setFlagExport(EXPORT_VERT_NORMAL,false);
+            }
+        }
+        else{
+            return( false );
+        }
+
+    }
 	if( !MeshGL::writeFile( rFileName ) ) {
 		std::cerr << "[MeshQt::" << __FUNCTION__ << "] could not write to file '" << rFileName << "'! " << std::endl;
 		return( false );
@@ -4703,15 +4755,6 @@ bool MeshQt::writeFile( const filesystem::path& rFileName ) {
 //! Set the MeshIO::EXPORT_BINARY flag.
 bool MeshQt::setFileSaveFlagBinary( bool rSetTo ) {
 	return setFlagExport( MeshIO::EXPORT_BINARY, rSetTo );
-}
-
-//! Set the MeshIO::EXPORT_* flags to contain or discard GigaMesh specific extensions to 3D-files.
-bool MeshQt::setFileSaveFlagGMExtras( bool rSetTo ) {
-	setFlagExport( MeshIO::EXPORT_VERT_FLAGS, rSetTo );
-	setFlagExport( MeshIO::EXPORT_VERT_LABEL, rSetTo );
-	setFlagExport( MeshIO::EXPORT_VERT_FTVEC, rSetTo );
-	setFlagExport( MeshIO::EXPORT_POLYLINE,   rSetTo );
-	return rSetTo;
 }
 
 bool MeshQt::setFileSaveFlagExportTextures(bool setTo)

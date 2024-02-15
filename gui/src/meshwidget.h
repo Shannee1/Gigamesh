@@ -249,6 +249,7 @@ public slots:
 	bool screenshotSVG();
 	bool screenshotSVG(const QString& rFileName, const QString& rFileNamePNG );
 
+    bool checkInkscapeAvailability();
 	bool exportPlaneIntersectPolyLinesSVG();
 	bool screenshotSVGexportPlaneIntersections( double rOffsetX, double rOffsetY, double rPolyLineWidth, double axisOffset, SvgWriter& svgWriter, const std::set<unsigned int>& polylineIDs );
 
@@ -294,7 +295,8 @@ signals:
 	void sParamFlagMesh(MeshGLParams::eParamFlag,bool);             //!< Sets a specific display flag see MeshGL::setShowFlag.
 	void sParamFlagMeshWidget(MeshWidgetParams::eParamFlag,bool);   //!< Sets a specific display flag see MeshWidget::setShowFlag.
 	void sParamIntegerMeshWidget(MeshWidgetParams::eParamInt,int);  //!< Sets a specific display integer see MeshWidget::
-	void sSelectPoly(std::vector<QPoint>&);                              //!< Pixel coordinates for polygonal/prism selection.
+    void sSelectPoly(std::vector<QPoint>&);                         //!< Pixel coordinates for polygonal/prism selection.
+    void sDeSelectPoly(std::vector<QPoint>&);                       //!< Pixel coordinates for polygonal/prism deselection.
 	// changes to plane position
 	void sApplyTransfromToPlane(Matrix4D);                          //!< Emitted when the planes postion was (interactivly) changed.
 	// guide for docked window

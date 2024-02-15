@@ -30,6 +30,7 @@
 #include <float.h>   // FLT_MAX, FLT_MIN, FLT_EPS, etc.
 #include <array>
 #include <vector>
+#include <cstdint>
 
 // generic defines
 #define _INFINITE_DBL_      std::numeric_limits<double>::infinity()

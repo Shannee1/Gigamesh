@@ -1,3 +1,22 @@
++) New: CLI: gigamesh-togltf --> Converts meshes to the gltf format
++) Changed: Deconstruction of checkbox 'File->GM Extras (Features,Labels, Flags). Export without GM Extras is now in the 'File->Export as Legacy' function. 
++) Improved: PLY Import supports the metadata 'Unit:'
++) Improved: GLTF export supports multiple textures
++) New: Selection mode: exactly 3 positions in a row
+
+Version 240115
++) New: Multiple vertex deselection with a lasso 
++) Improved: GLTF export now includes vertex color
++) Changed: Suggested suffixes for mesh export as a drop-down list by type
++) Improved: GLTF Export option without normals
+
+Version 231215
++) New: GLTF Export (only vertices, normals and single texture) 
++) Improved: Warning when a user has loaded a large mesh (35000000 faces) 
++) Changed: Inkscape warning only appears when using method 'Export Plane Intersections (SVG)'
++) Bugfix: added separator for view and projection matrix values in screenshot ttl file
++) Bugfix: prevent crash when broken ply file is loaded (if face contains an index out of the index range)
+
 Version 230622
 +)Improved: Tooltips were added to the menu bar
 +)New: CLI: gigamesh-info -> New Option: --quick (-q) Suppress detection of self-intersections (computationally intensive)

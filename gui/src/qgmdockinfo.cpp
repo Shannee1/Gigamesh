@@ -177,6 +177,12 @@ void QGMDockInfo::setGuideIDSelection( MeshWidgetParams::eGuideIDSelection rGuid
 			ui->labelGuide->setVisible( true );
 			ui->labelGuide->setPixmap( tmpIcon.pixmap( ui->labelGuide->size() ) );
 		} break;
+        // --- Deselection SelMVerts --------------------------------------------------------------------------
+        case MeshWidgetParams::GUIDE_DESELECT_SELMVERTS_LASSO: {
+            QIcon tmpIcon( ":/GMToolBar/gigamesh_icon_vertices_deselect_multiple_polyline.svg" );
+            ui->labelGuide->setVisible( true );
+            ui->labelGuide->setPixmap( tmpIcon.pixmap( ui->labelGuide->size() ) );
+        } break;
 		// --- SelMFaces --------------------------------------------------------------------------------------
 		case MeshWidgetParams::GUIDE_SELECT_SELMFACES: {
 			QIcon tmpIcon( ":/GMToolBar/gigamesh_icon_vertices_select_multiple_faces.svg" );
@@ -189,6 +195,11 @@ void QGMDockInfo::setGuideIDSelection( MeshWidgetParams::eGuideIDSelection rGuid
 			ui->labelGuide->setVisible( true );
 			ui->labelGuide->setPixmap( tmpIcon.pixmap( ui->labelGuide->size() ) );
 		} break;
+        case MeshWidgetParams::GUIDE_SELECT_THREE_POSITIONS: {
+            QIcon tmpIcon( ":/GMToolBar/gigamesh_icon_vertices_select_three_positions.svg" );
+            ui->labelGuide->setVisible( true );
+            ui->labelGuide->setPixmap( tmpIcon.pixmap( ui->labelGuide->size() ) );
+        } break;
 		// --- Plane  -----------------------------------------------------------------------------------------
 		case MeshWidgetParams::GUIDE_SELECT_PLANE_3FP_A:
 			ui->labelGuide->setVisible( true );

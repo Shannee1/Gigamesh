@@ -80,6 +80,8 @@
         <file>gigamesh_icon_feature_vector_min.svg</file>
         <file>gigamesh_icon_feature_vector_min_sign.svg</file>
         <file>gigamesh_icon_feature_vector_max_sign.svg</file>
+        <file>gigamesh_icon_vertices_deselect_multiple_polyline.svg</file>
+        <file>gigamesh_icon_vertices_select_three_positions.svg</file>
     </qresource>
     <qresource prefix="/GMToolTipImages">
         <file>tooltips/rendering_flat_smooth_egde_on.png</file>

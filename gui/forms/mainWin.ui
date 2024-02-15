@@ -161,8 +161,8 @@
     <addaction name="actionFileReload"/>
     <addaction name="actionFileSaveAs"/>
     <addaction name="actionSaveLabelsSeparated"/>
+    <addaction name="actionFileExportAsLegacy"/>
     <addaction name="actionSaveFlagBinary"/>
-    <addaction name="actionSaveFlagGMExtras"/>
     <addaction name="actionSaveFlagTextureExport"/>
     <addaction name="separator"/>
     <addaction name="menuImport"/>
@@ -723,12 +723,14 @@
     <addaction name="separator"/>
     <addaction name="actionSelMVertsGUIPinPoint"/>
     <addaction name="actionSelMVertsGUILasso"/>
+    <addaction name="actionDeSelMVertsGUILasso"/>
     <addaction name="separator"/>
     <addaction name="actionSelectVertexEnterIndex"/>
     <addaction name="actionSelectVertex"/>
     <addaction name="actionSelectFace"/>
     <addaction name="separator"/>
     <addaction name="actionSelectPositions"/>
+    <addaction name="actionSelectThreePositions"/>
     <addaction name="actionSelectPositionsDeselectAll"/>
     <addaction name="separator"/>
     <addaction name="actionSelectCone"/>
@@ -1127,7 +1129,9 @@
    <addaction name="actionSelectVertex"/>
    <addaction name="actionSelMVertsGUIPinPoint"/>
    <addaction name="actionSelectPositions"/>
+   <addaction name="actionSelectThreePositions"/>
    <addaction name="actionSelMVertsGUILasso"/>
+   <addaction name="actionDeSelMVertsGUILasso"/>
    <addaction name="actionSelectCone"/>
    <addaction name="actionSetConeAxisCentralPixel"/>
    <addaction name="separator"/>
@@ -1175,17 +1179,6 @@
    </property>
    <property name="text">
     <string>&amp;Binary</string>
-   </property>
-  </action>
-  <action name="actionSaveFlagGMExtras">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;GM Extras (Features, Labels, Flags)</string>
    </property>
   </action>
   <action name="actionImportVertexCoordinatesFromCSV">
@@ -4768,6 +4761,55 @@ The latter will be shown, when the processing has finished.</string>
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This method uses selected vertices (SelMVerts) to label the point cloud of the mesh into as many labels as there are selected vertices. The selection sets a preference for the central location of the classes. However, the algorithm is allowed to shift the location of the classes. This means that selections that are too close together may result in clusters in different locations than expected. Also note that highly curved surfaces can cause the labels to be disconnected as they are part of another area of the triangular grid, since only the positions of the vertices are used for clustering.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionDeSelMVertsGUILasso">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gigamesh.qrc">
+     <normaloff>:/GMToolBar/gigamesh_icon_vertices_deselect_multiple_polyline.svg</normaloff>:/GMToolBar/gigamesh_icon_vertices_deselect_multiple_polyline.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Vertices - DeselectMVerts - GUI - Lasso</string>
+   </property>
+   <property name="toolTip">
+    <string>Deselect multiple vertices with a lasso</string>
+   </property>
+  </action>
+  <action name="actionSelectThreePositions">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gigamesh.qrc">
+     <normaloff>:/GMToolBar/gigamesh_icon_vertices_select_three_positions.svg</normaloff>:/GMToolBar/gigamesh_icon_vertices_select_three_positions.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Positions - SelPrims - Select 3 </string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select 3 positions on the mesh i.e. points within triangles.&lt;/p&gt;&lt;p&gt;This selection mode automatically starts a new set of connected points after 3 pins.&lt;/p&gt;&lt;p&gt;These positions are used to calculate circle centers as part of the profile line calculation process.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionFileExportAsLegacy">
+   <property name="text">
+    <string>Export as Legacy</string>
+   </property>
+   <property name="toolTip">
+    <string>Export as Legacy (without Features, Labels and Flags)</string>
+   </property>
+  </action>
+  <action name="actionSaveFlagGMExtras">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;GM Extras (Features, Labels, Flags)</string>
    </property>
   </action>
  </widget>
