@@ -155,30 +155,30 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	QObject::connect( this, &MeshQt::sGuideIDCommon,    mMainWindow, &QGMMainWindow::sGuideIDCommon    );
 
 	// File menu -------------------------------------------------------------------------------------------------------------------------------------------
-	QObject::connect( mMainWindow, &QGMMainWindow::sFileImportFunctionValues, this, &MeshQt::importFunctionValues );
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportPolylines, this, &MeshQt::importPolylines );
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportTransMat, this, &MeshQt::importApplyTransMat );
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportLabels, this, &MeshQt::importLabels);
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportFunctionValues,      this, &MeshQt::importFunctionValues           );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportPolylines,           this, &MeshQt::importPolylines                );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportTransMat,            this, &MeshQt::importApplyTransMat            );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportLabels,              this, &MeshQt::importLabels                   );
 	// Old Qt Style connections:
-	QObject::connect( mMainWindow, SIGNAL(sFileImportFeatureVectors(QString)), this, SLOT(importFeatureVectors(QString)) );
-	QObject::connect( mMainWindow, SIGNAL(sExportFeatureVectors()), this, SLOT(exportFeatureVectors()) );
-	QObject::connect( mMainWindow, SIGNAL(sFileImportTexMap(QString)),         this, SLOT(importTexMapFromFile(QString)) );
-	QObject::connect( mMainWindow, SIGNAL(sFileImportNormals(QString)),        this, SLOT(importNormalVectorsFile(QString)) );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportFeatureVectors,      this, &MeshQt::importFeatureVectors           );
+    QObject::connect( mMainWindow, &QGMMainWindow::sExportFeatureVectors,          this, &MeshQt::exportFeatureVectors           );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportTexMap,              this, &MeshQt::importTexMapFromFile           );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportNormals,             this, &MeshQt::importNormalVectorsFile        );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagBinary(bool)),          this, SLOT(setFileSaveFlagBinary(bool))      );
-	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagExportTexture(bool)),this, SLOT(setFileSaveFlagExportTextures(bool)));
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileSaveFlagBinary,            this, &MeshQt::setFileSaveFlagBinary          );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileSaveFlagExportTexture,     this, &MeshQt::setFileSaveFlagExportTextures  );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(exportPolyLinesCoords()),          this, SLOT(exportPolyLinesCoords())          );
-	QObject::connect( mMainWindow, SIGNAL(exportPolyLinesCoordsProjected()), this, SLOT(exportPolyLinesCoordsProjected()) );
-	QObject::connect( mMainWindow, SIGNAL(exportPolyLinesFuncVals()),        this, SLOT(exportPolyLinesFuncVals())        );
+    QObject::connect( mMainWindow, &QGMMainWindow::exportPolyLinesCoords,          this, &MeshQt::exportPolyLinesCoords          );
+    QObject::connect( mMainWindow, &QGMMainWindow::exportPolyLinesCoordsProjected, this, &MeshQt::exportPolyLinesCoordsProjected );
+    QObject::connect( mMainWindow, &QGMMainWindow::exportPolyLinesFuncVals,        this, &MeshQt::exportPolyLinesFuncVals        );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(exportFuncVals()),                 this, SLOT(exportFuncVals())                 );
-	QObject::connect( mMainWindow, SIGNAL(exportFaceNormalAngles()),         this, SLOT(exportFaceNormalAngles())         );
+    QObject::connect( mMainWindow, &QGMMainWindow::exportFuncVals,                 this, &MeshQt::exportFuncVals                 );
+    QObject::connect( mMainWindow, SIGNAL(exportFaceNormalAngles()),               this, SLOT(exportFaceNormalAngles())          );
 
-	QObject::connect( mMainWindow, &QGMMainWindow::exportNormalSphereData, this , &MeshQt::exportNormalSphereData);
+    QObject::connect( mMainWindow, &QGMMainWindow::exportNormalSphereData,         this, &MeshQt::exportNormalSphereData         );
 	// Edit menu ----------------------------------------------------------------------------------------------------------
-	QObject::connect( mMainWindow, SIGNAL(removeVerticesSelected()),     this, SLOT(removeVerticesSelected()) );
-	QObject::connect( mMainWindow, SIGNAL(removeUncleanSmall()),         this, SLOT(removeUncleanSmallUser()) );
+    QObject::connect( mMainWindow, &QGMMainWindow::removeVerticesSelected,         this, &MeshQt::removeVerticesSelected         );
+    QObject::connect( mMainWindow, &QGMMainWindow::removeUncleanSmall,             this, &MeshQt::removeUncleanSmallUser         );
 	//.
 	QObject::connect( mMainWindow, SIGNAL(cutOffFeatureVertex()),        this, SLOT(cutOffFeatureVertex())    );
 	//.
@@ -285,7 +285,7 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	QObject::connect( mMainWindow, SIGNAL(estimateVolume()),                             this, SLOT(estimateVolume())                    );
 	QObject::connect( mMainWindow, SIGNAL(compVolumePlane()),                            this, SLOT(compVolumePlane())                   );
 
-	// --- Octree reöated ----------------------------------------------------------------------------------------------------------------------------------
+    // --- Octree related ----------------------------------------------------------------------------------------------------------------------------------
 	QObject::connect( mMainWindow, SIGNAL(generateOctree()),                     this, SLOT(generateOctree())                    );
 	QObject::connect( mMainWindow, SIGNAL(detectselfintersections()),            this, SLOT(detectselfintersections())           );
 	QObject::connect( mMainWindow, SIGNAL(drawOctree()),                         this, SLOT(drawOctree())                        );
@@ -295,7 +295,7 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	// #####################################################################################################################################################
 	// # FUNCTION VALUE
 	// #####################################################################################################################################################
-	// # Feature Vector reöated
+    // # Feature Vector related
 	QObject::connect( mMainWindow, SIGNAL(sFuncVertFeatLengthEuc()),              this, SLOT(visualizeFeatLengthEuc())               );
 	QObject::connect( mMainWindow, SIGNAL(sFuncVertFeatLengthMan()),              this, SLOT(visualizeFeatLengthMan())               );
 	QObject::connect( mMainWindow, SIGNAL(sFuncVertFeatBVFunc()),                 this, SLOT(visualizeFeatBVFunc())                  );
