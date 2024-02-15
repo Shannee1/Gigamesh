@@ -1,4 +1,4 @@
-#version 150
+#version 330
 uniform mat4 transformMat;
 
 // +++ Vertex buffers -- this corresponds to MeshGL::grVertexElmentBasic

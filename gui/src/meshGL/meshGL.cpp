@@ -942,7 +942,7 @@ bool MeshGL::runFunctionValueToRGBTransformation()
 	bool showRepeatColorMapValue = false;
 	bool invertFunctionValueColorValue = false;
 
-	const QImage colorMapImage(":/GMShaders/funcvalmapsquare.png");
+    const QImage colorMapImage(":/GMShaders/funcvalmapsquare.png");
 
 	double functionValueMin = 0.0;
 	double functionValueMax = 0.0;

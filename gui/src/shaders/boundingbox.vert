@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 // +++ Vertex buffers
 in vec3 position;

@@ -370,12 +370,12 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 
 	// --- Check external Tools i.e. Inkscape and convert/ImageMagick --------------------------------------------------------------------------------------
 	auto inkscapePath = settings.value("Inkscape_Path", "").toString();
-	if(inkscapePath.length() == 0)
-	    inkscapePath = "inkscape";
+    if(inkscapePath.length() == 0)
+        inkscapePath = "inkscape";
 	bool checkInkscapeFailed = false;
 	QProcess testRunInkscape;
 	testRunInkscape.start( inkscapePath + " --version" );
-	if( !testRunInkscape.waitForFinished() ) {
+    if( !testRunInkscape.waitForFinished() ) {
 		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had a timeout!" << endl;
 		checkInkscapeFailed = true;
 	}

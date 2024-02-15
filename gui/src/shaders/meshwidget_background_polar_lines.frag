@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 uniform float uAngleRotateRaster = 0.00; // Rotation for all lines
 // Line properties:

@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 // Circle properties:
 uniform float uGridSpace1 =  1.0;        // Spacing of polar circles (No.   I)

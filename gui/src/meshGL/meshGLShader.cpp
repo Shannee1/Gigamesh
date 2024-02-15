@@ -1739,7 +1739,9 @@ void MeshGLShader::vboPaintFacesIndexed() {
 	}
 
 	const auto mShaderDatumObjects = mShaderManager->getShader(ShaderManager::ShaderName::FUNC_VAL_COLOR);
-	if(mShaderDatumObjects != nullptr)
+    if(mShaderDatumObjects == nullptr) {
+        cerr << "[MeshGLShader::" << __FUNCTION__ << "] ERROR: Shader object is nullptr!" << endl;
+    }
 
 	// prepare, when needed
 	vboPrepareVerticesStriped();

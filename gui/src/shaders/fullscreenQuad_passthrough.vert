@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 //uniform float uScaleX   = 1.0;    // Scale for x-axis -- typically mm/pixel.
 //uniform float uScaleY   = 1.0;    // Scale for y-axis -- should always be the same value as uScaleX.

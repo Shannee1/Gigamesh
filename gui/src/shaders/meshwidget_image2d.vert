@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 uniform float uDepthPos = 0.0;    // Offset for the default range for the frustum z: +1.0-Epsilon (Far) to -1.0 (Near)
 

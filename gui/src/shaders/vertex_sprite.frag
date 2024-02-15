@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 // Backfaces -- GL_CULL_* has no effect for sprites!
 // Therefore gl_FrontFacing has no effect.

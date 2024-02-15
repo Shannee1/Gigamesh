@@ -5,11 +5,12 @@ set(OpenGL_GL_PREFERENCE GLVND)
 #list(APPEND CMAKE_PREFIX_PATH "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake/Qt6HostInfo")
 #set(QT_HOST_PATH "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake/Qt6HostInfo")
 #set(Qt6ShaderTools_DIR "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake")
-set(CMAKE_PREFIX_PATH "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake")
+#set(CMAKE_PREFIX_PATH "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake")
+
+set(Qt6_DIR "/home/jp/Qt/6.6.1/gcc_64/lib/cmake/Qt6")
 
 find_package(OpenGL REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets ShaderTools OpenGLWidgets Gui OpenGL Network)
-#find_package(Qt6 REQUIRED COMPONENTS ShaderTools PATHS /home/jp/Qt/6.5.2/Src/shadertools )
+find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui OpenGL Network ShaderTools) #ShaderTools
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -93,62 +94,93 @@ set(GUI_UI_FILES
         forms/QGMDialogMatrix.ui
 )
 
+set(SHADER_FILES
+    shaders/boundingbox.frag
+    shaders/boundingbox.vert
+    shaders/cone.frag
+    shaders/cone.geom
+    shaders/cone.vert
+    shaders/depth.frag
+    shaders/depth.vert
+    shaders/frontal_light_per_vertex.frag
+    shaders/frontal_light_per_vertex.vert
+    shaders/fullscreenQuad_passthrough.vert
+    shaders/funcval.frag
+    shaders/funcval.geom
+    shaders/funcval.vert
+    shaders/meshwidget_background_grid.frag
+    shaders/meshwidget_background_grid.vert
+    shaders/meshwidget_background_highlight_center.frag
+    shaders/meshwidget_background_highlight_center.vert
+    shaders/meshwidget_background_polar_circles.frag
+    shaders/meshwidget_background_polar_circles.vert
+    shaders/meshwidget_background_polar_lines.frag
+    shaders/meshwidget_background_polar_lines.vert
+    shaders/meshwidget_image2d.frag
+    shaders/meshwidget_image2d.vert
+    shaders/polyline.geom
+    shaders/vertex_pin.frag
+    shaders/vertex_pin.vert
+    shaders/vertex_sprite.frag
+    shaders/vertex_sprite.geom
+    shaders/vertex_sprite.vert
+    shaders/transparency/ABuffer/transparency_clearABuffers.frag
+    shaders/transparency/ABuffer/transparency_createABuffers.frag
+    shaders/transparency/ABuffer/transparency_minGeom.frag
+    shaders/transparency/ABuffer/transparency_minGeom.vert
+    shaders/transparency/ABuffer/transparency_renderABuffers.frag
+    shaders/transparency/atomicLoop/transparency_ALcollectDepth.frag
+    shaders/transparency/atomicLoop/transparency_clearALBuffers.frag
+    shaders/transparency/atomicLoop/transparency_createALBuffers.frag
+    shaders/transparency/atomicLoop/transparency_renderALBuffers.frag
+    shaders/transparency/WeightedOIT/transparency_blendWOIT.frag
+    shaders/transparency/WeightedOIT/transparency_geomWOIT.frag
+    shaders/wireframe/wireframe.frag
+    shaders/wireframe/wireframe.geom
+    shaders/wireframe/wireframe.vert
+    shaders/textureMesh/texturemesh.frag
+    shaders/textureMesh/texturemesh.vert
+    shaders/pointcloud/pointcloud.frag
+    shaders/pointcloud/pointcloud.geom
+    shaders/NPR/NPR_ApplySobel.frag
+    shaders/NPR/NPR_buildFBO.frag
+    shaders/NPR/NPR_buildFBO.vert
+    shaders/NPR/NPR_composit.frag
+    shaders/NPR/NPR_drawFBO.frag
+    shaders/NPR/NPR_gaussianblur.frag
+    shaders/NPR/NPR_hatches.frag
+    shaders/NPR/NPR_toonify.frag
+    shaders/normalSphere/IcoshphereShader.vert
+    shaders/normalSphere/IcosphereShader.frag
+    shaders/lightingOverlay/overlayLighting_fbopass.frag
+    shaders/lightingOverlay/overlayLighting_geometrypass.frag
+    shaders/lightingOverlay/overlayLighting_geometrypass.vert
+    shaders/funcval/funcVal.frag
+    shaders/funcval/label.frag
+    shaders/funcval/vertexColor.frag
+)
+
+qt6_add_shaders(SHADER_RESOURCES 
+    # "shaders"
+    # BATCHABLE
+    # PRECOMPILE
+    # OPTIMIZED
+    # PREFIX
+    # ""
+    FILES
+    ${SHADER_FILES}
+)
+
 #NOTE: instead of adding translations via resources, the ts-files can also be build by
 #      qt6_create_translation and then be added
 qt6_add_resources(GUI_RESOURCES "forms/gigamesh.qrc"
                                 "src/shaders/shaders.qrc"
+                                 # ${SHADER_RESOURCES}
                                 "languages/translations.qrc"
                                 "latex_report_template/latex_templates.qrc"
                                 "python-scripts/pythonscripts.qrc"
 )
-#[===[
-qt6_add_shaders(GUI_RESOURCES "porting_shaders"
-    PREFIX
-        "/shaders"
-    FILES
-        "shaders/boundingbox.frag"
-        "shaders/boundingbox.vert"
-        "shaders/cone.frag"
-        "shaders/cone.geom"
-        "shaders/cone.vert"
-        "shaders/depth.frag"
-        "shaders/depth.vert"
-        "shaders/frontal_light_per_vertex.frag"
-        "shaders/frontal_light_per_vertex.vert"
-        "shaders/fullscreebQuad_passthrough.vert"
-        "shaders/funcval.frag"
-        "shaders/funcval.geom"
-        "shaders/funcval.vert"
-        "shaders/meshwidget_background_grid.frag"
-        "shaders/meshwidget_background_grid.vert"
-        "shaders/meshwidget_background_highlight_center.frag"
-        "shaders/meshwidget_background_highlight_center.vert"
-        "shaders/meshwidget_background_polar_circles.frag"
-        "shaders/meshwidget_background_polar_circles.vert"
-        "shaders/meshwidget_background_polar_lines.frag"
-        "shaders/meshwidget_background_polar_lines.vert"
-        "shaders/meshwidget_image2d.frag"
-        "shaders/meshwidget_image2d.vert"
-        "shaders/polyline.geom"
-        "shaders/"
-        "shaders/vertex_pin.frag"
-        "shaders/vertex_pin.vert"
-        "shaders/vertex_sprite.frag"
-        "shaders/vertex_sprite.geom"
-        "shaders/vertex_sprite.vert"
-        "shaders/transparency/ABuffer/transparency_clearABuffers.frag"
-        "shaders/transparency/ABuffer/transparency_createABuffers.frag"
-        "shaders/transparency/ABuffer/transparency_minGeom.frag"
-        "shaders/transparency/ABuffer/transparency_minGeom.vert"
-        "shaders/transparency/ABuffer/transparency_renderABuffers.frag"
-        "shaders/transparency/atomicLoop/transparency_ALcollectDepth.frag"
-        "shaders/transparency/atomicLoop/transparency_clearALBuffers.frag"
-        "shaders/transparency/atomicLoop/transparency_createALBuffers.frag"
-        "shaders/transparency/atomicLoop/transparency_renderALBuffers.frag"
-        "shaders/transparency/WeightedOIT/transparency_blendWOIT.frag"
-        "shaders/transparency/WeightedOIT/transparency_geomWOIT.frag"
-)
-]===]
+
 
 #set here the paths of the ui-files, so autouic can find them
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/forms
@@ -156,13 +188,11 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/forms
 
 add_executable(gigamesh ${GUI_SOURCES} ${GUI_RESOURCES} ${GUI_UI_FILES})
 
+
 if(APPLE)
     set_target_properties(gigamesh PROPERTIES
         MACOSX_BUNDLE ON)
 endif()
-
-add_definitions(${Qt6Widgets_DEFINITIONS})
-target_include_directories(gigamesh PRIVATE ${Qt6Widgets_INCLUDES})
 
 add_definitions(${Qt6OpenGL_DEFINITIONS})
 target_include_directories(gigamesh PRIVATE ${Qt6OpenGL_INCLUDES})
@@ -178,7 +208,7 @@ target_include_directories(gigamesh PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 #needed, if ui-header files need references to custom classes (e.g. NormalSphereSelectionRenderWidget.h)
 target_include_directories(gigamesh PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(gigamesh PRIVATE ${Qt6Widgets_LIBRARIES} ${Qt6OpenGL_LIBRARIES} ${Qt6Gui_LIBRARIES} ${Qt6Network_LIBRARIES} Qt6::Core Qt6::OpenGLWidgets psalm OpenGL::GL gigameshCore triangle)
+target_link_libraries(gigamesh PRIVATE ${Qt6OpenGL_LIBRARIES} ${Qt6Gui_LIBRARIES} ${Qt6Network_LIBRARIES} Qt6::Core Qt6::OpenGLWidgets psalm OpenGL::GL gigameshCore triangle)
 
 #extras for static linking using the MXE mingw static build (set this via "export MINGW_CI_BUILD=True" on the command line)
 if(MINGW_CI_BUILD)
