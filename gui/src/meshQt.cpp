@@ -1599,6 +1599,13 @@ bool MeshQt::downscaleTexture()
         return false;
     }
     else{
+        // Ask for vertex normals
+        bool continueDownscaling = true;
+        bool userCancel = false;
+        SHOW_QUESTION( tr("Continue"), tr("This function overwrites the current texture. Do you want to continue?"), continueDownscaling, userCancel );
+        if( userCancel || !continueDownscaling) {
+            return false;
+        }
         QString texturePath = QString::fromStdString(std::filesystem::relative(textures[0]).string());
         QImage textureImg(texturePath);
         int width = textureImg.width();
