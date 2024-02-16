@@ -2,11 +2,11 @@
 //#extension GL_ARB_shader_bit_encoding : enable
 
 // +++ Homogenous matrices for camera orientation and projection:
-uniform highp mat4 modelview;
-uniform highp mat4 projection;
+uniform mat4 modelview; // highp not supported anymore: https://www.basyskom.de/2021/qt6-how-to-port-shadereffects/
+uniform mat4 projection;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 // This matrix and the following parameters are used to scale, rotate and position unit objects, like box, sphere and cone/cylinder.
-uniform highp mat4 uModelViewExtra = mat4( 1.0, 0.0, 0.0, 0.0,
+uniform mat4 uModelViewExtra = mat4( 1.0, 0.0, 0.0, 0.0,
                                            0.0, 1.0, 0.0, 0.0,
                                            0.0, 0.0, 1.0, 0.0,
                                            0.0, 0.0, 0.0, 1.0
@@ -64,7 +64,7 @@ uniform float uFaceShiftViewZ = 0.0; // offset in view coordinates to prevent z-
 
 void main(void) {
 	// Modifications for primitives in unit size (1x1x1) such as cylinder and sphere for similar use as in gluCylinder etc.
-	highp mat4  modelViewMat  = modelview * uModelViewExtra;
+              mat4  modelViewMat  = modelview * uModelViewExtra;
 	      float scaleRadial   = uScaleRadialBottom * ( 0.5 - position.z ) + uScaleRadialTop * ( 0.5 + position.z );
 	      vec3  modelPosition = vec3( position.x*scaleRadial, position.y*scaleRadial, position.z * uScaleHeight );
 

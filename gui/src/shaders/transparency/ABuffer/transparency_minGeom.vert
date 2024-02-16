@@ -2,10 +2,10 @@
 //#extension GL_ARB_shader_bit_encoding : enable
 
 // +++ Homogenous matrices for camera orientation and projection:
-uniform highp mat4 modelview;
-uniform highp mat4 projection;
+uniform mat4 modelview;
+uniform mat4 projection;
 
-uniform highp mat4 uModelViewExtra = mat4( 1.0, 0.0, 0.0, 0.0,
+uniform mat4 uModelViewExtra = mat4( 1.0, 0.0, 0.0, 0.0,
                                            0.0, 1.0, 0.0, 0.0,
                                            0.0, 0.0, 1.0, 0.0,
                                            0.0, 0.0, 0.0, 1.0
@@ -29,7 +29,7 @@ in float vFlags;   // this should be UINT, but thanks to fixed normalization thi
 
 void main(void)
 {
-    highp mat4  modelViewMat  = modelview * uModelViewExtra;
+          mat4  modelViewMat  = modelview * uModelViewExtra;
           float scaleRadial   = uScaleRadialBottom * ( 0.5 - position.z ) + uScaleRadialTop * ( 0.5 + position.z );
           vec3  modelPosition = vec3( position.x*scaleRadial, position.y*scaleRadial, position.z * uScaleHeight );
 

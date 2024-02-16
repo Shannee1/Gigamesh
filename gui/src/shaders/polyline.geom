@@ -6,8 +6,8 @@ layout (lines) in;
 layout (triangle_strip, max_vertices = 10) out; // 4 per line, 2*3 per vertex for the normals
 
 // +++ Homogenous matrices for camera orientation and projection:
-uniform highp mat4 modelview;
-uniform highp mat4 projection;
+uniform mat4 modelview;
+uniform mat4 projection;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 uniform float uLineWidth = 0.2;

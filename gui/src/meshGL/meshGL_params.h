@@ -217,7 +217,7 @@ class MeshGLParams {
 			MGLINFO_SELECTED_POSITIONS  //!< Number of positions selected (SelMPrims.
 		};
 
-		// ENumerator for methods/functions to be called from else-where.
+        // Enumerator for methods/functions to be called from else-where.
 		enum eFunctionCall {
 			IMPORT_COORDINATES_OF_VERTICES,   //!< Import new coordinates for all vertices and update mesh
 			RUN_TPS_RPM_TRANSFORMATION,       //!< Run TPS-RPM transformation

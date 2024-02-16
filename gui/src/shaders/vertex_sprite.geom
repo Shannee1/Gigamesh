@@ -6,8 +6,8 @@ layout (points) in;
 layout (triangle_strip, max_vertices = 3) out;
 
 // +++ Homogenous matrices for camera orientation and projection:
-uniform highp mat4 modelview;
-uniform highp mat4 projection;
+uniform mat4 modelview;
+uniform mat4 projection;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 uniform bool  uFaceNormals  = false;

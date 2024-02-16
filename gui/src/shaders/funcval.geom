@@ -6,8 +6,8 @@ layout (triangles) in;
 layout (triangle_strip, max_vertices = 12) out; // 3 for the face itselt. +3 for normal. +2x3 for light directions.
 
 // +++ Homogenous matrices for camera orientation and projection: ----------------------------------------------------------------------------------------------
-uniform highp mat4 modelview;
-uniform highp mat4 projection;
+uniform mat4 modelview;
+uniform mat4 projection;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // +++ Direction of the light fixed in relation to the camera: -------------------------------------------------------------------------------------------------

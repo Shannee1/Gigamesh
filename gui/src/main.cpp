@@ -139,6 +139,11 @@ int main( int argc, char *argv[] ) {
     //	SHOW_MSGBOX_WARN( "No OpenGL", "ERROR: This system has no OpenGL support!" );
     //	exit( EXIT_FAILURE );
     //}
+    /*if (!QOpenGLContext::supportsOpenGL()) {
+        LOG::fatal() << "[Main] ERROR: This system has no OpenGL support!\n";
+        SHOW_MSGBOX_WARN( "No OpenGL", "ERROR: This system has no OpenGL support!" );
+        exit( EXIT_FAILURE );
+    }*/
 
 	// Specify an OpenGL 3.2 format using the Core profile.
 	// That is, no old-school fixed pipeline functionality
@@ -156,11 +161,14 @@ int main( int argc, char *argv[] ) {
     //    exit( EXIT_FAILURE );
     //}
 
+
     glFormat.setProfile( QSurfaceFormat::CoreProfile ); // Do not even think to change the Profile to CompatibilityProfile !!!
     //! \todo set sample number (no idea what to choose though) Function for QSurfaceFormat is .smaples(int) and takes number of samples per pixel for multisampling
     //glFormat.setSampleBuffers( true );
     //! \todo check if number makes sense:
-    glFormat.setSamples(4);
+    //glFormat.setSamples(2);
+
+    QSurfaceFormat::setDefaultFormat(glFormat); // Set the default format for the application
 
     // The main window:
     QGMMainWindow mainWindow;

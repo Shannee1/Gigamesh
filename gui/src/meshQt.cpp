@@ -142,10 +142,12 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
     // ATTENTION: New Signal-Slot-Concept since Qt5 !!!
 	// See: https://wiki.qt.io/New_Signal_Slot_Syntax
 	// --------------------------------------------------------------------------------------------------------------------
-	// Overloading Slots and Signals is now a bad idea!
+    // Overloading Slots and Signals is now a bad idea! UPDATE: Can be done, but syntax is more ugly
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//! \todo Source revision for the following connections: Adapt to Qt5 signal-slot concept!
 	//! \todo Adapt to function calls using MeshParams / MeshGLParams as seen above!
+    //! UPDATE: Changed some of the below to new signal slots
+    //! AutomaticMeshAlignment has a default argument -> need different syntax for new signal slots
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	// SIDEBAR --- Information -----------------------------------------------------------------------------------------------------------------------------
@@ -155,122 +157,122 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	QObject::connect( this, &MeshQt::sGuideIDCommon,    mMainWindow, &QGMMainWindow::sGuideIDCommon    );
 
 	// File menu -------------------------------------------------------------------------------------------------------------------------------------------
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportFunctionValues,      this, &MeshQt::importFunctionValues           );
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportPolylines,           this, &MeshQt::importPolylines                );
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportTransMat,            this, &MeshQt::importApplyTransMat            );
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportLabels,              this, &MeshQt::importLabels                   );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportFunctionValues,     this, &MeshQt::importFunctionValues            );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportPolylines,          this, &MeshQt::importPolylines                 );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportTransMat,           this, &MeshQt::importApplyTransMat             );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportLabels,             this, &MeshQt::importLabels                    );
 	// Old Qt Style connections:
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportFeatureVectors,      this, &MeshQt::importFeatureVectors           );
-    QObject::connect( mMainWindow, &QGMMainWindow::sExportFeatureVectors,          this, &MeshQt::exportFeatureVectors           );
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportTexMap,              this, &MeshQt::importTexMapFromFile           );
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportNormals,             this, &MeshQt::importNormalVectorsFile        );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportFeatureVectors,     this, &MeshQt::importFeatureVectors            );
+    QObject::connect( mMainWindow, &QGMMainWindow::sExportFeatureVectors,         this, &MeshQt::exportFeatureVectors            );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportTexMap,             this, &MeshQt::importTexMapFromFile            );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileImportNormals,            this, &MeshQt::importNormalVectorsFile         );
 	//.
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileSaveFlagBinary,            this, &MeshQt::setFileSaveFlagBinary          );
-    QObject::connect( mMainWindow, &QGMMainWindow::sFileSaveFlagExportTexture,     this, &MeshQt::setFileSaveFlagExportTextures  );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileSaveFlagBinary,           this, &MeshQt::setFileSaveFlagBinary           );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFileSaveFlagExportTexture,    this, &MeshQt::setFileSaveFlagExportTextures   );
 	//.
-    QObject::connect( mMainWindow, &QGMMainWindow::exportPolyLinesCoords,          this, &MeshQt::exportPolyLinesCoords          );
-    QObject::connect( mMainWindow, &QGMMainWindow::exportPolyLinesCoordsProjected, this, &MeshQt::exportPolyLinesCoordsProjected );
-    QObject::connect( mMainWindow, &QGMMainWindow::exportPolyLinesFuncVals,        this, &MeshQt::exportPolyLinesFuncVals        );
+    QObject::connect( mMainWindow, &QGMMainWindow::exportPolyLinesCoords,         this, &MeshQt::exportPolyLinesCoords           );
+    QObject::connect( mMainWindow, &QGMMainWindow::exportPolyLinesCoordsProjected,this, &MeshQt::exportPolyLinesCoordsProjected  );
+    QObject::connect( mMainWindow, &QGMMainWindow::exportPolyLinesFuncVals,       this, &MeshQt::exportPolyLinesFuncVals         );
 	//.
-    QObject::connect( mMainWindow, &QGMMainWindow::exportFuncVals,                 this, &MeshQt::exportFuncVals                 );
-    QObject::connect( mMainWindow, SIGNAL(exportFaceNormalAngles()),               this, SLOT(exportFaceNormalAngles())          );
+    QObject::connect( mMainWindow, &QGMMainWindow::exportFuncVals,                this, &MeshQt::exportFuncVals                  );
+    QObject::connect( mMainWindow, &QGMMainWindow::exportFaceNormalAngles,        this, qOverload<>(&MeshQt::exportFaceNormalAngles));
 
-    QObject::connect( mMainWindow, &QGMMainWindow::exportNormalSphereData,         this, &MeshQt::exportNormalSphereData         );
+    QObject::connect( mMainWindow, &QGMMainWindow::exportNormalSphereData,        this, &MeshQt::exportNormalSphereData          );
 	// Edit menu ----------------------------------------------------------------------------------------------------------
-    QObject::connect( mMainWindow, &QGMMainWindow::removeVerticesSelected,         this, &MeshQt::removeVerticesSelected         );
-    QObject::connect( mMainWindow, &QGMMainWindow::removeUncleanSmall,             this, &MeshQt::removeUncleanSmallUser         );
+    QObject::connect( mMainWindow, &QGMMainWindow::removeVerticesSelected,        this, &MeshQt::removeVerticesSelected          );
+    QObject::connect( mMainWindow, &QGMMainWindow::removeUncleanSmall,            this, &MeshQt::removeUncleanSmallUser          );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(cutOffFeatureVertex()),        this, SLOT(cutOffFeatureVertex())    );
+    QObject::connect( mMainWindow, &QGMMainWindow::cutOffFeatureVertex,           this, qOverload<>(&MeshQt::cutOffFeatureVertex));
 	//.
-	QObject::connect( mMainWindow, SIGNAL(funcValSet()),                 this, SLOT(funcValSet())             );
-	QObject::connect( mMainWindow, SIGNAL(funcValueCutOff()),            this, SLOT(funcValueCutOff())        );
-	QObject::connect( mMainWindow, SIGNAL(funcValsNormalize()),          this, SLOT(funcValsNormalize())      );
-	QObject::connect( mMainWindow, SIGNAL(funcValsAbs()),                this, SLOT(funcValsAbs())            );
-	QObject::connect( mMainWindow, SIGNAL(funcValsAdd()),                this, SLOT(funcValsAdd())            );
-	QObject::connect( mMainWindow, SIGNAL(sFuncValToFeatureVector()),    this, SLOT(funcValsToFeatureVector()));
+    QObject::connect( mMainWindow, &QGMMainWindow::funcValSet,                    this, qOverload<>(&MeshQt::funcValSet)         );
+    QObject::connect( mMainWindow, &QGMMainWindow::funcValueCutOff,               this, qOverload<>(&MeshQt::funcValueCutOff)    );
+    QObject::connect( mMainWindow, &QGMMainWindow::funcValsNormalize,             this, &MeshQt::funcValsNormalize               );
+    QObject::connect( mMainWindow, &QGMMainWindow::funcValsAbs,                   this, &MeshQt::funcValsAbs                     );
+    QObject::connect( mMainWindow, &QGMMainWindow::funcValsAdd,                   this, qOverload<>(&MeshQt::funcValsAdd)        );
+    QObject::connect( mMainWindow, &QGMMainWindow::sFuncValToFeatureVector,       this, &MeshQt::funcValsToFeatureVector         );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(setConeData()),                this, SLOT(setConeData()));
-	QObject::connect( mMainWindow, SIGNAL(centerAroundCone()),           this, SLOT(centerAroundCone()));
+    QObject::connect( mMainWindow, &QGMMainWindow::setConeData,                   this, &MeshQt::setConeData                     );
+    QObject::connect( mMainWindow, &QGMMainWindow::centerAroundCone,              this, &MeshQt::centerAroundCone                );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(sSplitByPlane()),              this, SLOT(splitByPlane()));
-	QObject::connect( mMainWindow, SIGNAL(sSplitByIsoValue()),           this, SLOT(splitByIsoValue()));
+    QObject::connect( mMainWindow, &QGMMainWindow::sSplitByPlane,                 this, qOverload<>(&MeshQt::splitByPlane)       );
+    QObject::connect( mMainWindow, &QGMMainWindow::sSplitByIsoValue,              this, &MeshQt::splitByIsoValue                 );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(centerAroundSphere()),         this, SLOT(centerAroundSphere()));
-	QObject::connect( mMainWindow, SIGNAL(unrollAroundSphere()),         this, SLOT(unrollAroundSphere()));
+    QObject::connect( mMainWindow, &QGMMainWindow::centerAroundSphere,            this, &MeshQt::centerAroundSphere              );
+    QObject::connect( mMainWindow, &QGMMainWindow::unrollAroundSphere,            this, &MeshQt::unrollAroundSphere              );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(sDatumAddSphere()),            this, SLOT(datumAddSphere())         );
+    QObject::connect( mMainWindow, &QGMMainWindow::sDatumAddSphere,               this, qOverload<>(&MeshQt::datumAddSphere)     );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(sApplyMeltingSphere()),        this, SLOT(applyMeltingSphere())     );
+    QObject::connect( mMainWindow, &QGMMainWindow::sApplyMeltingSphere,           this, &MeshQt::applyMeltingSphere              );
 	//.
-    QObject::connect( mMainWindow, SIGNAL(sAutomaticMeshAlignment()),    this, SLOT(applyAutomaticMeshAlignment())     );
+    QObject::connect( mMainWindow, SIGNAL(sAutomaticMeshAlignment()),              this, SLOT(applyAutomaticMeshAlignment())      );
 
     //.
 
 
 	// View menu -------------------------------------------------------------------------------------------------------------------------------------------
-	QObject::connect( mMainWindow, SIGNAL(polylinesCurvScale()),                         this, SLOT(polylinesCurvScale())               );
+    QObject::connect( mMainWindow, &QGMMainWindow::polylinesCurvScale,            this, &MeshQt::polylinesCurvScale               );
 
 	// De-Selection-- --------------------------------------------------------------------------------------------------------------------------------------
-	QObject::connect( mMainWindow, SIGNAL(sDeSelVertsAll()),                             this, SLOT(deSelMVertsAll())                   );
-	QObject::connect( mMainWindow, SIGNAL(sDeSelVertsNoLabel()),                         this, SLOT(deSelMVertsNoLabel())               );
+    QObject::connect( mMainWindow, &QGMMainWindow::sDeSelVertsAll,                this, &MeshQt::deSelMVertsAll                   );
+    QObject::connect( mMainWindow, &QGMMainWindow::sDeSelVertsNoLabel,            this, &MeshQt::deSelMVertsNoLabel               );
 	// Selection-- -----------------------------------------------------------------------------------------------------------------------------------------
-	QObject::connect( mMainWindow, SIGNAL(getPlaneVPos()),                               this, SLOT(getPlaneVPos())                     );
-	QObject::connect( mMainWindow, SIGNAL(getPlaneHNF()),                                this, SLOT(getPlaneHNF())                      );
-	QObject::connect( mMainWindow, SIGNAL(setPlaneVPos()),                               this, SLOT(setPlaneVPos())                     );
-	QObject::connect( mMainWindow, SIGNAL(setPlaneHNF()),                                this, SLOT(setPlaneHNF())                      );
+    QObject::connect( mMainWindow, &QGMMainWindow::getPlaneVPos,                  this, &MeshQt::getPlaneVPos                     );
+    QObject::connect( mMainWindow, &QGMMainWindow::getPlaneHNF,                   this, &MeshQt::getPlaneHNF                      );
+    QObject::connect( mMainWindow, &QGMMainWindow::setPlaneVPos,                  this, qOverload<>(&MeshQt::setPlaneVPos)        );
+    QObject::connect( mMainWindow, &QGMMainWindow::setPlaneHNF,                   this, qOverload<>(&MeshQt::setPlaneHNF)         );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(selectVertFuncLT()),                           this, SLOT(selectVertFuncValLowerThan())       );
-	QObject::connect( mMainWindow, SIGNAL(selectVertFuncGT()),                           this, SLOT(selectVertFuncValGreatThan())       );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertFuncLT,              this, &MeshQt::selectVertFuncValLowerThan       );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertFuncGT,              this, &MeshQt::selectVertFuncValGreatThan       );
     //.
-    QObject::connect( mMainWindow, SIGNAL(selectVertNonMax()),                           this, SLOT(selectVertNonMaximum())             );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertNonMax,              this, &MeshQt::selectVertNonMaximum             );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(selectVertLocalMin()),                         this, SLOT(selectVertLocalMin())               );
-	QObject::connect( mMainWindow, SIGNAL(selectVertLocalMax()),                         this, SLOT(selectVertLocalMax())               );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertLocalMin,            this, &MeshQt::selectVertLocalMin               );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertLocalMax,            this, &MeshQt::selectVertLocalMax               );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(selectVertSolo()),                             this, SLOT(selectVertSolo())                   );
-	QObject::connect( mMainWindow, SIGNAL(selectVertNonManifoldFaces()),                 this, SLOT(selectVertNonManifoldFaces())       );
-	QObject::connect( mMainWindow, SIGNAL(selectVertDoubleCone()),                       this, SLOT(selectVertDoubleCone())             );
-	QObject::connect( mMainWindow, SIGNAL(selectVertLabelAreaLT()),                      this, SLOT(selectVertLabelAreaLT())            );
-	QObject::connect( mMainWindow, SIGNAL(selectVertLabelAreaRelativeLT()),              this, SLOT(selectVertLabelAreaRelativeLT())    );
-	QObject::connect( mMainWindow, SIGNAL(selectVertBorder()),                           this, SLOT(selectVertBorder())                 );
-	QObject::connect( mMainWindow, SIGNAL(selectVertFaceMinAngleLT()),                   this, SLOT(selectVertFaceMinAngleLT())         );
-	QObject::connect( mMainWindow, SIGNAL(selectVertFaceMaxAngleGT()),                   this, SLOT(selectVertFaceMaxAngleGT())         );
-	QObject::connect( mMainWindow, SIGNAL(sSelVertLabeledNot()),                         this, SLOT(selVertLabeledNot())                );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertSolo,                this, &MeshQt::selectVertSolo                   );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertNonManifoldFaces,    this, &MeshQt::selectVertNonManifoldFaces       );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertDoubleCone,          this, &MeshQt::selectVertDoubleCone             );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertLabelAreaLT,         this, &MeshQt::selectVertLabelAreaLT            );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertLabelAreaRelativeLT, this, qOverload<>(&MeshQt::selectVertLabelAreaRelativeLT));
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertBorder,              this, &MeshQt::selectVertBorder                 );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertFaceMinAngleLT,      this, qOverload<>(&MeshQt::selectVertFaceMinAngleLT));
+    QObject::connect( mMainWindow, &QGMMainWindow::selectVertFaceMaxAngleGT,      this, qOverload<>(&MeshQt::selectVertFaceMaxAngleGT));
+    QObject::connect( mMainWindow, &QGMMainWindow::sSelVertLabeledNot,            this, &MeshQt::selVertLabeledNot                );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(selectFaceNone()),                             this, SLOT(selectFaceNone())                   );
-	QObject::connect( mMainWindow, SIGNAL(selectFaceSticky()),                           this, SLOT(selectFaceSticky())                 );
-	QObject::connect( mMainWindow, SIGNAL(selectFaceNonManifold()),                      this, SLOT(selectFaceNonManifold())            );
-	QObject::connect( mMainWindow, SIGNAL(selectFaceZeroArea()),                         this, SLOT(selectFaceZeroArea())               );
-	QObject::connect( mMainWindow, SIGNAL(selectFaceInSphere()),                         this, SLOT(selectFaceInSphere())               );
-	QObject::connect( mMainWindow, SIGNAL(selectFaceRandom()),                           this, SLOT(selectFaceRandom())                 );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectFaceNone,                this, &MeshQt::selectFaceNone                   );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectFaceSticky,              this, &MeshQt::selectFaceSticky                 );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectFaceNonManifold,         this, &MeshQt::selectFaceNonManifold            );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectFaceZeroArea,            this, &MeshQt::selectFaceZeroArea               );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectFaceInSphere,            this, qOverload<>(&MeshQt::selectFaceInSphere)  );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectFaceRandom,              this, qOverload<>(&MeshQt::selectFaceRandom)    );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(selectPolyNoLabel()),                          this, SLOT(selectPolyNoLabel())                );
-	QObject::connect( mMainWindow, SIGNAL(selectPolyNotLabeled()),                       this, SLOT(selectPolyNotLabeled())             );
-	QObject::connect( mMainWindow, SIGNAL(selectPolyRunLenGT()),                         this, SLOT(selectPolyRunLenGT())               );
-	QObject::connect( mMainWindow, SIGNAL(selectPolyRunLenLT()),                         this, SLOT(selectPolyRunLenLT())               );
-	QObject::connect( mMainWindow, SIGNAL(selectPolyLongest()),                          this, SLOT(selectPolyLongest())                );
-	QObject::connect( mMainWindow, SIGNAL(selectPolyShortest()),                         this, SLOT(selectPolyShortest())               );
-	QObject::connect( mMainWindow, SIGNAL(selectPolyLabelNo()),                          this, SLOT(selectPolyLabelNo())                );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectPolyNoLabel,             this, &MeshQt::selectPolyNoLabel                );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectPolyNotLabeled,          this, &MeshQt::selectPolyNotLabeled             );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectPolyRunLenGT,            this, qOverload<>(&MeshQt::selectPolyRunLenGT)  );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectPolyRunLenLT,            this, qOverload<>(&MeshQt::selectPolyRunLenLT)  );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectPolyLongest,             this, &MeshQt::selectPolyLongest                );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectPolyShortest,            this, &MeshQt::selectPolyShortest               );
+    QObject::connect( mMainWindow, &QGMMainWindow::selectPolyLabelNo,             this, qOverload<>(&MeshQt::selectPolyLabelNo)   );
 
 	// Analyze menu ----------------------------------------------------------------------------------------------------------------------
-	QObject::connect( mMainWindow, SIGNAL(labelFaces()),                                 this, SLOT(labelFaces())                        );
-	QObject::connect( mMainWindow, SIGNAL(labelSelectionToSeeds()),                      this, SLOT(labelSelectionToSeeds())             );
-	QObject::connect( mMainWindow, SIGNAL(labelVerticesEqualFV()),                       this, SLOT(labelVerticesEqualFV())              );
-    QObject::connect( mMainWindow, SIGNAL(labelVerticesEqualRGB()),                      this, SLOT(labelVerticesEqualRGB())             );
-	QObject::connect( mMainWindow, SIGNAL(sLabelSelMVertsToBack()),                      this, SLOT(labelSelMVertsToBack())              );
+    QObject::connect( mMainWindow, &QGMMainWindow::labelFaces,                        this, &MeshQt::labelFaces                        );
+    QObject::connect( mMainWindow, &QGMMainWindow::labelSelectionToSeeds,             this, &MeshQt::labelSelectionToSeeds             );
+    QObject::connect( mMainWindow, &QGMMainWindow::labelVerticesEqualFV,              this, &MeshQt::labelVerticesEqualFV              );
+    QObject::connect( mMainWindow, &QGMMainWindow::labelVerticesEqualRGB,             this, &MeshQt::labelVerticesEqualRGB             );
+    QObject::connect( mMainWindow, &QGMMainWindow::sLabelSelMVertsToBack,             this, &MeshQt::labelSelMVertsToBack              );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(convertSelectedVerticesToPolyline()),          this, SLOT(convertSelectedVerticesToPolyline()) );
-	QObject::connect( mMainWindow, SIGNAL(convertBordersToPolylines()),                  this, SLOT(convertBordersToPolylines())         );
-	QObject::connect( mMainWindow, SIGNAL(convertLabelBordersToPolylines()),             this, SLOT(convertLabelBordersToPolylines())    );
-    QObject::connect( mMainWindow, SIGNAL(createSkeletonLine()),                         this, SLOT(createSkeletonLine()) );
-	QObject::connect( mMainWindow, SIGNAL(advancePolyThres()),                           this, SLOT(advancePolyThres())                  );
-	QObject::connect( mMainWindow, SIGNAL(sPolylinesCompIntInvRunLen()),                 this, SLOT(compPolylinesIntInvRunLen())         );
-	QObject::connect( mMainWindow, SIGNAL(sPolylinesCompIntInvAngle()),                  this, SLOT(compPolylinesIntInvAngle())          );
-	QObject::connect( mMainWindow, SIGNAL(sPolylinesCompCurv()),                         this, SLOT(getPolylineExtrema())                );
-	QObject::connect( mMainWindow, SIGNAL(setLengthSmooth()),                            this, SLOT(setParaSmoothLength())               );
-	QObject::connect( mMainWindow, SIGNAL(sPolylinesCopyNormalToVertices()),             this, SLOT(setPolylinesNormalToVert())          );
+    QObject::connect( mMainWindow, &QGMMainWindow::convertSelectedVerticesToPolyline, this, &MeshQt::convertSelectedVerticesToPolyline );
+    QObject::connect( mMainWindow, &QGMMainWindow::convertBordersToPolylines,         this, &MeshQt::convertBordersToPolylines         );
+    QObject::connect( mMainWindow, &QGMMainWindow::convertLabelBordersToPolylines,    this, &MeshQt::convertLabelBordersToPolylines    );
+    QObject::connect( mMainWindow, &QGMMainWindow::createSkeletonLine,                this, &MeshQt::createSkeletonLine );
+    QObject::connect( mMainWindow, &QGMMainWindow::advancePolyThres,                  this, &MeshQt::advancePolyThres                  );
+    QObject::connect( mMainWindow, &QGMMainWindow::sPolylinesCompIntInvRunLen,        this, &MeshQt::compPolylinesIntInvRunLen         );
+    QObject::connect( mMainWindow, &QGMMainWindow::sPolylinesCompIntInvAngle,         this, &MeshQt::compPolylinesIntInvAngle          );
+    QObject::connect( mMainWindow, &QGMMainWindow::sPolylinesCompCurv,                this, &MeshQt::getPolylineExtrema                );
+    QObject::connect( mMainWindow, &QGMMainWindow::setLengthSmooth,                   this, &MeshQt::setParaSmoothLength               );
+    QObject::connect( mMainWindow, &QGMMainWindow::sPolylinesCopyNormalToVertices,    this, &MeshQt::setPolylinesNormalToVert          );
 	//.
-	QObject::connect( mMainWindow, SIGNAL(estimateMSIIFeat()),                           this, SLOT(estimateMSIIFeat())                  );
+    QObject::connect( mMainWindow, &QGMMainWindow::estimateMSIIFeat,                  this, qOverload<>(&MeshQt::estimateMSIIFeat)     );
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sGeodPatchVertSel()),                          this, SLOT(geodPatchVertSel())                  );
 	QObject::connect( mMainWindow, SIGNAL(sGeodPatchVertSelOrder()),                     this, SLOT(geodPatchVertSelOrder())             );
@@ -1620,12 +1622,8 @@ bool MeshQt::applyAutomaticMeshAlignment(bool askForFront)
         return false;
     }
 
-
     //Matrix4D transMat(transMatVec);
     applyTransformationToWholeMesh(pcaTransformationMatrix);
-
-
-
 
     //calculate the determinant of the rotation part inside the transformation matrix
     //if the determinant is negative then mirror the mesh

@@ -6,8 +6,8 @@ in vec3 vNormal;
 in vec4 vColor;
 
 // +++ Homogenous matrices for camera orientation and projection:
-uniform highp mat4 modelview;
-uniform highp mat4 projection;
+uniform mat4 modelview;
+uniform mat4 projection;
 
 // +++ Direction of the light fixed in relation to the camera:
 uniform vec3 LightDirectionFixedCam   = vec3( 0.0, 0.0, 1.0 );

@@ -76,7 +76,7 @@ class MeshParams {
 			HISTOGRAM_TYPE_COUNT                    //!< Number of available options for a mesh's histogram.
 		}; //! \todo: histogram for auto-correlation and polyline length
 
-		// ENumerator for methods/functions to be called from else-where.
+        // Enumerator for methods/functions to be called from else-where.
 		enum eFunctionCall {
 			FILE_SAVE_AS,                                 //!< Call writeFile related methods.
             EXPORT_AS_LEGACY,                             //!< Disable the export of Features, Flags and Labels in PLY. Then, call writeFile related methods.

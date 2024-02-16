@@ -6,8 +6,8 @@ layout (lines) in;
 layout (triangle_strip, max_vertices = 34) out; // 4 for the axis PLUS Segments -- max seems to be 34 for a GTX 470
 
 // +++ Homogenous matrices for camera orientation and projection:
-uniform highp mat4 modelview;
-uniform highp mat4 projection;
+uniform mat4 modelview;
+uniform mat4 projection;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 uniform float uAxisWidth = 0.5;

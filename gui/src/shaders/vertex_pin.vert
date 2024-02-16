@@ -1,8 +1,8 @@
 #version 330
 
 // +++ Homogenous matrices for camera orientation and projection:
-uniform highp mat4 modelview;
-uniform highp mat4 projection;
+uniform mat4 modelview;
+uniform mat4 projection;
 
 uniform float scaleFactor = 1.0;
 

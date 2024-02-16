@@ -359,12 +359,12 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	double daysSinceLastCheck = difftime( timeNow, timeLast ) / ( 24.0 * 3600.0 );
     //daysSinceLastCheck = 356.0; // for testing (1/2)
 	std::cout << "[QGMMainWindow::" << __FUNCTION__ << "] Last check " << daysSinceLastCheck << " days ago." << std::endl;
-	if( daysSinceLastCheck > 3.0 ) {
+    if( daysSinceLastCheck > 3.0 ) {
         mNetworkManagerVersion = new QNetworkAccessManager( this );
         QObject::connect( mNetworkManagerVersion, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpCheckVersion );
-		QNetworkRequest request;
+        QNetworkRequest request;
         request.setUrl( QUrl( "https://gigamesh.eu/api.php/currentversion/" ) );
-		request.setRawHeader( "User-Agent", QString( "GigaMesh/%1" ).arg( VERSION_PACKAGE ).toStdString().c_str() );
+        request.setRawHeader( "User-Agent", QString( "GigaMesh/%1" ).arg( VERSION_PACKAGE ).toStdString().c_str() );
         mNetworkManagerVersion->get( request );
 
         //send to google analytics
@@ -385,7 +385,7 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
         QByteArray body = bodyText.toUtf8();
         std::cout << bodyText.toStdString() << std::endl;
         mNetworkManagerAnalytics->post(analyticsRequest,body);
-	}
+    }
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
 #ifdef REQUIRE_CONVERT_IMAGEMAGICK_OPTION

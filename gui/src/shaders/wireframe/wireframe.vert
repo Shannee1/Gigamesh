@@ -2,8 +2,8 @@
 //#extension GL_ARB_shader_bit_encoding : enable
 
 // +++ Homogenous matrices for camera orientation and projection:
-uniform highp mat4 modelview;
-uniform highp mat4 projection;
+uniform mat4 modelview;
+uniform mat4 projection;
 
 // +++ Vertex buffers -- this corresponds to MeshGL::grVertexElmentBasic
 in vec3  position;
