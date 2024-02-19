@@ -438,10 +438,10 @@ bool GltfWriter::writeFile(const std::filesystem::path& rFilename, const std::ve
     timeStart = clock();
     filestr.open( rFilename, fstream::out );
     if( !filestr.is_open() ) {
-        LOG::error() << "[ObjWriter::" << __FUNCTION__ << "] ERROR: Could not open file: '" << rFilename << "'!" << '\n';
+        LOG::error() << "[GltfWriter::" << __FUNCTION__ << "] ERROR: Could not open file: '" << rFilename << "'!" << '\n';
         return false;
     } else {
-        LOG::debug() << "[ObjWriter::" << __FUNCTION__ << "] File open for writing: '" << rFilename << "'." << '\n';
+        LOG::debug() << "[GltfWriter::" << __FUNCTION__ << "] File open for writing: '" << rFilename << "'." << '\n';
     }
 
     //following https://github.khronos.org/glTF-Tutorials/gltfTutorial/gltfTutorial_003_MinimalGltfFile.html

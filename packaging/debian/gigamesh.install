@@ -6,5 +6,6 @@ gui/forms/gigamesh_logo_terminal.svg usr/share/pixmaps
 #meshBuild/gigamesh-featurevectors usr/bin
 #meshBuild/gigamesh-tolegacy usr/bin
 #meshBuild/gigamesh-borders usr/bin
+#meshBuild/gigamesh-togltf usr/bin
 debian/gigamesh.desktop usr/share/applications
 debian/gigamesh_term.desktop usr/share/applications
