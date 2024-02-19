@@ -1606,18 +1606,31 @@ bool MeshQt::downscaleTexture()
         if( userCancel || !continueDownscaling) {
             return false;
         }
-        QString texturePath = QString::fromStdString(std::filesystem::relative(textures[0]).string());
-        QImage textureImg(texturePath);
-        int width = textureImg.width();
-        int height = textureImg.height();
+
+        //Percentage of the texture that should be kept
+        //in double because the showSlider function needs it
+        double suggestPercent = 25;
+        // Show dialog
+        if( !showSlider(&suggestPercent,0,100,"How many percent of the texture do you want to keep?")) {
+            std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: bad input (1)!" << std::endl;
+            return( false );
+        }
+        if(suggestPercent > 100)suggestPercent=100;
         //the scaling factor defines how much the image is scaled down
-        double factor = 0.5;
-        int newWidth = round(factor*width);
-        int newHeight = round(factor*height);
-        QImage textureImgScaled = textureImg.scaled(newWidth, newHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        textureImgScaled.save(texturePath);
+        double factor = suggestPercent/100;
+        //change all textures that are assigned to the mesh
+        for(auto texture : textures){
+            QString texturePath = QString::fromStdString(std::filesystem::relative(texture).string());
+            QImage textureImg(texturePath);
+            int width = textureImg.width();
+            int height = textureImg.height();
+
+            int newWidth = round(factor*width);
+            int newHeight = round(factor*height);
+            QImage textureImgScaled = textureImg.scaled(newWidth, newHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            textureImgScaled.save(texturePath);
+        }
         //simulate the reload click
-        //mMainWindow->actionFileReload->trigger();
         emit sReloadFile();
         //set view to texture automatically
         //mMainWindow->sShowParamIntMeshGL(MeshGLParams::SHADER_CHOICE,5);
