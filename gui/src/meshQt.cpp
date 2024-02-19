@@ -166,7 +166,6 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	QObject::connect( mMainWindow, SIGNAL(sFileImportNormals(QString)),        this, SLOT(importNormalVectorsFile(QString)) );
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagBinary(bool)),          this, SLOT(setFileSaveFlagBinary(bool))      );
-	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagGMExtras(bool)),        this, SLOT(setFileSaveFlagGMExtras(bool))    );
 	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagExportTexture(bool)),this, SLOT(setFileSaveFlagExportTextures(bool)));
 	//.
 	QObject::connect( mMainWindow, SIGNAL(exportPolyLinesCoords()),          this, SLOT(exportPolyLinesCoords())          );
@@ -201,6 +200,8 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sDatumAddSphere()),            this, SLOT(datumAddSphere())         );
 	//.
+    QObject::connect( mMainWindow, SIGNAL(sDownscaleTexture()),          this, SLOT(downscaleTexture())         );
+    //.
 	QObject::connect( mMainWindow, SIGNAL(sApplyMeltingSphere()),        this, SLOT(applyMeltingSphere())     );
 	//.
     QObject::connect( mMainWindow, SIGNAL(sAutomaticMeshAlignment()),    this, SLOT(applyAutomaticMeshAlignment())     );
@@ -1584,7 +1585,59 @@ bool MeshQt::datumAddSphere( vector<double> rPosAndRadius ) {
 	}
 	Mesh::datumAddSphere( Vector3D( rPosAndRadius[0], rPosAndRadius[1], rPosAndRadius[2], 1.0 ), rPosAndRadius.at(3) );
 	emit updateGL();
-	return true;
+    return true;
+}
+//! Downscale the corresponding textures of the mesh
+//! Asks for the ration of downscaling
+//! Overwrites the original file
+bool MeshQt::downscaleTexture()
+{
+    ModelMetaData modelMetaData = MeshIO::getModelMetaDataRef();
+    std::vector<std::filesystem::path> textures = modelMetaData.getTexturefilesRef();
+    if(!(textures.size() > 0)){
+        cout << "[MeshQt::" << __FUNCTION__ << "] No texture for this mesh available!" << std::endl;
+        return false;
+    }
+    else{
+        // Ask for vertex normals
+        bool continueDownscaling = true;
+        bool userCancel = false;
+        SHOW_QUESTION( tr("Continue"), tr("This function overwrites the current texture. Do you want to continue?"), continueDownscaling, userCancel );
+        if( userCancel || !continueDownscaling) {
+            return false;
+        }
+
+        //Percentage of the texture that should be kept
+        //in double because the showSlider function needs it
+        double suggestPercent = 25;
+        // Show dialog
+        if( !showSlider(&suggestPercent,0,100,"How many percent of the texture do you want to keep?")) {
+            std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: bad input (1)!" << std::endl;
+            return( false );
+        }
+        if(suggestPercent > 100)suggestPercent=100;
+        //the scaling factor defines how much the image is scaled down
+        double factor = suggestPercent/100;
+        //change all textures that are assigned to the mesh
+        for(auto texture : textures){
+            QString texturePath = QString::fromStdString(std::filesystem::relative(texture).string());
+            QImage textureImg(texturePath);
+            int width = textureImg.width();
+            int height = textureImg.height();
+
+            int newWidth = round(factor*width);
+            int newHeight = round(factor*height);
+            QImage textureImgScaled = textureImg.scaled(newWidth, newHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            textureImgScaled.save(texturePath);
+        }
+        //simulate the reload click
+        emit sReloadFile();
+        //set view to texture automatically
+        //mMainWindow->sShowParamIntMeshGL(MeshGLParams::SHADER_CHOICE,5);
+
+    }
+
+    return true;
 }
 
 //! Enter radius and melting with sqrt(r^2-x^2-y^2).
@@ -4116,7 +4169,7 @@ bool MeshQt::editMetaData() {
 	}
 
 	//! .) Edit Model Unit.
-	/*
+
 	std::string modelUnit = getModelMetaDataRef().getModelMetaString( ModelMetaData::META_MODEL_UNIT );
 	std::string modelUnitLabel;
 	getModelMetaDataRef().getModelMetaStringLabel( ModelMetaData::META_MODEL_UNIT, modelUnitLabel );
@@ -4135,8 +4188,7 @@ bool MeshQt::editMetaData() {
 			return( false );
 		}
 		getModelMetaDataRef().setModelMetaString( ModelMetaData::META_MODEL_UNIT, newUnit.toStdString() );
-	}*/
-	getModelMetaDataRef().setModelMetaString( ModelMetaData::META_MODEL_UNIT, "mm" );
+    }
 
 	return( true );
 }
@@ -4636,7 +4688,15 @@ bool MeshQt::showInfoAxisHTML() {
 //=============================================================================
 
 //! Write 3D-data to file after asking the user for a filename.
-bool MeshQt::writeFileUserInteract() {
+bool MeshQt::writeFileUserInteract(const bool asLegacy) {
+
+    if (asLegacy){
+        //! Disable the export of Features, flags and labels for the legacy export
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_FLAGS, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_LABEL, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_FTVEC, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_POLYLINE,   false );
+    }
 	QSettings settings;
 
 	QString filePath    = QString( settings.value( "lastPath" ).toString() ); // or: getFileLocation().c_str()
@@ -4749,15 +4809,6 @@ bool MeshQt::writeFile( const filesystem::path& rFileName ) {
 //! Set the MeshIO::EXPORT_BINARY flag.
 bool MeshQt::setFileSaveFlagBinary( bool rSetTo ) {
 	return setFlagExport( MeshIO::EXPORT_BINARY, rSetTo );
-}
-
-//! Set the MeshIO::EXPORT_* flags to contain or discard GigaMesh specific extensions to 3D-files.
-bool MeshQt::setFileSaveFlagGMExtras( bool rSetTo ) {
-	setFlagExport( MeshIO::EXPORT_VERT_FLAGS, rSetTo );
-	setFlagExport( MeshIO::EXPORT_VERT_LABEL, rSetTo );
-	setFlagExport( MeshIO::EXPORT_VERT_FTVEC, rSetTo );
-	setFlagExport( MeshIO::EXPORT_POLYLINE,   rSetTo );
-	return rSetTo;
 }
 
 bool MeshQt::setFileSaveFlagExportTextures(bool setTo)

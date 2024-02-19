@@ -552,6 +552,9 @@ bool MeshWidget::setParamIntegerMeshWidget( MeshWidgetParams::eParamInt rParam, 
 				case MeshWidgetParams::SELECTION_MODE_POSITIONS:
 					emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_POSITIONS );
 				break;
+                case MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS:
+                    emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_THREE_POSITIONS );
+                break;
 				default:
 					// do nothing
 					cerr << "[MeshWidget::" << __FUNCTION__ << "] SELECTION_MODE unknown paramNr: " << rParam << " val: " << rValue << endl;
@@ -891,6 +894,7 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 	QObject::connect( mMeshVisual, &MeshQt::sDefaultViewLight,               this,        &MeshWidget::defaultViewLight         );
 	QObject::connect( mMeshVisual, &MeshQt::sDefaultViewLightZoom,           this,        &MeshWidget::defaultViewLightZoom     );
     QObject::connect( mMeshVisual, &MeshQt::sSetDefaultView,                 this,        &MeshWidget::currentViewToDefault    );
+    QObject::connect( mMeshVisual, &MeshQt::sReloadFile,                     this,        [this]{ reloadFile(false); });
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// cheks mesh for problems and fix them
@@ -948,21 +952,22 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 	cout << "[MeshWidget::" << __FUNCTION__ << "] Done." << endl;
 
 	emit loadedMeshIsTextured( mMeshVisual->getModelMetaDataRef().hasTextureCoordinates() && mMeshVisual->getModelMetaDataRef().hasTextureFiles() );
-
 	return( true );
 }
 
 //! Reloads the current file from disk.
-bool MeshWidget::reloadFile() {
+bool MeshWidget::reloadFile(const bool askQuestion) {
 	if( mMeshVisual == nullptr ) {
 		return false;
 	}
-	bool userReload;
-	bool userCancel;
-	SHOW_QUESTION( tr("Reload file"), tr("Do you really want to reload this file?"), userReload, userCancel );
-	if( ( userCancel ) || not( userReload ) ) {
-		return false;
-	}
+    if(askQuestion){
+        bool userReload;
+        bool userCancel;
+        SHOW_QUESTION( tr("Reload file"), tr("Do you really want to reload this file?"), userReload, userCancel );
+        if( ( userCancel ) || not( userReload ) ) {
+            return false;
+        }
+    }
 	auto fileName = mMeshVisual->getFullName();
     return fileOpen( QString::fromStdWString( fileName.wstring() ) );
 }
@@ -7326,6 +7331,17 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
 		case MeshWidgetParams::SELECTION_MODE_POSITIONS:
 			retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, false );
 			break;
+        case MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS:
+            if (mMeshVisual->isMoreThanNconSelPosition(1)){
+                //last point of the position set --> start automatically a new one
+                retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, true );
+            }
+            else{
+                //add point to the same set
+                retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, false );
+            }
+
+            break;
 		case MeshWidgetParams::SELECTION_MODE_CONE: {
 			retVal = mMeshVisual->selectConePoints( xPixel, yPixel );
 			break;
@@ -7380,6 +7396,10 @@ bool MeshWidget::userSelectAtMouseRight( const QPoint& rPoint ) {
 		case MeshWidgetParams::SELECTION_MODE_POSITIONS:
 			retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, true );
 			break;
+        case MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS:
+            // Nothing to do.
+            retVal = true;
+            break;
 		default:
 			std::cerr << "[MeshGL::" << __FUNCTION__ << "] invalid selection mode: " << selectionMode << "!" << std::endl;
 			retVal = false;

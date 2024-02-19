@@ -1,3 +1,11 @@
++) New: Edit->Downscale Texture(s) --> reduces the texture size
++) New: CLI: gigamesh-togltf --> Converts meshes to the gltf format
++) Changed: Deconstruction of checkbox 'File->GM Extras (Features,Labels, Flags). Export without GM Extras is now in the 'File->Export as Legacy' function. 
++) Improved: PLY Import supports the metadata 'Unit:'
++) Improved: GLTF export supports multiple textures
++) New: Selection mode: exactly 3 positions in a row
+
+Version 240115
 +) New: Multiple vertex deselection with a lasso 
 +) Improved: GLTF export now includes vertex color
 +) Changed: Suggested suffixes for mesh export as a drop-down list by type

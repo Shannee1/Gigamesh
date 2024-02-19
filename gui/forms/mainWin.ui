@@ -161,8 +161,8 @@
     <addaction name="actionFileReload"/>
     <addaction name="actionFileSaveAs"/>
     <addaction name="actionSaveLabelsSeparated"/>
+    <addaction name="actionFileExportAsLegacy"/>
     <addaction name="actionSaveFlagBinary"/>
-    <addaction name="actionSaveFlagGMExtras"/>
     <addaction name="actionSaveFlagTextureExport"/>
     <addaction name="separator"/>
     <addaction name="menuImport"/>
@@ -440,6 +440,8 @@
     <addaction name="menuFunctionsValueExtra"/>
     <addaction name="separator"/>
     <addaction name="actionTransformFunctionValuesToRGB"/>
+    <addaction name="separator"/>
+    <addaction name="actionDownscaleTexture"/>
     <addaction name="separator"/>
     <addaction name="actionMultiplyColorValuesWithFunctionValues"/>
     <addaction name="actionNormalizeFunctionValues"/>
@@ -730,6 +732,7 @@
     <addaction name="actionSelectFace"/>
     <addaction name="separator"/>
     <addaction name="actionSelectPositions"/>
+    <addaction name="actionSelectThreePositions"/>
     <addaction name="actionSelectPositionsDeselectAll"/>
     <addaction name="separator"/>
     <addaction name="actionSelectCone"/>
@@ -1128,6 +1131,7 @@
    <addaction name="actionSelectVertex"/>
    <addaction name="actionSelMVertsGUIPinPoint"/>
    <addaction name="actionSelectPositions"/>
+   <addaction name="actionSelectThreePositions"/>
    <addaction name="actionSelMVertsGUILasso"/>
    <addaction name="actionDeSelMVertsGUILasso"/>
    <addaction name="actionSelectCone"/>
@@ -1177,17 +1181,6 @@
    </property>
    <property name="text">
     <string>&amp;Binary</string>
-   </property>
-  </action>
-  <action name="actionSaveFlagGMExtras">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;GM Extras (Features, Labels, Flags)</string>
    </property>
   </action>
   <action name="actionImportVertexCoordinatesFromCSV">
@@ -4785,6 +4778,45 @@ The latter will be shown, when the processing has finished.</string>
    </property>
    <property name="toolTip">
     <string>Deselect multiple vertices with a lasso</string>
+   </property>
+  </action>
+  <action name="actionSelectThreePositions">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="gigamesh.qrc">
+     <normaloff>:/GMToolBar/gigamesh_icon_vertices_select_three_positions.svg</normaloff>:/GMToolBar/gigamesh_icon_vertices_select_three_positions.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Positions - SelPrims - Select 3 </string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select 3 positions on the mesh i.e. points within triangles.&lt;/p&gt;&lt;p&gt;This selection mode automatically starts a new set of connected points after 3 pins.&lt;/p&gt;&lt;p&gt;These positions are used to calculate circle centers as part of the profile line calculation process.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionFileExportAsLegacy">
+   <property name="text">
+    <string>Export as Legacy</string>
+   </property>
+   <property name="toolTip">
+    <string>Export as Legacy (without Features, Labels and Flags)</string>
+   </property>
+  </action>
+  <action name="actionSaveFlagGMExtras">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;GM Extras (Features, Labels, Flags)</string>
+   </property>
+  </action>
+  <action name="actionDownscaleTexture">
+   <property name="text">
+    <string>Downscale Texture(s)</string>
    </property>
   </action>
  </widget>

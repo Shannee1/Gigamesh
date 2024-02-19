@@ -395,7 +395,7 @@ bool MeshIO::setFlagExport( eExportFlags rFlag, bool rSetTo ) {
 //! Write a Mesh to a file using a filename given by the user.
 //!
 //! @returns false in case of an error. True otherwise.
-bool MeshIO::writeFileUserInteract() {
+bool MeshIO::writeFileUserInteract(const bool isLegacy) {
 	// STUB
 	LOG::error() << "[MeshIO::" << __FUNCTION__ << "] ERROR: Not impemented!\n";
 	return( false );

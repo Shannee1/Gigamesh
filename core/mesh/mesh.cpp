@@ -173,6 +173,7 @@ Mesh::Mesh( const std::filesystem::path& rFileName, bool& rReadSuccess )
 	std::vector<sVertexProperties> vertexProps;
 	std::vector<sFaceProperties> faceProps;
 	rReadSuccess = readFile( rFileName, vertexProps, faceProps );
+
     if(faceProps.size()>30000000){
         std::cout << "[Mesh::" << __FUNCTION__ << "] You are processing a large mesh." << std::endl;
         std::cout << "[Mesh::" << __FUNCTION__ << "] This can cause a crash." << std::endl;
@@ -321,6 +322,9 @@ bool Mesh::callFunction(
 		case FILE_SAVE_AS:
 			retVal = writeFileUserInteract();
 			break;
+        case EXPORT_AS_LEGACY:
+            retVal = writeFileUserInteract(true);
+            break;
 		case EXPORT_CONNECTED_COMPONENTS:
 			retVal = writeFilesForConnectedComponents();
 			break;

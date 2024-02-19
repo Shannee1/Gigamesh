@@ -95,7 +95,6 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	QObject::connect( actionFileReload,               SIGNAL(triggered()), this,       SIGNAL(sFileReload())             );
 	//.
 	QObject::connect( actionSaveFlagBinary,           SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagBinary(bool))   );
-	QObject::connect( actionSaveFlagGMExtras,         SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagGMExtras(bool)) );
 	QObject::connect( actionSaveFlagTextureExport,    SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagExportTexture(bool)) );
 	//.
 	QObject::connect( actionImportTexMap,             SIGNAL(triggered()), this,       SLOT(menuImportTexMap())          );
@@ -149,6 +148,8 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	QObject::connect( actionUnrollAroundSphere,     SIGNAL(triggered()), this,       SIGNAL(unrollAroundSphere()));
 	//.
 	QObject::connect( actionApplyMeltingSphere,     SIGNAL(triggered()), this,       SIGNAL(sApplyMeltingSphere())     );
+    //.
+    QObject::connect( actionDownscaleTexture,       SIGNAL(triggered()), this,       SIGNAL(sDownscaleTexture())     );
     //.
     QObject::connect( actionAutomatic_Mesh_Alignment,     SIGNAL(triggered()), this,       SIGNAL(sAutomaticMeshAlignment())     );
     QObject::connect( actionDirectoryAutomaticMeshAlignment,     SIGNAL(triggered()), this,       SIGNAL(sAutomaticMeshAlignmentDir())     );
@@ -524,6 +525,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	actionSelectCone->setActionGroup(      mGroupSelPrimitive );
 	actionSelectSphere->setActionGroup(    mGroupSelPrimitive );
 	actionSelectPositions->setActionGroup( mGroupSelPrimitive );
+    actionSelectThreePositions->setActionGroup( mGroupSelPrimitive );
 	mGroupSelPrimitive->setExclusive( true );
 
 	actionSelMVertsGUIPinPoint->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
@@ -536,6 +538,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	actionSelectCone->setProperty(      "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelectSphere->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelectPositions->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
+    actionSelectThreePositions->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 
 	actionSelMVertsGUIPinPoint->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTICES  );
 	actionSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO  );
@@ -547,6 +550,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	actionSelectCone->setProperty(      "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_CONE      );
 	actionSelectSphere->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_SPHERE    );
 	actionSelectPositions->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_POSITIONS );
+    actionSelectThreePositions->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS );
 
 	// Connect this exclusive group:
 	QObject::connect( mGroupSelPrimitive, SIGNAL(triggered(QAction*)), this, SLOT(setMeshWidgetParamInt(QAction*)) );
@@ -1025,6 +1029,7 @@ void QGMMainWindow::initMeshSignals() {
 	// === MeshGL/MeshQt - Function/Method CALL ============================================================================================================
 	// ... File load, save, import, export  ................................................................................................................
 	actionFileSaveAs->setProperty(                                "gmMeshFunctionCall", MeshParams::FILE_SAVE_AS                                 );
+    actionFileExportAsLegacy->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_AS_LEGACY                             );
 	actionSaveLabelsSeparated->setProperty(                       "gmMeshFunctionCall", MeshParams::EXPORT_CONNECTED_COMPONENTS                  );
 	actionExportMetaDataHTML->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_METADATA_HTML                         );
 	actionExportMetaDataJSON->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_METADATA_JSON                         );
