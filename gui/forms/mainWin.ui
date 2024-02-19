@@ -441,6 +441,8 @@
     <addaction name="separator"/>
     <addaction name="actionTransformFunctionValuesToRGB"/>
     <addaction name="separator"/>
+    <addaction name="actionDownscaleTexture"/>
+    <addaction name="separator"/>
     <addaction name="actionMultiplyColorValuesWithFunctionValues"/>
     <addaction name="actionNormalizeFunctionValues"/>
     <addaction name="separator"/>
@@ -4810,6 +4812,11 @@ The latter will be shown, when the processing has finished.</string>
    </property>
    <property name="text">
     <string>&amp;GM Extras (Features, Labels, Flags)</string>
+   </property>
+  </action>
+  <action name="actionDownscaleTexture">
+   <property name="text">
+    <string>Downscale Texture(s)</string>
    </property>
   </action>
  </widget>

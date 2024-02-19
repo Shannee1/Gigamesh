@@ -200,6 +200,8 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sDatumAddSphere()),            this, SLOT(datumAddSphere())         );
 	//.
+    QObject::connect( mMainWindow, SIGNAL(sDownscaleTexture()),          this, SLOT(downscaleTexture())         );
+    //.
 	QObject::connect( mMainWindow, SIGNAL(sApplyMeltingSphere()),        this, SLOT(applyMeltingSphere())     );
 	//.
     QObject::connect( mMainWindow, SIGNAL(sAutomaticMeshAlignment()),    this, SLOT(applyAutomaticMeshAlignment())     );
@@ -1583,7 +1585,59 @@ bool MeshQt::datumAddSphere( vector<double> rPosAndRadius ) {
 	}
 	Mesh::datumAddSphere( Vector3D( rPosAndRadius[0], rPosAndRadius[1], rPosAndRadius[2], 1.0 ), rPosAndRadius.at(3) );
 	emit updateGL();
-	return true;
+    return true;
+}
+//! Downscale the corresponding textures of the mesh
+//! Asks for the ration of downscaling
+//! Overwrites the original file
+bool MeshQt::downscaleTexture()
+{
+    ModelMetaData modelMetaData = MeshIO::getModelMetaDataRef();
+    std::vector<std::filesystem::path> textures = modelMetaData.getTexturefilesRef();
+    if(!(textures.size() > 0)){
+        cout << "[MeshQt::" << __FUNCTION__ << "] No texture for this mesh available!" << std::endl;
+        return false;
+    }
+    else{
+        // Ask for vertex normals
+        bool continueDownscaling = true;
+        bool userCancel = false;
+        SHOW_QUESTION( tr("Continue"), tr("This function overwrites the current texture. Do you want to continue?"), continueDownscaling, userCancel );
+        if( userCancel || !continueDownscaling) {
+            return false;
+        }
+
+        //Percentage of the texture that should be kept
+        //in double because the showSlider function needs it
+        double suggestPercent = 25;
+        // Show dialog
+        if( !showSlider(&suggestPercent,0,100,"How many percent of the texture do you want to keep?")) {
+            std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: bad input (1)!" << std::endl;
+            return( false );
+        }
+        if(suggestPercent > 100)suggestPercent=100;
+        //the scaling factor defines how much the image is scaled down
+        double factor = suggestPercent/100;
+        //change all textures that are assigned to the mesh
+        for(auto texture : textures){
+            QString texturePath = QString::fromStdString(std::filesystem::relative(texture).string());
+            QImage textureImg(texturePath);
+            int width = textureImg.width();
+            int height = textureImg.height();
+
+            int newWidth = round(factor*width);
+            int newHeight = round(factor*height);
+            QImage textureImgScaled = textureImg.scaled(newWidth, newHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            textureImgScaled.save(texturePath);
+        }
+        //simulate the reload click
+        emit sReloadFile();
+        //set view to texture automatically
+        //mMainWindow->sShowParamIntMeshGL(MeshGLParams::SHADER_CHOICE,5);
+
+    }
+
+    return true;
 }
 
 //! Enter radius and melting with sqrt(r^2-x^2-y^2).

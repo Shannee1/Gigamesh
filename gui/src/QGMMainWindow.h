@@ -225,6 +225,8 @@ signals:
 	void funcValsAdd();                                      //!< Add a constant value to the vertices function values.
 	//-
 	void transformFunctionValuesToRGB();
+    //-
+    void sDownscaleTexture();                                //!< triggers the downscaling options, rescale and overwrite the texture
 	//.
 	void setConeData();                                      //!< triggers showing the cone data dialog window
 	void centerAroundCone();                                 //!< triggers centering the mesh around a user-specified cone
