@@ -61,7 +61,7 @@ bool convertMeshData(
 	}
 
 	// Add parameters to output prefix
-    std::filesystem::path fileNameOut = rFileName.parent_path();
+    std::filesystem::path fileNameOut = std::filesystem::absolute(rFileName).parent_path();
     fileNameOut += "/";
     fileNameOut += rFileName.stem();
 	fileNameOut += rFileSuffix;
