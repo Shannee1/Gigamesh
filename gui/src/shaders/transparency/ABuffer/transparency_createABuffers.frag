@@ -23,8 +23,8 @@ in struct grVertex {
 
 //flat in float labelNr;
 //flat in float flagNoLabel;
-in vec3 vBarycenter;            // normalized Barycenter coordinates
-flat in vec3 vLabelNumbers;                        // vector to hold all three labelNr's to get uninterpolated result
+layout(location=3) in vec3 vBarycenter;            // normalized Barycenter coordinates
+layout(location=4) flat in vec3 vLabelNumbers;                        // vector to hold all three labelNr's to get uninterpolated result
 
 // Switch betwenn flat and smooth shading
 uniform bool  flatShade = false;

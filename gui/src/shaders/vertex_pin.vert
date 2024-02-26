@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 // +++ Homogenous matrices for camera orientation and projection:
 uniform mat4 modelview;
@@ -8,19 +8,19 @@ uniform float scaleFactor = 1.0;
 
 
 //the geometries of the pin-mesh
-in vec3  position;
-in vec3  vNormal;
-in float vHeadFlag; //flag to differentiate between head and needle
+layout(location = 0) in vec3  position;
+layout(location = 1) in vec3  vNormal;
+layout(location = 2) in float vHeadFlag; //flag to differentiate between head and needle
 
 //instanced data given by the points where the Pins should be rendered at
-in vec3 offsetInstanced;        //local space of the position where the pin points to
-in vec3 pinDirectionInstanced;  //up-vector for the pin
-in vec3 colorInstanced;         //color of the pin head
+layout(location = 3) in vec3 offsetInstanced;        //local space of the position where the pin points to
+layout(location = 4) in vec3 pinDirectionInstanced;  //up-vector for the pin
+layout(location = 5) in vec3 colorInstanced;         //color of the pin head
 
-out vec4 vertexColor;
-out vec3 vertexNormal;
-out vec3 halfWay;
-out vec3 halfWay2;
+layout(location = 0) out vec4 vertexColor;
+layout(location = 1) out vec3 vertexNormal;
+layout(location = 2) out vec3 halfWay;
+layout(location = 3) out vec3 halfWay2;
 
 float PI = 3.1415926535897932384626433832795;
 

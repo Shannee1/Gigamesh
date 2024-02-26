@@ -1,4 +1,4 @@
-#version 150
+#version 430
 //#extension GL_ARB_shader_bit_encoding : enable
 
 // +++ Homogenous matrices for camera orientation and projection:
@@ -19,13 +19,13 @@ uniform float uScaleRadialTop    = 1.0;
 uniform vec4 uClipPlane0 = vec4( 0.0, -1.0, 0.0, 0.0 ); // Classic clipping plane, provided by the plane of the Mesh.
 uniform vec3 uClipBefore = vec3( 0.0, 0.0, 0.0 );       // Point in world coordinates sed when a single primitve is selected, than everything in front of it is clipped.
 
-in vec3  position;
-in vec3  vNormal;
-in vec4  vColor;
-in float vFuncVal;
+layout(location=0) in vec3  position;
+layout(location=1) in vec3  vNormal;
+layout(location=2) in vec4  vColor;
+layout(location=3) in float vFuncVal;
 // +++ Vertex buffers -- this corresponds to MeshGL::grVertexStripeElment
-in float vLabelID; // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
-in float vFlags;   // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
+layout(location=4) in float vLabelID; // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
+layout(location=5) in float vFlags;   // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
 
 void main(void)
 {

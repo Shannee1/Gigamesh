@@ -3,7 +3,7 @@
 uniform vec2 uViewPortSize;
 
 // Output i.e. color of the fragment
-out vec4 fragColor;
+layout(location=0) out vec4 fragColor;
 
 struct TransFragmentData {
     uint Color;      //color data

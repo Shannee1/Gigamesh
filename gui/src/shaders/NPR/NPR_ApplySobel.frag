@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 uniform sampler2D uFBO_Texture_ID;
 uniform vec2 uViewPortSize = vec2( 860, 718 ); // ( width, height ) of the viewport in pixel

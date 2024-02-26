@@ -1,9 +1,9 @@
-#version 330
+#version 430
 
-in vec4 vertexColor;
-in vec3 vertexNormal;
-in vec3 halfWay;
-out vec4 frag_color;
+layout(location = 0) in vec4 vertexColor;
+layout(location = 1) in vec3 vertexNormal;
+layout(location = 2) in vec3 halfWay;
+layout(location = 0) out vec4 frag_color;
 
 void main()
 {

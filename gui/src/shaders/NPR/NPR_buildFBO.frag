@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 // +++ Values to be passed from the vertex or geometry shader
 in struct grVertex {

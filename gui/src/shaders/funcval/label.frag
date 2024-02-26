@@ -1,4 +1,4 @@
-#version 150
+#version 430
 
 // Backfaces -- glDisable( GL_CULL_FACE ); has to be set
 uniform bool  backCulling    = true;

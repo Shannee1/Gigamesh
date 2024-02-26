@@ -20,7 +20,7 @@ layout (std430, binding = 1) buffer ColorArray
 uniform sampler2DRect ColorTex0;
 uniform sampler2DRect ColorTex1;
 
-out vec4 fragColor;
+layout(location=0) out vec4 fragColor;
 
 //-------------------------------
 void main(void) {

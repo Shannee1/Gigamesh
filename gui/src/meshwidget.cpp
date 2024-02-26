@@ -66,7 +66,8 @@ using PglBindVertexArray = void (*)(GLuint);
 
 //! Constructor.
 MeshWidget::MeshWidget( const QSurfaceFormat &format, QWidget *parent )
-    : QOpenGLWidget( parent ), MESHWIDGETINITDEFAULTS {
+    : QOpenGLWidget( parent ), MESHWIDGETINITDEFAULTS
+{
     setFormat(format);
 #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
 	cout << "[MeshWidget::" << __FUNCTION__ << "]" << endl;
@@ -84,6 +85,7 @@ MeshWidget::MeshWidget( const QSurfaceFormat &format, QWidget *parent )
 	setMouseTracking(true);
 
 	if( parent != nullptr ) {
+        cout << "Resized to " << parent->geometry().size().height() << " , " << parent->geometry().size().width()  << endl;
 		resize( parent->geometry().size() );
 	}
 
@@ -1787,15 +1789,15 @@ void MeshWidget::initializeGL() {
     PRINT_OPENGL_ERROR( "glClearColor( Qt::white ) or so (was updated)" );
 
 	//! \todo Source revision for OpenGL initaliation.
-	glEnable( GL_DEPTH_TEST );
+    glEnable( GL_DEPTH_TEST );
 	PRINT_OPENGL_ERROR( "glEnable( GL_DEPTH_TEST )" );
 
 	// Face culling:
-	glEnable( GL_CULL_FACE );
+    glEnable( GL_CULL_FACE );
 	PRINT_OPENGL_ERROR( "glEnable( GL_CULL_FACE )" );
-	glCullFace( GL_BACK ); // GL_FRONT or GL_BACK (default)
+    glCullFace( GL_BACK ); // GL_FRONT or GL_BACK (default)
 	PRINT_OPENGL_ERROR( "glCullFace( GL_BACK )" );
-	glFrontFace( GL_CCW ); // GL_CW or GL_CCW (default)
+    glFrontFace( GL_CCW ); // GL_CW or GL_CCW (default)
 	PRINT_OPENGL_ERROR( "glFrontFace( GL_CCW )" );
 
 	//glHint( GL_POINT_SMOOTH_HINT, GL_NICEST ); // Invalid enum in windows. Anyway, this is deprecated.
@@ -1806,10 +1808,10 @@ void MeshWidget::initializeGL() {
 	//glEnable( GL_LINE_SMOOTH );
 	//glEnable( GL_POLYGON_SMOOTH );
 	// http://nehe.gamedev.net/data/lessons/lesson.asp?lesson=46
-	glEnable( GL_MULTISAMPLE );
+    glEnable( GL_MULTISAMPLE );
 	PRINT_OPENGL_ERROR( "glEnable( GL_MULTISAMPLE )" );
 
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    //f->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	PRINT_OPENGL_ERROR( "glPolygonMode( GL_FRONT_AND_BACK, GL_FILL )" );
 
 	// switch for polygon-offset to avoid the Z-Conflict <- deprecated
@@ -1820,9 +1822,9 @@ void MeshWidget::initializeGL() {
 	//glEnable( GL_POLYGON_OFFSET_POINT ); // for all line objects
 	//PRINT_OPENGL_ERROR( "glEnable( GL_POLYGON_OFFSET_.... )" );
 
-	glClearDepth( 1.0f );                                // Depth Buffer Setup
+    glClearDepth( 1.0f );                                // Depth Buffer Setup
 	PRINT_OPENGL_ERROR( "glClearDepth( 1.0f )" );
-	glDepthFunc( GL_LEQUAL );                            // The Type Of Depth Test To Do
+    glDepthFunc( GL_LEQUAL );                            // The Type Of Depth Test To Do
 	PRINT_OPENGL_ERROR( "glDepthFunc( GL_LEQUAL )" );
 	// glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST ); // Really Nice Perspective Calculations <- removed from coreprofile
 #ifdef DEAD_CORE_PROFILE
@@ -6007,10 +6009,10 @@ bool MeshWidget::rotPlaneRoll(double rAngle)
 //! Re-draws the OpenGL widget, when its size has changed by calling setView(). \todo this is broken with the qt6 change
 void MeshWidget::resizeGL( [[maybe_unused]]int width , [[maybe_unused]]int height  ) {
 #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
-	cout << "[MeshWidget::" << __FUNCTION__ << "] width: " << width << " height: " << height << endl;
+    cout << "[MeshWidget::" << __FUNCTION__ << "] width: " << width << " height: " << height << endl;
 #endif
-	setView();
-	update();
+    setView();
+    update();
 }
 
 //! This function is called whenever the widget needs to be painted. It is a reimplementation
@@ -6054,7 +6056,7 @@ void MeshWidget::paintEvent( QPaintEvent *rEvent ) {
     //! \todo set autoBufferswap wasnt done atm, so skip for now (swapBuffers is also not found in QOpenGLWidget
     if( mMeshVisual == nullptr ) {
 		//! Do nothing, when no mesh is present.
-		//cerr << "{MeshWidget::" << __FUNCTION__ << "] ERROR: Mesh not present!" << endl;
+        //cerr << "{MeshWidget::" << __FUNCTION__ << "] ERROR: Mesh not present!" << endl;
         //swapBuffers(); // has to be called, when setAutoBufferSwap(false) was set in the constructor to preven flickering when QPainter.end is called!
         return;
     }
@@ -6069,7 +6071,7 @@ void MeshWidget::paintEvent( QPaintEvent *rEvent ) {
         mMeshVisual->glPaint();
     }
 
-	//! Optional; draw RGB histogram of the scene. Highly recommended to be calle before paintScreenInfo, paintOrthoGrid and paintHistogram!
+    //! Optional; draw RGB histogram of the scene. Highly recommended to be called before paintScreenInfo, paintOrthoGrid and paintHistogram!
 	paintHistogramScence(); // This sould be first -- otherwise unwanted elements like logos are accounted to (this color) histogram.
 
 	//! Draw (optional) Grid(s) in orthographic and perspective projection. The latter may give the impression of scale, but can not be used as such!
@@ -6225,7 +6227,7 @@ bool MeshWidget::paintBackgroundShader( QOpenGLShaderProgram** rShaderProgram ) 
 		cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: getViewPortResolution failed!" << endl;
 		return false;
 	}
-	//cout << "PW: " << pixelWidth << " PH: " << pixelHeight << endl;
+    //cout << "PW: " << realWidth << " PH: " << realHeight << endl;
 	double gridShiftDepth;
 	bool   gridHighLightCenter;
 	getParamFloatMeshWidget( GRID_SHIFT_DEPTH, &gridShiftDepth );
@@ -7645,19 +7647,19 @@ void MeshWidget::wheelEventZoom(
 	update();
 }
 
-//! Takes care to properly resize this OpenGL widget.
+// //! Takes care to properly resize this OpenGL widget.
 void MeshWidget::resizeEvent( [[maybe_unused]] QResizeEvent * event  ) {
 #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
-	std::cout << "[MeshWidget::" << __FUNCTION__ << "] " << event->size().width()
-	          << " x " << event->size().height() << std::endl;
+    std::cout << "[MeshWidget::" << __FUNCTION__ << "] " << event->size().width()
+              << " x " << event->size().height() << std::endl;
 #endif
-	//QGLWidget::resizeEvent( event );
-	if( mMeshVisual == nullptr ) {
-		// No mesh present -> nothing to do.
-		return;
-	}
-	setView();
-	update();
+    //QGLWidget::resizeEvent( event );
+    if( mMeshVisual == nullptr ) {
+        // No mesh present -> nothing to do.
+        return;
+    }
+    setView();
+    update();
 }
 
 //! Initial Setup of the camera, the light position(s) and the material properties.
@@ -7740,10 +7742,9 @@ void MeshWidget::setView( GLdouble* rOrthoViewPort //!< position and dimension o
 //	glLoadIdentity();
 //	PRINT_OPENGL_ERROR( "glLoadIdentity()" );
 
-
 	//! Setup Viewport
 	GLfloat windowRatio = static_cast<GLfloat>(width())/static_cast<GLfloat>(height());
-	glViewport( 0, 0, width(), height() );
+    glViewport( 0, 0, width(), height() );
 
 	//! Estimate clipping planes (front and back) for the frustum.
 	// distance between camera and the bounding box center
@@ -7783,7 +7784,7 @@ void MeshWidget::setView( GLdouble* rOrthoViewPort //!< position and dimension o
 	mMatProjection.setToIdentity();
 	if( mParamFlag[ORTHO_MODE] ) {
 		if( rOrthoViewPort != nullptr ) {
-			//glOrtho( rOrthoViewPort[0], rOrthoViewPort[1], rOrthoViewPort[2], rOrthoViewPort[3], zNear, zFar );
+            //glOrtho( rOrthoViewPort[0], rOrthoViewPort[1], rOrthoViewPort[2], rOrthoViewPort[3], zNear, zFar );
 			mMatProjection.ortho( rOrthoViewPort[0], rOrthoViewPort[1], rOrthoViewPort[2], rOrthoViewPort[3], zNear, zFar );
 		} else {
 			double orthoZoom;
@@ -7865,8 +7866,8 @@ int MeshWidget::height() const {
 //! Sort of a fix for HighDPI displays with scaling.
 //! Windows does not seem to be affected.
 int MeshWidget::width() const {
-	double scaleFactor = 1.0;
-	getParamFloatMeshWidget( HIGHDPI_ZOOM_FACTOR, &scaleFactor );
+    double scaleFactor = 1.0;
+    getParamFloatMeshWidget( HIGHDPI_ZOOM_FACTOR, &scaleFactor );
     return QOpenGLWidget::width()*scaleFactor;
 }
 

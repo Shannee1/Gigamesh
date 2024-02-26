@@ -27,6 +27,7 @@
 
 #include <GigaMesh/logging/Logging.h>
 #include "../QGMMacros.h"
+#include <iostream>
 
 QOpenGLShaderProgram* shaderLink(const QString& vertSrc,
                           const QString& geomSrc,
@@ -45,8 +46,9 @@ ShaderManager::~ShaderManager()
 //! @returns pointer to shaderprogram if successfull, nullptr otherwise
 QOpenGLShaderProgram* ShaderManager::getShader(ShaderManager::ShaderName shaderName)
 {
+    std::cout << "Shader Name: " << shaderName << std::endl;
 	if(mBrokenShader[static_cast<size_t>(shaderName)] == true)
-	{
+    {
 		return nullptr;
 	}
 
@@ -57,7 +59,7 @@ QOpenGLShaderProgram* ShaderManager::getShader(ShaderManager::ShaderName shaderN
 		shaderPtr = initShader(shaderName);
 		if(shaderPtr == nullptr)
 		{
-			mBrokenShader[static_cast<size_t>(shaderName)] = true;
+            mBrokenShader[static_cast<size_t>(shaderName)] = true;
 		}
 	}
 

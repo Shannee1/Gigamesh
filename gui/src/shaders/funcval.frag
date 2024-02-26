@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 // Backfaces -- glDisable( GL_CULL_FACE ); has to be set
 uniform bool  backCulling    = true;
@@ -64,11 +64,13 @@ uniform bool uIsoSolidFlag  = true;
 uniform vec4 uIsoSolidColor = vec4( 0.0, 0.0, 0.0, 1.0 );
 
 // +++ Values to be passed from the vertex or geometry shader
-in struct grVertex {
+layout(location = 0) in struct grVertex {
 	vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
 	vec3  normal_interp; // Normal vector, which will be interpolated
-	vec3  FixedCam_halfVector,FixedCam_L;
-	vec3  FixedWorld_halfVector,FixedWorld_L;
+        vec3  FixedCam_halfVector;
+        vec3  FixedCam_L;
+        vec3  FixedWorld_halfVector;
+        vec3  FixedWorld_L;
 	//+++ Color of the vertex
 	vec4  vertexColor;
 	// +++ Function value of the vertex passed to the fragment shader:
@@ -79,19 +81,19 @@ in struct grVertex {
 	float flagNoLabel; 
 } gVertex;
 
-flat in uint gInvertColor;
+layout(location = 1) flat in uint gInvertColor;
 
 // +++ Edge/Wireframe Rendering
-noperspective in vec3 vEdgeDist;                           // Barycenter coordinates.
+layout(location = 2) noperspective in vec3 vEdgeDist;                           // Barycenter coordinates.
 
-in vec3 vBarycenter;            // normalized Barycenter coordinates
-flat in vec3 vLabelNumbers;                        // vector to hold all three labelNr's to get uninterpolated result
+layout(location = 3) in vec3 vBarycenter;            // normalized Barycenter coordinates
+layout(location = 4) flat in vec3 vLabelNumbers;                        // vector to hold all three labelNr's to get uninterpolated result
 
 uniform vec4 uEdgeColor      = vec4( 0.1, 0.1, 0.1, 1.0 ); // Color of the edge
 uniform bool uEdgeShown      = false;
 
 // Output i.e. color of the fragment
-out vec4 fragColor;
+layout(location=0) out vec4 fragColor;
 
 // --- Light function (Phong) ----------------------------------------------------------------------------------------------------------------------------------
 vec4 getLightAmount( vec3 L, vec3 normal, vec3 halfVector, vec4 diffuseProduct, vec4 specularProduct ) { // Product essentially means color

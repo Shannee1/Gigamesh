@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 // Backfaces -- glDisable( GL_CULL_FACE ); has to be set
 uniform bool  backCulling    = true;
@@ -41,7 +41,7 @@ in struct grVertexX {
 
 
 // Output i.e. color of the fragment
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // --- Light function (Phong) ----------------------------------------------------------------------------------------------------------------------------------
 vec4 getLightAmount( vec3 L, vec3 normal, vec3 halfVector, vec4 diffuseProduct, vec4 specularProduct ) { // Product essentially means color

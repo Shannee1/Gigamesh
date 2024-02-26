@@ -1,4 +1,4 @@
-#version 330
+#version 430
 // IMPORTANT: It isn't possible to create a program with geometry shaders that handle multiple primitive types.
 // This means: out is either triangle_strip or line_strip!
 

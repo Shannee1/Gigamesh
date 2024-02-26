@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 //=============================================
 // Highlight center:
@@ -20,7 +20,7 @@ in vec2  gridPos;              // Interpolated position of the grid i.e. pixel c
 //in vec4  ecPosition;         // Interpolated position of the fragment in eye coordinates.
 
 // Output i.e. color of the fragment
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 struct grGridSettings {
 	float mGridDist;

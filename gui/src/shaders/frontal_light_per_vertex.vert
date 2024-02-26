@@ -1,4 +1,4 @@
-#version 330
+#version 430
 uniform mat4 transformMat;
 uniform int xResolution;
 uniform int yResolution;
@@ -7,13 +7,13 @@ uniform float zTolerance;
 uniform int vertIDOffset;
 
 // +++ Vertex buffers -- this corresponds to MeshGL::grVertexElmentBasic
-in vec3  position;
-in vec3  vNormal;
-in vec4  vColor;
-in float vFuncVal;
+layout(location = 0) in vec3  position;
+layout(location = 1) in vec3  vNormal;
+layout(location = 2) in vec4  vColor;
+layout(location = 3) in float vFuncVal;
 // +++ Vertex buffers -- this corresponds to MeshGL::grVertexStripeElment
-in float vLabelID; // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
-in float vFlags;   // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
+layout(location = 4) in float vLabelID; // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
+layout(location = 5) in float vFlags;   // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 out float brightness;

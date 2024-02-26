@@ -1,9 +1,9 @@
-#version 330
+#version 430
 
 // +++ Vertex buffers
-in vec3 position;
-in vec3 vNormal;
-in vec4 vColor;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec3 vNormal;
+layout(location = 2) in vec4 vColor;
 
 // +++ Homogenous matrices for camera orientation and projection:
 uniform mat4 modelview;
@@ -18,13 +18,15 @@ uniform vec3 uStrech = vec3( 1.0, 1.0, 1.0 );
 uniform vec3 uOffSet = vec3( 0.0, 0.0, 0.0 );
 
 // +++ Values to be passed on to the fragment shader:
-out vec4 ec_pos; // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
-out vec3 normal_interp;
-out vec3 FixedCam_halfVector,FixedCam_L;
-out vec3 FixedWorld_halfVector,FixedWorld_L;
+layout(location = 0) out vec4 ec_pos; // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
+layout(location = 1) out vec3 normal_interp;
+layout(location = 2) out vec3 FixedCam_halfVector;
+layout(location = 3) out vec3 FixedCam_L;
+layout(location = 4) out vec3 FixedWorld_halfVector;
+layout(location = 5) out vec3 FixedWorld_L;
 
 // +++ Color of the vertex
-out vec4 vertexColor;
+layout(location = 6) out vec4 vertexColor;
 
 // -----------------------------------------------
 void main(void) {

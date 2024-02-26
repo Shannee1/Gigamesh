@@ -327,6 +327,7 @@ void MeshGLShader::glPaint() {
 
 	//! *) Polygonal lines - normals per label.
 	//! \todo this BROKEN and has to be implemented within the shader.
+    //! INFO: glBegin(9 and glEnd() are deprecated!
 	uint64_t labelNrs;
 	bool mainNormalPolyLine;
 	getParamFlagMeshGL( SHOW_NORMALS_POLYLINE_MAIN, &mainNormalPolyLine );

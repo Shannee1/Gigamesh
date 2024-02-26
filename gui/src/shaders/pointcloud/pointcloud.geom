@@ -1,4 +1,4 @@
-#version 150
+#version 430
 
 layout (points) in;
 layout (points, max_vertices = 1) out; //generate one point per point

@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 // Backfaces -- GL_CULL_* has no effect for sprites!
 // Therefore gl_FrontFacing has no effect.
@@ -57,7 +57,7 @@ uniform struct FogParameters {
 uniform sampler2D uFuncValTexMap;
 
 // +++ Values to be passed from the vertex.
-in struct grVertex {
+layout(location = 0) in struct grVertex {
 	vec4  ec_pos;        // Interpolated position of the fragment in eye coordinates.
 	vec3  normal_interp; // Interpolated normal (also in eye coordinates).
 	vec3  FixedCam_halfVector,FixedCam_L;
@@ -73,7 +73,7 @@ in struct grVertex {
 } oVertex;
 
 // Output i.e. color of the fragment
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // --- Light function (Phong) ----------------------------------------------------------------------------------------------------------------------------------
 vec4 getLightAmount( vec3 L, vec3 normal, vec3 halfVector, vec4 diffuseProduct, vec4 specularProduct ) { // Product essentially means color

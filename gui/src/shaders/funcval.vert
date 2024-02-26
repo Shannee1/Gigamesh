@@ -1,4 +1,4 @@
-#version 330
+#version 430
 //#extension GL_ARB_shader_bit_encoding : enable
 
 // +++ Homogenous matrices for camera orientation and projection:
@@ -7,23 +7,23 @@ uniform mat4 projection;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 // This matrix and the following parameters are used to scale, rotate and position unit objects, like box, sphere and cone/cylinder.
 uniform mat4 uModelViewExtra = mat4( 1.0, 0.0, 0.0, 0.0,
-                                           0.0, 1.0, 0.0, 0.0,
-                                           0.0, 0.0, 1.0, 0.0,
-                                           0.0, 0.0, 0.0, 1.0
-                                         );
+                                     0.0, 1.0, 0.0, 0.0,
+                                     0.0, 0.0, 1.0, 0.0,
+                                     0.0, 0.0, 0.0, 1.0
+                                    );
 uniform float uScaleHeight       = 1.0;
 uniform float uScaleRadialBottom = 1.0;
 uniform float uScaleRadialTop    = 1.0;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // +++ Vertex buffers -- this corresponds to MeshGL::grVertexElmentBasic
-in vec3  position;
-in vec3  vNormal;
-in vec4  vColor;
-in float vFuncVal;
+layout(location=0) in vec3  position;
+layout(location=1) in vec3  vNormal;
+layout(location=2) in vec4  vColor;
+layout(location=3) in float vFuncVal;
 // +++ Vertex buffers -- this corresponds to MeshGL::grVertexStripeElment
-in float vLabelID; // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
-in float vFlags;   // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
+layout(location=4) in float vLabelID; // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
+layout(location=5) in float vFlags;   // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // +++ Direction of the light fixed in relation to the camera:
@@ -43,12 +43,13 @@ uniform bool  uFuncValRepeat    = false;
 uniform float uFuncValIntervall = 10.0;
 uniform float uFuncValLogGamma  =  1.0;
 
-// +++ Values to be passed on to the geometry shader:
-out struct grVertex {
+struct grVertex {
         vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
         vec3  normal_interp; // Normal vector, which will be interpolated
-        vec3  FixedCam_halfVector,FixedCam_L;
-        vec3  FixedWorld_halfVector,FixedWorld_L;
+        vec3  FixedCam_halfVector;
+        vec3  FixedCam_L;
+        vec3  FixedWorld_halfVector;
+        vec3  FixedWorld_L;
         //+++ Color of the vertex
         vec4  vertexColor;
         // +++ Function value of the vertex passed to the fragment shader:
@@ -57,7 +58,9 @@ out struct grVertex {
         // +++ Labels
         float labelNr;       // corresponds to vLabelID
         float flagNoLabel;
-} oVertex;
+};
+// +++ Values to be passed on to the geometry shader:
+layout(location = 0) out grVertex oVertex;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 uniform float uFaceShiftViewZ = 0.0; // offset in view coordinates to prevent z-fighting. e.g. when selected faces are drawn.

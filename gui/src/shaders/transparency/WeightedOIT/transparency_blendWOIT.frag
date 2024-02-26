@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 uniform sampler2DRect ColorTex0;
 uniform sampler2DRect ColorTex1;

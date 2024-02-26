@@ -1,4 +1,4 @@
-#version 330
+#version 430
 // IMPORTANT: It isn't possible to create a program with geometry shaders that handle multiple primitive types.
 // This means: out is either triangle_strip or line_strip!
 
@@ -15,7 +15,7 @@ uniform float uNormalLength = 2.5;
 uniform float uNormalWidth  = 0.1;
 
 // +++ Values to be passed from the vertex.
-in struct grVertex {
+layout(location = 0) in struct grVertex {
 	vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
 	vec3  normal_interp; // Normal vector, which will be interpolated
 	vec3  FixedCam_halfVector,FixedCam_L;
@@ -31,12 +31,12 @@ in struct grVertex {
 } oVertex[];
 
 out grVertex gVertex;
-flat out uint gInvertColor;
+layout(location = 1) flat out uint gInvertColor;
 
 // +++ Edge/Wireframe Rendering 
-noperspective out vec3 vEdgeDist;              // Barycenter coordinates. REQUIRED by funcval.frag
-out vec3 vBarycenter;            // normalized Barycenter coordinates
-flat out vec3 vLabelNumbers;                        // vector to hold all three labelNr's to get uninterpolated result
+layout(location = 2) noperspective out vec3 vEdgeDist;              // Barycenter coordinates. REQUIRED by funcval.frag
+layout(location = 3) out vec3 vBarycenter;            // normalized Barycenter coordinates
+layout(location = 4) flat out vec3 vLabelNumbers;                        // vector to hold all three labelNr's to get uninterpolated result
 
 //uniform float uExplodeFactor = 0.12;
 

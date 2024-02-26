@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 uniform sampler2D uLabelTexMap;  // Texturemap holding an image e.g. logo.
 
@@ -6,7 +6,7 @@ uniform sampler2D uLabelTexMap;  // Texturemap holding an image e.g. logo.
 in vec2 texCoord;
 
 // Output i.e. color of the fragment
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // Orthogonal grid with rotation:
 //-------------------------------

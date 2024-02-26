@@ -1,4 +1,4 @@
-#version 330
+#version 430
 //#extension GL_ARB_shader_bit_encoding : enable
 
 // +++ Homogenous matrices for camera orientation and projection:
@@ -7,10 +7,10 @@ uniform mat4 projection;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // +++ Vertex buffers -- this corresponds to MeshGL::grVertexStripeElment
-in vec3  position;
-in vec3  vNormal;
-in vec4  vColor;
-in float vRadius;
+layout(location = 0) in vec3  position;
+layout(location = 1) in vec3  vNormal;
+layout(location = 2) in vec4  vColor;
+layout(location = 3) in float vRadius;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // +++ Direction of the light fixed in relation to the camera:

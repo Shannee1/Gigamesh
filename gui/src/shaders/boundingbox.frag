@@ -1,4 +1,4 @@
-#version 330
+#version 430
 
 // Solid color
 uniform bool  uColorSolidForce = false;
@@ -29,16 +29,18 @@ uniform struct FogParameters {
 } fogParams;
 
 // +++ Color of the vertex
-in vec4 vertexColor;
+layout(location = 6) in vec4 vertexColor;
 
 // +++ Vector for computing the effect of the light
-in vec4 ec_pos;         // Interpolated position of the fragment in eye coordinates.
-in vec3 normal_interp;  // Interpolated normal (also in eye coordinates).
-in vec3 FixedCam_halfVector,FixedCam_L;
-in vec3 FixedWorld_halfVector,FixedWorld_L;
+layout(location = 0) in vec4 ec_pos;         // Interpolated position of the fragment in eye coordinates.
+layout(location = 1) in vec3 normal_interp;  // Interpolated normal (also in eye coordinates).
+layout(location = 2) in vec3 FixedCam_halfVector;
+layout(location = 3) in vec3 FixedCam_L;
+layout(location = 4) in vec3 FixedWorld_halfVector;
+layout(location = 5) in vec3 FixedWorld_L;
 
 // +++ Output i.e. color of the fragment
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // --- Fog function ---------------------------------------------------------------------------------------------------------------------------------------------
 float getFogFactor( FogParameters params, float fFogCoord ) {
@@ -94,7 +96,7 @@ void main(void) {
 		}
 	// +++ Add fog (if present):
 		if( fogPresent ) {
-			outputColor = mix( outputColor, fogParams.vFogColor, fFogFactor );
+                        outputColor = mix( outputColor, fogParams.vFogColor, fFogFactor );
 		}
 		fragColor = outputColor; // was gl_FragColor, which is deprecated
 	} else if( backCulling ) { // Backfaces color & culling

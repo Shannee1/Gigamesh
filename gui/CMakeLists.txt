@@ -11,6 +11,7 @@ set(Qt6_DIR "/home/jp/Qt/6.6.1/gcc_64/lib/cmake/Qt6")
 
 find_package(OpenGL REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui OpenGL Network ShaderTools) #ShaderTools
+# \todo: Use ShaderTools to create qsb and include those baked shaders as resource (should increase performance i think)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)

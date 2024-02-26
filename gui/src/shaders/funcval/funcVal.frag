@@ -1,4 +1,4 @@
-#version 150
+#version 430
 
 // Backfaces -- glDisable( GL_CULL_FACE ); has to be set
 uniform bool  backCulling    = true;
@@ -59,16 +59,16 @@ in struct grVertex {
         float flagNoLabel;
 } gVertex;
 
-flat in uint gInvertColor;
+layout(location=1) flat in uint gInvertColor;
 
 // +++ Edge/Wireframe Rendering
-noperspective in vec3 vEdgeDist;                           // Barycenter coordinates.
+layout(location=2) noperspective in vec3 vEdgeDist;                           // Barycenter coordinates.
 
 uniform vec4 uEdgeColor      = vec4( 0.1, 0.1, 0.1, 1.0 ); // Color of the edge
 uniform bool uEdgeShown      = false;
 
 // Output i.e. color of the fragment
-out vec4 fragColor;
+layout(location=0) out vec4 fragColor;
 
 // --- Light function (Phong) ----------------------------------------------------------------------------------------------------------------------------------
 vec4 getLightAmount( vec3 L, vec3 normal, vec3 halfVector, vec4 diffuseProduct, vec4 specularProduct ) { // Product essentially means color

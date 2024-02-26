@@ -1,4 +1,4 @@
-#version 330
+#version 430
 // IMPORTANT: It isn't possible to create a program with geometry shaders that handle multiple primitive types.
 // This means: out is either triangle_strip or line_strip!
 
@@ -27,30 +27,32 @@ uniform int   uLightVecModVal  = 10;
 uniform float uLightVeclLength = 20.0;
 uniform float uLightVecWidth   =  0.005;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+struct grVertex {
+        vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
+        vec3  normal_interp; // Normal vector, which will be interpolated
+        vec3  FixedCam_halfVector;
+        vec3  FixedCam_L;
+        vec3  FixedWorld_halfVector;
+        vec3  FixedWorld_L;
+        //+++ Color of the vertex
+        vec4  vertexColor;
+        // +++ Function value of the vertex passed to the fragment shader:
+        float vertexFuncVal;
+        vec2  vertexFuncValTexCoord;
+        // +++ Labels
+        float labelNr;       // corresponds to vLabelID
+        float flagNoLabel;
+};
 // +++ Values to be passed from the vertex.
-in struct grVertex {
-	vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
-	vec3  normal_interp; // Normal vector, which will be interpolated
-	vec3  FixedCam_halfVector,FixedCam_L;
-	vec3  FixedWorld_halfVector,FixedWorld_L;
-	//+++ Color of the vertex
-	vec4  vertexColor;
-	// +++ Function value of the vertex passed to the fragment shader:
-	float vertexFuncVal;
-	vec2  vertexFuncValTexCoord;
-	// +++ Labels
-	float labelNr;       // corresponds to vLabelID
-	float flagNoLabel; 
-} oVertex[];
+layout(location = 0) in grVertex oVertex[];
 
 out grVertex gVertex;
-flat out uint gInvertColor;
+layout(location = 1) flat out uint gInvertColor;
 
 // +++ Edge/Wireframe Rendering 
-noperspective out vec3 vEdgeDist;              // Barycenter coordinates.
-out vec3 vBarycenter;            // normalized Barycenter coordinates
-flat out vec3 vLabelNumbers;                        // vector to hold all three labelNr's to get uninterpolated result
+layout(location = 2) noperspective out vec3 vEdgeDist;              // Barycenter coordinates.
+layout(location = 3) out vec3 vBarycenter;                          // normalized Barycenter coordinates
+layout(location = 4) flat out vec3 vLabelNumbers;                   // vector to hold all three labelNr's to get uninterpolated result
 uniform vec2 uViewPortSize = vec2( 860, 718 ); // ( width, height ) of the viewport in pixel
 
 //uniform float uExplodeFactor = 0.12;
@@ -65,7 +67,7 @@ void main(void) {
 	vec2 v2 = p1-p0;
 	float area = abs( v1.x * v2.y - v1.y * v2.x );
 
-	gInvertColor = 0u;
+        gInvertColor = 0u;
 	int i;
 
 	vLabelNumbers = vec3(oVertex[0].labelNr,oVertex[1].labelNr,oVertex[2].labelNr);
@@ -109,7 +111,7 @@ void main(void) {
 	EndPrimitive();
 
 	if( uFaceNormals ) {
-		gInvertColor = 1u;
+                gInvertColor = 1u;
 		// Calculate the center of gravity of the triangle:
 		vec3 cog = ( oVertex[0].ec_pos.xyz + oVertex[1].ec_pos.xyz + oVertex[2].ec_pos.xyz ) / 3.0;
 
@@ -133,11 +135,11 @@ void main(void) {
 		EmitVertex();
 
 		EndPrimitive();
-		gInvertColor = 0u;
+                gInvertColor = 0u;
 	}
 	
         if( uLightVectors != 0 && ( mod( gl_PrimitiveIDIn, uLightVecModVal ) == 0 ) ) {
-		gInvertColor = 1u;
+                gInvertColor = 1u;
 		// Calculate the center of gravity of the triangle:
 		vec3 cog = ( oVertex[0].ec_pos.xyz + oVertex[1].ec_pos.xyz + oVertex[2].ec_pos.xyz ) / 3.0;
 	
@@ -175,6 +177,6 @@ void main(void) {
 		
 			EndPrimitive();
 		}
-		gInvertColor = 0u;
+                gInvertColor = 0u;
 	}
 }
