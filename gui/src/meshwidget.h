@@ -311,11 +311,12 @@ private:
 	void initializeVAO();
 	void initializeShaders();
     void resizeGL( int width, int height ) override;
-	void paintEvent( QPaintEvent *rEvent ) override;
+    // void paintEvent( QPaintEvent *rEvent ) override;
+    void paintGL() override;
 	void paintSelection();
 	bool paintHistogram();
 	bool paintHistogramScence();
-    void resizeEvent( QResizeEvent * event ) override;
+    // void resizeEvent( QResizeEvent * event ) override;
 
 	// Keyboard and Mouse interaction:
 	//------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -1789,15 +1789,15 @@ void MeshWidget::initializeGL() {
     PRINT_OPENGL_ERROR( "glClearColor( Qt::white ) or so (was updated)" );
 
 	//! \todo Source revision for OpenGL initaliation.
-    glEnable( GL_DEPTH_TEST );
+    f->glEnable( GL_DEPTH_TEST );
 	PRINT_OPENGL_ERROR( "glEnable( GL_DEPTH_TEST )" );
 
 	// Face culling:
-    glEnable( GL_CULL_FACE );
+    f->glEnable( GL_CULL_FACE );
 	PRINT_OPENGL_ERROR( "glEnable( GL_CULL_FACE )" );
-    glCullFace( GL_BACK ); // GL_FRONT or GL_BACK (default)
+    f->glCullFace( GL_BACK ); // GL_FRONT or GL_BACK (default)
 	PRINT_OPENGL_ERROR( "glCullFace( GL_BACK )" );
-    glFrontFace( GL_CCW ); // GL_CW or GL_CCW (default)
+    f->glFrontFace( GL_CCW ); // GL_CW or GL_CCW (default)
 	PRINT_OPENGL_ERROR( "glFrontFace( GL_CCW )" );
 
 	//glHint( GL_POINT_SMOOTH_HINT, GL_NICEST ); // Invalid enum in windows. Anyway, this is deprecated.
@@ -1808,10 +1808,10 @@ void MeshWidget::initializeGL() {
 	//glEnable( GL_LINE_SMOOTH );
 	//glEnable( GL_POLYGON_SMOOTH );
 	// http://nehe.gamedev.net/data/lessons/lesson.asp?lesson=46
-    glEnable( GL_MULTISAMPLE );
+    f->glEnable( GL_MULTISAMPLE );
 	PRINT_OPENGL_ERROR( "glEnable( GL_MULTISAMPLE )" );
 
-    //f->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	PRINT_OPENGL_ERROR( "glPolygonMode( GL_FRONT_AND_BACK, GL_FILL )" );
 
 	// switch for polygon-offset to avoid the Z-Conflict <- deprecated
@@ -1822,9 +1822,9 @@ void MeshWidget::initializeGL() {
 	//glEnable( GL_POLYGON_OFFSET_POINT ); // for all line objects
 	//PRINT_OPENGL_ERROR( "glEnable( GL_POLYGON_OFFSET_.... )" );
 
-    glClearDepth( 1.0f );                                // Depth Buffer Setup
+    f->glClearDepthf( 1.0f );                                // Depth Buffer Setup
 	PRINT_OPENGL_ERROR( "glClearDepth( 1.0f )" );
-    glDepthFunc( GL_LEQUAL );                            // The Type Of Depth Test To Do
+    f->glDepthFunc( GL_LEQUAL );                            // The Type Of Depth Test To Do
 	PRINT_OPENGL_ERROR( "glDepthFunc( GL_LEQUAL )" );
 	// glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST ); // Really Nice Perspective Calculations <- removed from coreprofile
 #ifdef DEAD_CORE_PROFILE
@@ -6030,172 +6030,312 @@ void MeshWidget::resizeGL( [[maybe_unused]]int width , [[maybe_unused]]int heigh
 //!
 //! Actions performed:
 //! \todo this is broken with the qt6 change
-void MeshWidget::paintEvent( QPaintEvent *rEvent ) {
+// void MeshWidget::paintEvent( QPaintEvent *rEvent ) {
+// #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
+// 	cout << "[MeshWidget::" << __FUNCTION__ << "]" << endl;
+// #endif
+// 	PRINT_OPENGL_ERROR( "OLD_ERROR" );
+
+//     QOpenGLWidget::paintEvent( rEvent );
+//     PRINT_OPENGL_ERROR( "QOpenGLWidget::paintEvent( rEvent )" );
+
+// 	//! Initialize shaders (ONCE!)
+//     if( mVAO == _NOT_A_NUMBER_UINT_ ) {
+// 		initializeVAO();
+// 		initializeShaders();
+// 	}
+
+// 	//! Clear color buffer.
+// 	glClear( GL_COLOR_BUFFER_BIT );
+// 	PRINT_OPENGL_ERROR( "glClear( GL_COLOR_BUFFER_BIT )" );
+
+// 	//! Clear depth buffer.
+// 	glClear( GL_DEPTH_BUFFER_BIT );
+// 	PRINT_OPENGL_ERROR( "glClear( GL_DEPTH_BUFFER_BIT )" );
+
+//     //! \todo set autoBufferswap wasnt done atm, so skip for now (swapBuffers is also not found in QOpenGLWidget
+//     if( mMeshVisual == nullptr ) {
+// 		//! Do nothing, when no mesh is present.
+//         //cerr << "{MeshWidget::" << __FUNCTION__ << "] ERROR: Mesh not present!" << endl;
+//         //swapBuffers(); // has to be called, when setAutoBufferSwap(false) was set in the constructor to preven flickering when QPainter.end is called!
+//         return;
+//     }
+
+// 	//! Enable OpenGL depth test.
+// 	glEnable( GL_DEPTH_TEST );
+// 	//! Setup Alpha blendig for OpenGL.
+// 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+// 	glEnable( GL_BLEND );
+//     //! Draw the Mesh.
+//     if( mMeshVisual != nullptr ) {
+//         mMeshVisual->glPaint();
+//     }
+
+//     //! Optional; draw RGB histogram of the scene. Highly recommended to be called before paintScreenInfo, paintOrthoGrid and paintHistogram!
+// 	paintHistogramScence(); // This sould be first -- otherwise unwanted elements like logos are accounted to (this color) histogram.
+
+// 	//! Draw (optional) Grid(s) in orthographic and perspective projection. The latter may give the impression of scale, but can not be used as such!
+// 	glBlendFunc( GL_DST_COLOR, GL_ZERO ); // Allows for a nice overlay.
+// 	// Background canvas using a VBOs and shaders
+// 	bool showGridRect;
+// 	bool showGridPolarLines;
+// 	bool showGridPolarCircles;
+// 	bool showGridHighLightCenter;
+// 	getParamFlagMeshWidget( SHOW_GRID_RECTANGULAR, &showGridRect );
+// 	getParamFlagMeshWidget( SHOW_GRID_POLAR_LINES, &showGridPolarLines );
+// 	getParamFlagMeshWidget( SHOW_GRID_POLAR_CIRCLES, &showGridPolarCircles );
+// 	getParamFlagMeshWidget( SHOW_GRID_HIGHLIGHTCENTER, &showGridHighLightCenter );
+// 	if( showGridRect ) {
+// 		paintBackgroundShader( &mShaderGridOrtho );
+// 	}
+// 	if( showGridPolarLines ) {
+// 		paintBackgroundShader( &mShaderGridPolarLines );
+// 	}
+// 	if( showGridPolarCircles ) {
+// 		paintBackgroundShader( &mShaderGridPolarCircles );
+// 	}
+// 	if( ( showGridRect || showGridPolarLines || showGridPolarCircles ) && showGridHighLightCenter ) {
+// 		paintBackgroundShader( &mShaderGridHighLightCenter );
+// 	}
+
+
+// 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); // Set to the de-facto default.
+
+//     mMeshVisual->glPaintTransparent(); //draw transparent faces. Necessary to do it after the background has been drawn, but before overlays
+
+// 	// Face culling conflicts with QPainter. Therefore it is turned of and the flag state stored to turn it back on, after painting is done.
+// 	// ... and QPainter can't be used with OpenGL CoreProfile
+// 	//GLboolean cullFace;
+// 	//glGetBooleanv( GL_CULL_FACE, &cullFace );
+// 	//glDisable( GL_CULL_FACE );
+
+// 	//! Draw (optional) Histogram of a mesh property.
+// 	paintHistogram();
+
+// 	//! Draw the selection of polygonal area.
+// 	paintSelection();
+
+
+// 	mMeshVisual->glPaintOverlay();
+
+// 	//! Draw the GigaMesh logo.
+// 	bool showGigaMeshLogo = true;
+// 	bool showGigaMeshLogoForced = true;
+// 	getParamFlagMeshWidget( SHOW_GIGAMESH_LOGO_CANVAS, &showGigaMeshLogo );
+// 	getParamFlagMeshWidget( SHOW_GIGAMESH_LOGO_FORCED, &showGigaMeshLogoForced );
+// 	if( showGigaMeshLogo | showGigaMeshLogoForced ) {
+// 		paintRasterImage( TEXMAP_GIGAMESH_LOGO, -20, -20, 150, 150 );
+// 	}
+
+// 	//! Draw the keyboard layout.
+// 	bool showKeyboardCamera = false;
+// 	getParamFlagMeshWidget( SHOW_KEYBOARD_CAMERA, &showKeyboardCamera );
+// 	if( showKeyboardCamera ) {
+// 		int layoutImWidth  =  768;
+// 		int layoutImHeigth =  320;
+// 		paintRasterImage( TEXMAP_KEYBOARD_LAYOUT,
+// 		                  max( (width()-layoutImWidth)/2, 20 ), 20,
+// 		                  layoutImWidth, layoutImHeigth );
+// 	}
+
+// 	//! Compute frames per second and pass it to the sidebar.
+// 	float framesPerSecond = 0.0f;
+// 	if ( ( mFrameCount == 30 ) || ( mFrameCount == 0 ) ) {
+// 		mFrameTime.start();
+// 		mFrameCount = 0;
+// 	} else {
+// 		framesPerSecond = float(1000*mFrameCount) / mFrameTime.elapsed();
+// 	}
+// 	mFrameCount++;
+// 	emit sViewPortInfo( VPINFO_FRAMES_PER_SEC, QString::number( framesPerSecond, 'f', 2 ) );
+
+
+// 	//! \todo move to changedSelPrim
+// 	// Show selection:
+// 	Primitive* primSelected = mMeshVisual->getPrimitiveSelected();
+// 	if( primSelected != nullptr ) {
+// 		uint64_t labelNr;
+// 		if( primSelected->getLabel( labelNr ) ) {
+// 			emit sViewPortInfo( VPINFO_LABEL_ID, QString::number( labelNr ) );
+// 		} else {
+// 			emit sViewPortInfo( VPINFO_LABEL_ID, QString( "not set" ) );
+// 		}
+// 		double funcVal;
+// 		if( primSelected->getFuncValue( &funcVal ) ) {
+// 			emit sViewPortInfo( VPINFO_FUNCTION_VALUE, QString::number( funcVal ) );
+// 		} else {
+// 			emit sViewPortInfo( VPINFO_FUNCTION_VALUE, QString( "err" ) );
+// 		}
+// 	} else {
+// 		emit sViewPortInfo( VPINFO_FUNCTION_VALUE, QString( "n.a." ) );
+// 		emit sViewPortInfo( VPINFO_LABEL_ID, QString( "n.a." ) );
+// 	}
+
+
+// 	// Example for adding text using QPainter:
+// 	// NOTE: that this will NOT WORK with OpenGL CoreProfile!
+// 	//--------------------------------------------------------
+// 	//QPainter painter;
+// 	//painter.begin(this);
+// 	//painter.setRenderHint(QPainter::Antialiasing);
+// 	//painter.setPen(QPen(Qt::red));
+// 	//QFont textFont;
+// 	//textFont.setPixelSize(50);
+// 	//painter.setFont(textFont);
+// 	//painter.drawText(QRect(50, 50, 500, 100), Qt::AlignCenter, QString("TestPaint"));
+// 	//painter.end();
+
+// 	// Turn on backface culling, when disabled because of QPainter
+// 	// ... and QPainter can't be used with OpenGL CoreProfile
+// 	//if( cullFace ) {
+// 	//	glEnable( GL_CULL_FACE );
+// 	//}
+//     //! \todo put swap buffer equivalent back in if necessary (swap buffers is no method in QOpenGLWidget anymore though
+//     //swapBuffers(); // has to be called, when setAutoBufferSwap(false) was set in the constructor to preven flickering when QPainter.end is called!
+//     //! \todo check whether this makes sense: swap buffer stuff is now in QSurfaceFormat:
+//     //! format().setSwapBehavior( QSurfaceFormat::DoubleBuffer );
+// #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
+// 	cout << "[MeshWidget::" << __FUNCTION__ << "] DONE." << endl;
+// #endif
+// }
+
+void MeshWidget::paintGL() {
 #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
-	cout << "[MeshWidget::" << __FUNCTION__ << "]" << endl;
+    cout << "[MeshWidget::" << __FUNCTION__ << "]" << endl;
 #endif
-	PRINT_OPENGL_ERROR( "OLD_ERROR" );
+    PRINT_OPENGL_ERROR( "OLD_ERROR" );
 
-    QOpenGLWidget::paintEvent( rEvent );
-    PRINT_OPENGL_ERROR( "QOpenGLWidget::paintEvent( rEvent )" );
-
-	//! Initialize shaders (ONCE!)
+    //! Initialize shaders (ONCE!)
     if( mVAO == _NOT_A_NUMBER_UINT_ ) {
-		initializeVAO();
-		initializeShaders();
-	}
+        initializeVAO();
+        initializeShaders();
+    }
 
-	//! Clear color buffer.
-	glClear( GL_COLOR_BUFFER_BIT );
-	PRINT_OPENGL_ERROR( "glClear( GL_COLOR_BUFFER_BIT )" );
+    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
 
-	//! Clear depth buffer.
-	glClear( GL_DEPTH_BUFFER_BIT );
-	PRINT_OPENGL_ERROR( "glClear( GL_DEPTH_BUFFER_BIT )" );
+    //! Clear color buffer.
+    f->glClear( GL_COLOR_BUFFER_BIT );
+    PRINT_OPENGL_ERROR( "glClear( GL_COLOR_BUFFER_BIT )" );
+
+    //! Clear depth buffer.
+    f->glClear( GL_DEPTH_BUFFER_BIT );
+    PRINT_OPENGL_ERROR( "glClear( GL_DEPTH_BUFFER_BIT )" );
 
     //! \todo set autoBufferswap wasnt done atm, so skip for now (swapBuffers is also not found in QOpenGLWidget
     if( mMeshVisual == nullptr ) {
-		//! Do nothing, when no mesh is present.
+        //! Do nothing, when no mesh is present.
         //cerr << "{MeshWidget::" << __FUNCTION__ << "] ERROR: Mesh not present!" << endl;
         //swapBuffers(); // has to be called, when setAutoBufferSwap(false) was set in the constructor to preven flickering when QPainter.end is called!
         return;
     }
 
-	//! Enable OpenGL depth test.
-	glEnable( GL_DEPTH_TEST );
-	//! Setup Alpha blendig for OpenGL.
-	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-	glEnable( GL_BLEND );
+    //! Enable OpenGL depth test.
+    f->glEnable( GL_DEPTH_TEST );
+    //! Setup Alpha blendig for OpenGL.
+    f->glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    f->glEnable( GL_BLEND );
     //! Draw the Mesh.
     if( mMeshVisual != nullptr ) {
         mMeshVisual->glPaint();
     }
 
     //! Optional; draw RGB histogram of the scene. Highly recommended to be called before paintScreenInfo, paintOrthoGrid and paintHistogram!
-	paintHistogramScence(); // This sould be first -- otherwise unwanted elements like logos are accounted to (this color) histogram.
+    paintHistogramScence(); // This sould be first -- otherwise unwanted elements like logos are accounted to (this color) histogram.
 
-	//! Draw (optional) Grid(s) in orthographic and perspective projection. The latter may give the impression of scale, but can not be used as such!
-	glBlendFunc( GL_DST_COLOR, GL_ZERO ); // Allows for a nice overlay.
-	// Background canvas using a VBOs and shaders
-	bool showGridRect;
-	bool showGridPolarLines;
-	bool showGridPolarCircles;
-	bool showGridHighLightCenter;
-	getParamFlagMeshWidget( SHOW_GRID_RECTANGULAR, &showGridRect );
-	getParamFlagMeshWidget( SHOW_GRID_POLAR_LINES, &showGridPolarLines );
-	getParamFlagMeshWidget( SHOW_GRID_POLAR_CIRCLES, &showGridPolarCircles );
-	getParamFlagMeshWidget( SHOW_GRID_HIGHLIGHTCENTER, &showGridHighLightCenter );
-	if( showGridRect ) {
-		paintBackgroundShader( &mShaderGridOrtho );
-	}
-	if( showGridPolarLines ) {
-		paintBackgroundShader( &mShaderGridPolarLines );
-	}
-	if( showGridPolarCircles ) {
-		paintBackgroundShader( &mShaderGridPolarCircles );
-	}
-	if( ( showGridRect || showGridPolarLines || showGridPolarCircles ) && showGridHighLightCenter ) {
-		paintBackgroundShader( &mShaderGridHighLightCenter );
-	}
+    //! Draw (optional) Grid(s) in orthographic and perspective projection. The latter may give the impression of scale, but can not be used as such!
+    f->glBlendFunc( GL_DST_COLOR, GL_ZERO ); // Allows for a nice overlay.
+    // Background canvas using a VBOs and shaders
+    bool showGridRect;
+    bool showGridPolarLines;
+    bool showGridPolarCircles;
+    bool showGridHighLightCenter;
+    getParamFlagMeshWidget( SHOW_GRID_RECTANGULAR, &showGridRect );
+    getParamFlagMeshWidget( SHOW_GRID_POLAR_LINES, &showGridPolarLines );
+    getParamFlagMeshWidget( SHOW_GRID_POLAR_CIRCLES, &showGridPolarCircles );
+    getParamFlagMeshWidget( SHOW_GRID_HIGHLIGHTCENTER, &showGridHighLightCenter );
+    if( showGridRect ) {
+        paintBackgroundShader( &mShaderGridOrtho );
+    }
+    if( showGridPolarLines ) {
+        paintBackgroundShader( &mShaderGridPolarLines );
+    }
+    if( showGridPolarCircles ) {
+        paintBackgroundShader( &mShaderGridPolarCircles );
+    }
+    if( ( showGridRect || showGridPolarLines || showGridPolarCircles ) && showGridHighLightCenter ) {
+        paintBackgroundShader( &mShaderGridHighLightCenter );
+    }
 
-
-	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); // Set to the de-facto default.
+    f->glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); // Set to the de-facto default.
 
     mMeshVisual->glPaintTransparent(); //draw transparent faces. Necessary to do it after the background has been drawn, but before overlays
 
-	// Face culling conflicts with QPainter. Therefore it is turned of and the flag state stored to turn it back on, after painting is done.
-	// ... and QPainter can't be used with OpenGL CoreProfile
-	//GLboolean cullFace;
-	//glGetBooleanv( GL_CULL_FACE, &cullFace );
-	//glDisable( GL_CULL_FACE );
+    //! Draw (optional) Histogram of a mesh property.
+    paintHistogram();
 
-	//! Draw (optional) Histogram of a mesh property.
-	paintHistogram();
+    //! Draw the selection of polygonal area.
+    paintSelection();
 
-	//! Draw the selection of polygonal area.
-	paintSelection();
+    mMeshVisual->glPaintOverlay();
 
+    //! Draw the GigaMesh logo.
+    bool showGigaMeshLogo = true;
+    bool showGigaMeshLogoForced = true;
+    getParamFlagMeshWidget( SHOW_GIGAMESH_LOGO_CANVAS, &showGigaMeshLogo );
+    getParamFlagMeshWidget( SHOW_GIGAMESH_LOGO_FORCED, &showGigaMeshLogoForced );
+    if( showGigaMeshLogo | showGigaMeshLogoForced ) {
+        paintRasterImage( TEXMAP_GIGAMESH_LOGO, -20, -20, 150, 150 );
+    }
 
-	mMeshVisual->glPaintOverlay();
+    //! Draw the keyboard layout.
+    bool showKeyboardCamera = false;
+    getParamFlagMeshWidget( SHOW_KEYBOARD_CAMERA, &showKeyboardCamera );
+    if( showKeyboardCamera ) {
+        int layoutImWidth  =  768;
+        int layoutImHeigth =  320;
+        paintRasterImage( TEXMAP_KEYBOARD_LAYOUT,
+                          max( (width()-layoutImWidth)/2, 20 ), 20,
+                          layoutImWidth, layoutImHeigth );
+    }
 
-	//! Draw the GigaMesh logo.
-	bool showGigaMeshLogo = true;
-	bool showGigaMeshLogoForced = true;
-	getParamFlagMeshWidget( SHOW_GIGAMESH_LOGO_CANVAS, &showGigaMeshLogo );
-	getParamFlagMeshWidget( SHOW_GIGAMESH_LOGO_FORCED, &showGigaMeshLogoForced );
-	if( showGigaMeshLogo | showGigaMeshLogoForced ) {
-		paintRasterImage( TEXMAP_GIGAMESH_LOGO, -20, -20, 150, 150 );
-	}
-
-	//! Draw the keyboard layout.
-	bool showKeyboardCamera = false;
-	getParamFlagMeshWidget( SHOW_KEYBOARD_CAMERA, &showKeyboardCamera );
-	if( showKeyboardCamera ) {
-		int layoutImWidth  =  768;
-		int layoutImHeigth =  320;
-		paintRasterImage( TEXMAP_KEYBOARD_LAYOUT,
-		                  max( (width()-layoutImWidth)/2, 20 ), 20,
-		                  layoutImWidth, layoutImHeigth );
-	}
-
-	//! Compute frames per second and pass it to the sidebar.
-	float framesPerSecond = 0.0f;
-	if ( ( mFrameCount == 30 ) || ( mFrameCount == 0 ) ) {
-		mFrameTime.start();
-		mFrameCount = 0;
-	} else {
-		framesPerSecond = float(1000*mFrameCount) / mFrameTime.elapsed();
-	}
-	mFrameCount++;
-	emit sViewPortInfo( VPINFO_FRAMES_PER_SEC, QString::number( framesPerSecond, 'f', 2 ) );
+    //! Compute frames per second and pass it to the sidebar.
+    float framesPerSecond = 0.0f;
+    if ( ( mFrameCount == 30 ) || ( mFrameCount == 0 ) ) {
+        mFrameTime.start();
+        mFrameCount = 0;
+    } else {
+        framesPerSecond = float(1000*mFrameCount) / mFrameTime.elapsed();
+    }
+    mFrameCount++;
+    emit sViewPortInfo( VPINFO_FRAMES_PER_SEC, QString::number( framesPerSecond, 'f', 2 ) );
 
 
-	//! \todo move to changedSelPrim
-	// Show selection:
-	Primitive* primSelected = mMeshVisual->getPrimitiveSelected();
-	if( primSelected != nullptr ) {
-		uint64_t labelNr;
-		if( primSelected->getLabel( labelNr ) ) {
-			emit sViewPortInfo( VPINFO_LABEL_ID, QString::number( labelNr ) );
-		} else {
-			emit sViewPortInfo( VPINFO_LABEL_ID, QString( "not set" ) );
-		}
-		double funcVal;
-		if( primSelected->getFuncValue( &funcVal ) ) {
-			emit sViewPortInfo( VPINFO_FUNCTION_VALUE, QString::number( funcVal ) );
-		} else {
-			emit sViewPortInfo( VPINFO_FUNCTION_VALUE, QString( "err" ) );
-		}
-	} else {
-		emit sViewPortInfo( VPINFO_FUNCTION_VALUE, QString( "n.a." ) );
-		emit sViewPortInfo( VPINFO_LABEL_ID, QString( "n.a." ) );
-	}
-
-
-	// Example for adding text using QPainter:
-	// NOTE: that this will NOT WORK with OpenGL CoreProfile!
-	//--------------------------------------------------------
-	//QPainter painter;
-	//painter.begin(this);
-	//painter.setRenderHint(QPainter::Antialiasing);
-	//painter.setPen(QPen(Qt::red));
-	//QFont textFont;
-	//textFont.setPixelSize(50);
-	//painter.setFont(textFont);
-	//painter.drawText(QRect(50, 50, 500, 100), Qt::AlignCenter, QString("TestPaint"));
-	//painter.end();
-
-	// Turn on backface culling, when disabled because of QPainter
-	// ... and QPainter can't be used with OpenGL CoreProfile
-	//if( cullFace ) {
-	//	glEnable( GL_CULL_FACE );
-	//}
+    //! \todo move to changedSelPrim
+    // Show selection:
+    Primitive* primSelected = mMeshVisual->getPrimitiveSelected();
+    if( primSelected != nullptr ) {
+        uint64_t labelNr;
+        if( primSelected->getLabel( labelNr ) ) {
+            emit sViewPortInfo( VPINFO_LABEL_ID, QString::number( labelNr ) );
+        } else {
+            emit sViewPortInfo( VPINFO_LABEL_ID, QString( "not set" ) );
+        }
+        double funcVal;
+        if( primSelected->getFuncValue( &funcVal ) ) {
+            emit sViewPortInfo( VPINFO_FUNCTION_VALUE, QString::number( funcVal ) );
+        } else {
+            emit sViewPortInfo( VPINFO_FUNCTION_VALUE, QString( "err" ) );
+        }
+    } else {
+        emit sViewPortInfo( VPINFO_FUNCTION_VALUE, QString( "n.a." ) );
+        emit sViewPortInfo( VPINFO_LABEL_ID, QString( "n.a." ) );
+    }
     //! \todo put swap buffer equivalent back in if necessary (swap buffers is no method in QOpenGLWidget anymore though
     //swapBuffers(); // has to be called, when setAutoBufferSwap(false) was set in the constructor to preven flickering when QPainter.end is called!
     //! \todo check whether this makes sense: swap buffer stuff is now in QSurfaceFormat:
     //! format().setSwapBehavior( QSurfaceFormat::DoubleBuffer );
 #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
-	cout << "[MeshWidget::" << __FUNCTION__ << "] DONE." << endl;
+    cout << "[MeshWidget::" << __FUNCTION__ << "] DONE." << endl;
 #endif
 }
 
@@ -7648,19 +7788,19 @@ void MeshWidget::wheelEventZoom(
 }
 
 // //! Takes care to properly resize this OpenGL widget.
-void MeshWidget::resizeEvent( [[maybe_unused]] QResizeEvent * event  ) {
-#ifdef DEBUG_SHOW_ALL_METHOD_CALLS
-    std::cout << "[MeshWidget::" << __FUNCTION__ << "] " << event->size().width()
-              << " x " << event->size().height() << std::endl;
-#endif
-    //QGLWidget::resizeEvent( event );
-    if( mMeshVisual == nullptr ) {
-        // No mesh present -> nothing to do.
-        return;
-    }
-    setView();
-    update();
-}
+// void MeshWidget::resizeEvent( [[maybe_unused]] QResizeEvent * event  ) {
+// #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
+//     std::cout << "[MeshWidget::" << __FUNCTION__ << "] " << event->size().width()
+//               << " x " << event->size().height() << std::endl;
+// #endif
+//     //QGLWidget::resizeEvent( event );
+//     if( mMeshVisual == nullptr ) {
+//         // No mesh present -> nothing to do.
+//         return;
+//     }
+//     setView();
+//     update();
+// }
 
 //! Initial Setup of the camera, the light position(s) and the material properties.
 void MeshWidget::setViewInitial() {

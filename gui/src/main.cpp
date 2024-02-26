@@ -166,7 +166,7 @@ int main( int argc, char *argv[] ) {
     //! \todo set sample number (no idea what to choose though) Function for QSurfaceFormat is .smaples(int) and takes number of samples per pixel for multisampling
     //glFormat.setSampleBuffers( true );
     //! \todo check if number makes sense:
-    //glFormat.setSamples(2);
+    glFormat.setSamples(4);
 
     QSurfaceFormat::setDefaultFormat(glFormat); // Set the default format for the application
 
