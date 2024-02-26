@@ -167,6 +167,7 @@ int main( int argc, char *argv[] ) {
     //glFormat.setSampleBuffers( true );
     //! \todo check if number makes sense:
     glFormat.setSamples(4);
+    glFormat.setSwapBehavior( QSurfaceFormat::DoubleBuffer ); // added, but not sure whether necessary?
 
     QSurfaceFormat::setDefaultFormat(glFormat); // Set the default format for the application
 
