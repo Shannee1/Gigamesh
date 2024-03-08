@@ -75,7 +75,7 @@ class MeshQt;
 //!
 //! Selection of a Primitive: only one type (Vertex, Edge or Face) can be selected.
 
-class MeshWidget : public QOpenGLWidget, public MeshWidgetParams, public MeshGLColors {
+class MeshWidget : public QOpenGLWidget, public MeshWidgetParams, public MeshGLColors, protected QOpenGLFunctions {
     Q_OBJECT
 
 public:
@@ -190,7 +190,7 @@ public slots:
 private:
 
 	// Helper class to render Screenshots into an OffscreenBuffer => only have one of the class initialized at a time
-	class OffscreenBuffer
+    class OffscreenBuffer : protected QOpenGLFunctions
 	{
 	public:
         OffscreenBuffer(QOpenGLContext *context);
@@ -311,12 +311,12 @@ private:
 	void initializeVAO();
 	void initializeShaders();
     void resizeGL( int width, int height ) override;
-    // void paintEvent( QPaintEvent *rEvent ) override;
+    // void paintEvent( QPaintEvent *rEvent ) override; // needed to be replaced by paintGL when moving to QOpenGLWidget
     void paintGL() override;
 	void paintSelection();
 	bool paintHistogram();
 	bool paintHistogramScence();
-    // void resizeEvent( QResizeEvent * event ) override;
+    // void resizeEvent( QResizeEvent * event ) override; // needed to be replaced by paintGL when moving to QOpenGLWidget
 
 	// Keyboard and Mouse interaction:
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -381,11 +381,11 @@ private:
 
 	// One shader per background type and one shader for images:
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
-	QOpenGLShaderProgram* mShaderGridOrtho;        //!< Shader program for rectangular grid.
-	QOpenGLShaderProgram* mShaderGridPolarLines;   //!< Shader program for polar grid -- lines.
-	QOpenGLShaderProgram* mShaderGridPolarCircles; //!< Shader program for polar grid -- concentric circles.
-	QOpenGLShaderProgram* mShaderGridHighLightCenter;  //!< Shader program highlighting the central pixel.
-	QOpenGLShaderProgram* mShaderImage;            //!< Shader program for display of images e.g. logos, because QPainter is not compliant with OpenGL CoreProfile.
+    QOpenGLShaderProgram* mShaderGridOrtho;              //!< Shader program for rectangular grid.
+    QOpenGLShaderProgram* mShaderGridPolarLines;         //!< Shader program for polar grid -- lines.
+    QOpenGLShaderProgram* mShaderGridPolarCircles;       //!< Shader program for polar grid -- concentric circles.
+    QOpenGLShaderProgram* mShaderGridHighLightCenter;    //!< Shader program highlighting the central pixel.
+    QOpenGLShaderProgram* mShaderImage;                  //!< Shader program for display of images e.g. logos, because QPainter is not compliant with OpenGL CoreProfile.
 
 	// Texture maps used by the shader programs
 	//------------------------------------------------------------------------------------------------------------------------------------------------------

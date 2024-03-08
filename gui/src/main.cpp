@@ -139,16 +139,15 @@ int main( int argc, char *argv[] ) {
     //	SHOW_MSGBOX_WARN( "No OpenGL", "ERROR: This system has no OpenGL support!" );
     //	exit( EXIT_FAILURE );
     //}
-    /*if (!QOpenGLContext::supportsOpenGL()) {
-        LOG::fatal() << "[Main] ERROR: This system has no OpenGL support!\n";
-        SHOW_MSGBOX_WARN( "No OpenGL", "ERROR: This system has no OpenGL support!" );
-        exit( EXIT_FAILURE );
-    }*/
 
 	// Specify an OpenGL 3.2 format using the Core profile.
 	// That is, no old-school fixed pipeline functionality
     QSurfaceFormat glFormat; //QGLFormat is deprecated...
+    glFormat.setRenderableType(QSurfaceFormat::OpenGL);
     glFormat.setVersion(4,3);
+
+    glFormat.setDepthBufferSize(24); //! \todo needed?
+    glFormat.setStencilBufferSize(8); //! \todo needed?
 	//! \todo QSurfaceFormat is the replacment for the deprecated QGLFormat
     //if(QSurfaceFormat::openGLVersionFlags() & QSurfaceFormat::OpenGL_Version_4_3)
     //	glFormat.setVersion( 4, 3 );        //Higher Version needed to handle transparency in shader. Revert to 3.3 if it breaks core functionalities...
@@ -161,7 +160,6 @@ int main( int argc, char *argv[] ) {
     //    exit( EXIT_FAILURE );
     //}
 
-
     glFormat.setProfile( QSurfaceFormat::CoreProfile ); // Do not even think to change the Profile to CompatibilityProfile !!!
     //! \todo set sample number (no idea what to choose though) Function for QSurfaceFormat is .smaples(int) and takes number of samples per pixel for multisampling
     //glFormat.setSampleBuffers( true );
@@ -170,6 +168,14 @@ int main( int argc, char *argv[] ) {
     glFormat.setSwapBehavior( QSurfaceFormat::DoubleBuffer ); // added, but not sure whether necessary?
 
     QSurfaceFormat::setDefaultFormat(glFormat); // Set the default format for the application
+
+
+    //! \todo check if system supports openGl (maybe also before QSurface Format creation
+    // if (!QOpenGLContext::isValid()) {
+    //     LOG::fatal() << "[Main] ERROR: This system has no OpenGL support!\n";
+    //     SHOW_MSGBOX_WARN( "No OpenGL", "ERROR: This system has no OpenGL support!" );
+    //     exit( EXIT_FAILURE );
+    // }
 
     // The main window:
     QGMMainWindow mainWindow;

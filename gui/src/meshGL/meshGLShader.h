@@ -130,7 +130,7 @@ private:
 	bool                      mIsFboInitialized;
 
 	//SSBOs and variables for Transparency rendering
-	QOpenGLFunctions_4_3_Core mGL4_3Functions;  //<-------needed for ssbo´s
+    QOpenGLFunctions_4_3_Core mGL4_3Functions;  //<-------needed for ssbo´s
 
 	std::array<GLuint,3> mSSBOs;
 

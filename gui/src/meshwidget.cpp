@@ -84,8 +84,7 @@ MeshWidget::MeshWidget( const QSurfaceFormat &format, QWidget *parent )
 	//needed for selection
 	setMouseTracking(true);
 
-	if( parent != nullptr ) {
-        cout << "Resized to " << parent->geometry().size().height() << " , " << parent->geometry().size().width()  << endl;
+    if( parent != nullptr ) {
 		resize( parent->geometry().size() );
 	}
 
@@ -893,7 +892,7 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 	QObject::connect( this,        SIGNAL(sParamFlagMesh(MeshGLParams::eParamFlag,bool)), mMeshVisual, SLOT(setParamFlagMeshGL(MeshGLParams::eParamFlag,bool)) );
     QObject::connect( this,        SIGNAL(sSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(selectPoly(std::vector<QPoint>&)) );
     QObject::connect( this,        SIGNAL(sDeSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(deselectPoly(std::vector<QPoint>&)) );
-	QObject::connect( mMeshVisual, SIGNAL(updateGL()),                                    this,        SLOT(update())                                          );
+    QObject::connect( mMeshVisual, SIGNAL(updateGL()),                                    this,        SLOT(update())                                          );
 	// Interaction -----------------------------------------------------------------------------------------------------------------------------------------
 	QObject::connect( this,        SIGNAL(sApplyTransfromToPlane(Matrix4D)), mMeshVisual, SLOT(applyTransfromToPlane(Matrix4D)) );
 	QObject::connect( mMeshVisual, &MeshQt::sDefaultViewLight,               this,        &MeshWidget::defaultViewLight         );
@@ -939,8 +938,7 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 	setParamIntegerMeshWidget( MeshWidgetParams::SELECTION_MODE, MeshWidgetParams::SELECTION_MODE_VERTEX );
 
     // Update OpenGL context to default view
-    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-    f->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     //qglClearColor( Qt::white );
 	defaultViewLightZoom();
 
@@ -1745,8 +1743,7 @@ void MeshWidget::unloadMesh() {
 		// remove mesh, when one is present:
 		delete mMeshVisual;
         mMeshVisual = nullptr;
-        QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-        f->glClearColor(0.5f, 0.5f, 0.5f, 1.0f); //! \todo make color Qt::gray correct
+        glClearColor(0.5f, 0.5f, 0.5f, 1.0f); //! \todo make color Qt::gray correct
         //! qglClearColor( Qt::gray );  \todo qglClearColor not supported anymore, have to use glClearColor from QOpenGLFunctions
 		setView();
 		update();
@@ -1760,6 +1757,8 @@ void MeshWidget::initializeGL() {
 #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
 	cout << "[MeshWidget::" << __FUNCTION__ << "] " << endl;
 #endif
+    initializeOpenGLFunctions();
+
 	cout << "[MeshWidget::" << __FUNCTION__ << "] -----------------------------------------------------------" << endl;
 	cout << "[MeshWidget::" << __FUNCTION__ << "] Widget OpenGl: " << format().majorVersion() << "." << format().minorVersion() << endl;
 	cout << "[MeshWidget::" << __FUNCTION__ << "] Context valid: " << context()->isValid() << endl;
@@ -1770,11 +1769,12 @@ void MeshWidget::initializeGL() {
 	cout << "[MeshWidget::" << __FUNCTION__ << "]                     GLSL VERSION: " << reinterpret_cast<const char*>(glGetString( GL_SHADING_LANGUAGE_VERSION )) << endl;
 	cout << "[MeshWidget::" << __FUNCTION__ << "] -----------------------------------------------------------" << endl;
 
-    QSurfaceFormat glFormat = QOpenGLWidget::format();
+
+    //QSurfaceFormat glFormat = QOpenGLContext::currentContext()->format(); //QOpenGLWidget::format();
     //! \todo look for similar fct to old sampleBuffer in QSurfaceFormat (maybe hasAlpha() ???
     //! QGLFormat::sampleBuffers() previously returned true if multisample buffer support was enabled
     //! QSurfaceFormat::samples() returns number of samples per pixel when multisampling is enabled, -1 otherwise
-    if( glFormat.samples() == -1 ) {
+    if( QOpenGLContext::currentContext()->format().samples() == -1 ) {
         cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: Could not enable sample buffers!" << endl;
     }
     // deprecated:
@@ -1783,21 +1783,20 @@ void MeshWidget::initializeGL() {
     //}
 
     //setFormat( QGLFormat( QGL::DoubleBuffer | QGL::DepthBuffer ) ); // was in fileOpen and caused a addtional calls to initializeGL - maybe not necessary at all.
-    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-    f->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     //! qglClearColor( Qt::white ); \todo deprecated , use glClearColor
     PRINT_OPENGL_ERROR( "glClearColor( Qt::white ) or so (was updated)" );
 
 	//! \todo Source revision for OpenGL initaliation.
-    f->glEnable( GL_DEPTH_TEST );
+    glEnable( GL_DEPTH_TEST );
 	PRINT_OPENGL_ERROR( "glEnable( GL_DEPTH_TEST )" );
 
 	// Face culling:
-    f->glEnable( GL_CULL_FACE );
+    glEnable( GL_CULL_FACE );
 	PRINT_OPENGL_ERROR( "glEnable( GL_CULL_FACE )" );
-    f->glCullFace( GL_BACK ); // GL_FRONT or GL_BACK (default)
+    glCullFace( GL_BACK ); // GL_FRONT or GL_BACK (default)
 	PRINT_OPENGL_ERROR( "glCullFace( GL_BACK )" );
-    f->glFrontFace( GL_CCW ); // GL_CW or GL_CCW (default)
+    glFrontFace( GL_CCW ); // GL_CW or GL_CCW (default)
 	PRINT_OPENGL_ERROR( "glFrontFace( GL_CCW )" );
 
 	//glHint( GL_POINT_SMOOTH_HINT, GL_NICEST ); // Invalid enum in windows. Anyway, this is deprecated.
@@ -1808,7 +1807,7 @@ void MeshWidget::initializeGL() {
 	//glEnable( GL_LINE_SMOOTH );
 	//glEnable( GL_POLYGON_SMOOTH );
 	// http://nehe.gamedev.net/data/lessons/lesson.asp?lesson=46
-    f->glEnable( GL_MULTISAMPLE );
+    glEnable( GL_MULTISAMPLE );
 	PRINT_OPENGL_ERROR( "glEnable( GL_MULTISAMPLE )" );
 
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
@@ -1822,9 +1821,9 @@ void MeshWidget::initializeGL() {
 	//glEnable( GL_POLYGON_OFFSET_POINT ); // for all line objects
 	//PRINT_OPENGL_ERROR( "glEnable( GL_POLYGON_OFFSET_.... )" );
 
-    f->glClearDepthf( 1.0f );                                // Depth Buffer Setup
+    glClearDepthf( 1.0f );                                // Depth Buffer Setup
 	PRINT_OPENGL_ERROR( "glClearDepth( 1.0f )" );
-    f->glDepthFunc( GL_LEQUAL );                            // The Type Of Depth Test To Do
+    glDepthFunc( GL_LEQUAL );                            // The Type Of Depth Test To Do
 	PRINT_OPENGL_ERROR( "glDepthFunc( GL_LEQUAL )" );
 	// glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST ); // Really Nice Perspective Calculations <- removed from coreprofile
 #ifdef DEAD_CORE_PROFILE
@@ -3044,7 +3043,7 @@ bool MeshWidget::screenshotSingle( const QString&   rFileName,   //!< Filename t
 
 	cout << "[MeshWidget::" << __FUNCTION__ << "] extension: " << fileExtension.toStdString() << endl;
 
-	bool ret = false;
+    bool ret = false;
 
 	{
 		OffscreenBuffer offscreenBuffer(context());
@@ -3424,7 +3423,6 @@ bool MeshWidget::fetchFrameAndZBuffer(unsigned char*&   rImRGBA,          //!< I
 	rImHeight = colHeight;
 	rImRGBA   = new unsigned char[rImWidth*4*rImHeight];
 
-
 	// Set the crop size to the image size. Otherwise the values are invalid, when there is nothing to crop.
 	uint64_t xMin = 0;
 	uint64_t xMax = rImWidth-1;
@@ -3619,7 +3617,7 @@ bool MeshWidget::screenshotPNG(const QString& rFileName,
 	if( !fetchFrameAndZBuffer( imRGBA, imWidth, imHeight, mParamFlag[CROP_SCREENSHOTS], offscreenBuffer, opaqueBackground ) ) {
 		cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: fetchFrameAndZBuffer failed!" << endl;
 		return( false );
-	}
+    }
 
 	// Set resolution in DPI, when the orthographic projection is used.
 	bool orthoMode = false;
@@ -3635,7 +3633,7 @@ bool MeshWidget::screenshotPNG(const QString& rFileName,
 	{
 		cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: getViewPortDPM failed!" << endl;
 		return false;
-	}
+    }
 
 	// Write the file:
 	bool writeOk = writePNG( rFileName, imWidth, imHeight, imRGBA, dpm, dpm );
@@ -3667,8 +3665,7 @@ void MeshWidget::selectColorBackground() {
 	if( !rgbNew.isValid() ) { // Cancel was pressed.
 		return;
     }
-    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-    f->glClearColor(rgbNew.redF(), rgbNew.greenF(), rgbNew.blueF(), rgbNew.alphaF());
+    glClearColor(rgbNew.redF(), rgbNew.greenF(), rgbNew.blueF(), rgbNew.alphaF());
     //! qglClearColor( rgbNew ); deprecated use glClearColor
 	update();
 }
@@ -4261,7 +4258,7 @@ bool MeshWidget::screenshotSVG( const QString& rFileName, const QString& rFileNa
 	uint64_t imHeight;
 	unsigned char* imRGBA;
 	{
-		OffscreenBuffer offscreenBuffer(context());
+        OffscreenBuffer offscreenBuffer(context());
 
 		int defaultBuffer = 0;
 		mMeshVisual->getParamIntMeshGL(MeshGLParams::DEFAULT_FRAMEBUFFER_ID, &defaultBuffer);
@@ -6211,14 +6208,12 @@ void MeshWidget::paintGL() {
         initializeShaders();
     }
 
-    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-
     //! Clear color buffer.
-    f->glClear( GL_COLOR_BUFFER_BIT );
+    glClear( GL_COLOR_BUFFER_BIT );
     PRINT_OPENGL_ERROR( "glClear( GL_COLOR_BUFFER_BIT )" );
 
     //! Clear depth buffer.
-    f->glClear( GL_DEPTH_BUFFER_BIT );
+    glClear( GL_DEPTH_BUFFER_BIT );
     PRINT_OPENGL_ERROR( "glClear( GL_DEPTH_BUFFER_BIT )" );
 
     //! \todo set autoBufferswap wasnt done atm, so skip for now (swapBuffers is also not found in QOpenGLWidget
@@ -6230,10 +6225,10 @@ void MeshWidget::paintGL() {
     }
 
     //! Enable OpenGL depth test.
-    f->glEnable( GL_DEPTH_TEST );
+    glEnable( GL_DEPTH_TEST );
     //! Setup Alpha blendig for OpenGL.
-    f->glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    f->glEnable( GL_BLEND );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glEnable( GL_BLEND );
     //! Draw the Mesh.
     if( mMeshVisual != nullptr ) {
         mMeshVisual->glPaint();
@@ -6243,7 +6238,7 @@ void MeshWidget::paintGL() {
     paintHistogramScence(); // This sould be first -- otherwise unwanted elements like logos are accounted to (this color) histogram.
 
     //! Draw (optional) Grid(s) in orthographic and perspective projection. The latter may give the impression of scale, but can not be used as such!
-    f->glBlendFunc( GL_DST_COLOR, GL_ZERO ); // Allows for a nice overlay.
+    glBlendFunc( GL_DST_COLOR, GL_ZERO ); // Allows for a nice overlay.
     // Background canvas using a VBOs and shaders
     bool showGridRect;
     bool showGridPolarLines;
@@ -6266,7 +6261,7 @@ void MeshWidget::paintGL() {
         paintBackgroundShader( &mShaderGridHighLightCenter );
     }
 
-    f->glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); // Set to the de-facto default.
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ); // Set to the de-facto default.
 
     mMeshVisual->glPaintTransparent(); //draw transparent faces. Necessary to do it after the background has been drawn, but before overlays
 
@@ -8034,8 +8029,11 @@ bool MeshWidget::setPlaneHNFByView()
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 // implementation of helper class for offscreen buffer
 
-MeshWidget::OffscreenBuffer::OffscreenBuffer(QOpenGLContext* context) : mContext(context)
+MeshWidget::OffscreenBuffer::OffscreenBuffer(QOpenGLContext* context) //: mContext(context)
 {
+    mContext = context;
+    initializeOpenGLFunctions();
+
 	GLint viewportSize[4];
 	glGetIntegerv(GL_VIEWPORT, viewportSize);
 	mTexWidth = viewportSize[2];
@@ -8077,6 +8075,13 @@ MeshWidget::OffscreenBuffer::OffscreenBuffer(QOpenGLContext* context) : mContext
 	framebufferTexture2D(GL_FRAMEBUFFER,  GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthTextureID, 0);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Check for framebuffer completeness
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        // Handle framebuffer completeness error
+        qWarning() << "Error: Framebuffer is incomplete"; //! \todo proper error handling
+    }
 }
 
 MeshWidget::OffscreenBuffer::~OffscreenBuffer()

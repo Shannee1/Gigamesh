@@ -57,7 +57,7 @@ class MeshGLColors {
 		};
 
 		bool getColorSettings( eColorSettings rColorId, GLfloat* rVec4 );
-		bool setColorSettings(eColorSettings rColorId, const GLfloat* iVec4 );
+        bool setColorSettings( eColorSettings rColorId, const GLfloat* iVec4 );
 	protected:
 		GLubyte mColorSetting[COLOR_SETTING_COUNT][4]; //!< Selected colors.
 };

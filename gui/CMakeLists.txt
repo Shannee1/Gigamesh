@@ -2,13 +2,6 @@ cmake_minimum_required(VERSION 3.15, FATAL_ERROR)
 
 set(OpenGL_GL_PREFERENCE GLVND)
 
-#list(APPEND CMAKE_PREFIX_PATH "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake/Qt6HostInfo")
-#set(QT_HOST_PATH "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake/Qt6HostInfo")
-#set(Qt6ShaderTools_DIR "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake")
-#set(CMAKE_PREFIX_PATH "/home/jp/Qt/6.5.2/Src/gcc_64/lib/cmake")
-
-set(Qt6_DIR "/home/jp/Qt/6.6.1/gcc_64/lib/cmake/Qt6")
-
 find_package(OpenGL REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui OpenGL Network ShaderTools) #ShaderTools
 # \todo: Use ShaderTools to create qsb and include those baked shaders as resource (should increase performance i think)

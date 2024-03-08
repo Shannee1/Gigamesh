@@ -4304,12 +4304,13 @@ void MeshGLShader::vboPaintTransparencyALBuffer()
 
 	if(!mTransIsInitialized)
 	{
+            cout << "Initialize SSBOs " << endl;
 			mCurrentNumLayers = 0;
 			mTransIsInitialized = 3;
 			lastWidth = 0;
 			lastHeight = 0;
 			//SSBOs: 0 = depth data, 1 = fragment data
-			mGL4_3Functions.glGenBuffers(2, mSSBOs.data());
+            mGL4_3Functions.glGenBuffers(2, mSSBOs.data());
 			PRINT_OPENGL_ERROR( "Problem initializing SSBOs" );
 
 			transparencyPrepareFBO();
@@ -4318,6 +4319,7 @@ void MeshGLShader::vboPaintTransparencyALBuffer()
 	PglBindVertexArray glBindVertexArray = reinterpret_cast<PglBindVertexArray>(mOpenGLContext->getProcAddress( "glBindVertexArray" ));
 
 	glBindVertexArray( mVAO);
+    PRINT_OPENGL_ERROR( "Error Binding Vertex Array Object" );
 
 	GLint viewPort[4];
 	glGetIntegerv(GL_VIEWPORT, viewPort);
@@ -4326,7 +4328,7 @@ void MeshGLShader::vboPaintTransparencyALBuffer()
 	if(viewPort[2] != lastWidth || viewPort[3] != lastHeight || numLayers != mCurrentNumLayers
 			|| lastoverflowHandling != overflowHandling)
 	{
-		//viewport size change, update tail fbo
+        //viewport size change, update tail fbo
 		if(numLayers == mCurrentNumLayers)
 		{
 			transparencyDeleteFBO();
@@ -4334,22 +4336,27 @@ void MeshGLShader::vboPaintTransparencyALBuffer()
 		}
 
 		mCurrentNumLayers = numLayers;
-		lastWidth = viewPort[2];
+        lastWidth = viewPort[2];
 		lastHeight = viewPort[3];
 		lastoverflowHandling = overflowHandling;
 
-		mGL4_3Functions.glBindBuffer(GL_SHADER_STORAGE_BUFFER, mSSBOs[0]);
-		mGL4_3Functions.glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLuint) * viewPort[2] * viewPort[3] * numLayers, nullptr, GL_DYNAMIC_COPY);
+        mGL4_3Functions.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0,  mSSBOs[0]);
+        PRINT_OPENGL_ERROR( "Error Clearing 1" );
+        mGL4_3Functions.glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLuint) * viewPort[2] * viewPort[3] * numLayers, nullptr, GL_DYNAMIC_COPY);
+        PRINT_OPENGL_ERROR( "Error Clearing 2" );
 
-		mGL4_3Functions.glBindBuffer(GL_SHADER_STORAGE_BUFFER, mSSBOs[1]);
+        mGL4_3Functions.glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1,  mSSBOs[1]);
+        PRINT_OPENGL_ERROR( "Error Clearing 3" );
 		//packed
-		mGL4_3Functions.glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLuint) * viewPort[2] * viewPort[3] * numLayers, nullptr, GL_DYNAMIC_COPY);
-		mGL4_3Functions.glClearBufferData(GL_SHADER_STORAGE_BUFFER,GL_R32UI,GL_RED,GL_UNSIGNED_INT,nullptr);
+        mGL4_3Functions.glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLuint) * viewPort[2] * viewPort[3] * numLayers, nullptr, GL_DYNAMIC_COPY);
+        PRINT_OPENGL_ERROR( "Error Clearing 4" );
+
+        mGL4_3Functions.glClearBufferData(GL_SHADER_STORAGE_BUFFER,GL_R32UI,GL_RED,GL_UNSIGNED_INT,nullptr);
 		//not packed
 		//mGL4_3Functions.glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLfloat) * 4 * viewPort[2] * viewPort[3] * numLayers, NULL, GL_DYNAMIC_COPY);
 		//mGL4_3Functions.glClearBufferData(GL_SHADER_STORAGE_BUFFER,GL_RGBA32F,GL_RGBA,GL_FLOAT,NULL);
 
-		PRINT_OPENGL_ERROR( "Error Clearing Buffer" );
+        PRINT_OPENGL_ERROR( "Error Clearing Buffer" );
 		//-----------------------------------------------------------------------
 		//init transparency buffers
 		glEnable(GL_CULL_FACE);
