@@ -742,7 +742,7 @@ bool MeshInfoData::getMeshInfoJSON(std::string& rInfoJSON){
     infoStr+="\"giga:MaximumYCoordinate\":\""+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_MAX_Y])+"\",\n"; 
     infoStr+="\"giga:MaximumZCoordinate\":\""+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_MAX_Z])+"\",\n"; 
     infoStr+="\"giga:BoundingBoxWidth\":\""+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_WIDTH])+"\",\n"; 
-    infoStr+="\"giga:BoundingBoxHeight\":\""+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_HEIGHT])+"\"\n"; 
+    infoStr+="\"giga:BoundingBoxHeight\":\""+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_HEIGHT])+"\",\n"; 
     infoStr+="\"giga:BoundingBoxThickness\":\""+std::to_string(this->mCountDouble[MeshInfoData::BOUNDINGBOX_THICK])+"\"\n"; 
     infoStr+="},\n";
     infoStr+="\"giga:Metadata\":{\n";
