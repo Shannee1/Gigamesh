@@ -39,6 +39,7 @@
 #include "QGMDialogWebView.h"
 #include "QGMAnnotationTemplateDialog.h"
 #include "QGMAnnotationDialog.h"
+#include "analyticsConfig.h"
 
 using namespace std;
 
@@ -50,7 +51,8 @@ using namespace std;
 	mDockInfo( nullptr ),             \
 	mMeshWidgetFlag( nullptr ),       \
 	mRecentFiles( nullptr ),          \
-	mNetworkManager( nullptr )
+    mNetworkManagerVersion( nullptr ),\
+    mNetworkManagerAnalytics( nullptr )
 
 //! Constructor
 QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
@@ -96,7 +98,6 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	QObject::connect( actionFileReload,               SIGNAL(triggered()), this,       SIGNAL(sFileReload())             );
 	//.
 	QObject::connect( actionSaveFlagBinary,           SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagBinary(bool))   );
-	QObject::connect( actionSaveFlagGMExtras,         SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagGMExtras(bool)) );
 	QObject::connect( actionSaveFlagTextureExport,    SIGNAL(toggled(bool)), this,     SIGNAL(sFileSaveFlagExportTexture(bool)) );
 	//.
 	QObject::connect( actionImportTexMap,             SIGNAL(triggered()), this,       SLOT(menuImportTexMap())          );
@@ -120,7 +121,8 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	//.
 	QObject::connect( actionSphericalImagesLight,     SIGNAL(triggered()),   this,     SIGNAL(sphericalImagesLight())          );
 	QObject::connect( actionSphericalImages,          SIGNAL(triggered()),   this,     SIGNAL(sphericalImages())               );
-	QObject::connect( actionSphericalImagesStateNr,   SIGNAL(triggered()),   this,     SIGNAL(sphericalImagesStateNr())        );
+    QObject::connect( actionSphericalImagesLightDirectory, SIGNAL(triggered()),   this,     SIGNAL(sphericalImagesLightDir())               );
+    QObject::connect( actionSphericalImagesStateNr,   SIGNAL(triggered()),   this,     SIGNAL(sphericalImagesStateNr())        );
 	//.
 	QObject::connect( actionUnload3D,                 SIGNAL(triggered()),   this,     SIGNAL(unloadMesh())                    );
 	//.
@@ -150,7 +152,10 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	//.
 	QObject::connect( actionApplyMeltingSphere,     SIGNAL(triggered()), this,       SIGNAL(sApplyMeltingSphere())     );
     //.
+    QObject::connect( actionDownscaleTexture,       SIGNAL(triggered()), this,       SIGNAL(sDownscaleTexture())     );
+    //.
     QObject::connect( actionAutomatic_Mesh_Alignment,     SIGNAL(triggered()), this,       SIGNAL(sAutomaticMeshAlignment())     );
+    QObject::connect( actionDirectoryAutomaticMeshAlignment,     SIGNAL(triggered()), this,       SIGNAL(sAutomaticMeshAlignmentDir())     );
     //.
 
 	// --- De-Selection ------------------------------------------------------------------------------------------------------------------------------------
@@ -367,45 +372,37 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	QSettings settings;
 	timeLast = settings.value( "lastVersionCheck" ).toLongLong();
 	double daysSinceLastCheck = difftime( timeNow, timeLast ) / ( 24.0 * 3600.0 );
-	// daysSinceLastCheck = 356.0; // for testing (1/2)
+    //daysSinceLastCheck = 356.0; // for testing (1/2)
 	std::cout << "[QGMMainWindow::" << __FUNCTION__ << "] Last check " << daysSinceLastCheck << " days ago." << std::endl;
 	if( daysSinceLastCheck > 3.0 ) {
-		mNetworkManager = new QNetworkAccessManager( this );
-		QObject::connect( mNetworkManager, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpCheckVersion );
+        mNetworkManagerVersion = new QNetworkAccessManager( this );
+        QObject::connect( mNetworkManagerVersion, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpCheckVersion );
 		QNetworkRequest request;
-		request.setUrl( QUrl( "https://www.gigamesh.eu/api.php/currentversion" ) );
+        request.setUrl( QUrl( "https://gigamesh.eu/api.php/currentversion/" ) );
 		request.setRawHeader( "User-Agent", QString( "GigaMesh/%1" ).arg( VERSION_PACKAGE ).toStdString().c_str() );
-		mNetworkManager->get( request );
+        mNetworkManagerVersion->get( request );
+
+        //send to google analytics
+        //Caution! This request is not working in some network e. g. Eduroam
+
+        //Using different managers, since the first manager is waiting for a response --> gigaMesh stops until the response is received
+        mNetworkManagerAnalytics = new QNetworkAccessManager( this );
+        QObject::connect( mNetworkManagerAnalytics, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpAnalytics );
+        QNetworkRequest analyticsRequest;
+
+        QString apiUrl = QString( "https://www.google-analytics.com/mp/collect?measurement_id=G-CJ9E5M832W&api_secret=%1" ).arg(KEY);
+        analyticsRequest.setUrl( QUrl( apiUrl ));
+
+        analyticsRequest.setRawHeader("Content-Type", "application/json");
+
+        QString bodyText = QString( "{\"client_id\":\"gigamesh.application\",\"events\":[{ \"name\": \"login\", \"params\": {\"method\": \"%1\"}}]}" ).arg( VERSION_PACKAGE ).toStdString().c_str();
+
+        QByteArray body = bodyText.toUtf8();
+        std::cout << bodyText.toStdString() << std::endl;
+        mNetworkManagerAnalytics->post(analyticsRequest,body);
 	}
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
-	// --- Check external Tools i.e. Inkscape and convert/ImageMagick --------------------------------------------------------------------------------------
-	auto inkscapePath = settings.value("Inkscape_Path", "").toString();
-	if(inkscapePath.length() == 0)
-	    inkscapePath = "inkscape";
-	bool checkInkscapeFailed = false;
-	QProcess testRunInkscape;
-	testRunInkscape.start( inkscapePath + " --version" );
-	if( !testRunInkscape.waitForFinished() ) {
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had a timeout!" << endl;
-		checkInkscapeFailed = true;
-	}
-	if( testRunInkscape.exitStatus() != QProcess::NormalExit ) {
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had no normal exit!" << endl;
-		checkInkscapeFailed = true;
-	}
-	if( testRunInkscape.exitCode() != 0 ) {
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR Inkscape exit code: " << testRunInkscape.exitCode() << endl;
-		QString outInkscapeErr( testRunInkscape.readAllStandardError() );
-		cerr << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape error: " << outInkscapeErr.toStdString().c_str() << endl;
-		checkInkscapeFailed = true;
-	}
-	QString outInkscape( testRunInkscape.readAllStandardOutput() );
-	cout << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape check: " << outInkscape.simplified().toStdString().c_str() << endl;
-	if( checkInkscapeFailed ) {
-		SHOW_MSGBOX_WARN_TIMEOUT( tr("Inkscape error"), tr("Checking Inkscape for presence and functionality failed!"), 5000 );
-	}
-	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 #ifdef REQUIRE_CONVERT_IMAGEMAGICK_OPTION
 	// Due to DPI set within PNGs by Qt this is currently not required. Maybe for writings TIFFs, which need some source revision.
 	bool checkConvertFailed = false;
@@ -537,6 +534,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	actionSelMVertsGUIPinPoint->setActionGroup( mGroupSelPrimitive );
 	actionSelMVertsGUILasso->setActionGroup(    mGroupSelPrimitive );
     //actionMarkAnnotation->setActionGroup(    mGroupSelPrimitive );
+    actionDeSelMVertsGUILasso->setActionGroup(    mGroupSelPrimitive );
 	actionSelMFacesGUIPinPoint->setActionGroup( mGroupSelPrimitive );
     actionGet_Label_Info->setActionGroup(    mGroupSelPrimitive );
 	actionSelectVertex->setActionGroup(    mGroupSelPrimitive );
@@ -545,12 +543,14 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	actionSelectCone->setActionGroup(      mGroupSelPrimitive );
 	actionSelectSphere->setActionGroup(    mGroupSelPrimitive );
 	actionSelectPositions->setActionGroup( mGroupSelPrimitive );
+    actionSelectThreePositions->setActionGroup( mGroupSelPrimitive );
 	mGroupSelPrimitive->setExclusive( true );
 
 	actionSelMVertsGUIPinPoint->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
     //actionMarkAnnotation->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
     actionGet_Label_Info->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
+    actionDeSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelMFacesGUIPinPoint->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelectVertex->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelectFace->setProperty(      "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
@@ -558,11 +558,13 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	actionSelectCone->setProperty(      "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelectSphere->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelectPositions->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
+    actionSelectThreePositions->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 
 	actionSelMVertsGUIPinPoint->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTICES  );
 	actionSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO  );
     //actionMarkAnnotation->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION  );
     actionGet_Label_Info->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE_LABEL_INFO );
+    actionDeSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO  );
 	actionSelMFacesGUIPinPoint->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_MULTI_FACES  );
 	actionSelectVertex->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTEX    );
 	actionSelectFace->setProperty(      "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_FACE      );
@@ -570,6 +572,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	actionSelectCone->setProperty(      "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_CONE      );
 	actionSelectSphere->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_SPHERE    );
 	actionSelectPositions->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_POSITIONS );
+    actionSelectThreePositions->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS );
 
 	// Connect this exclusive group:
 	QObject::connect( mGroupSelPrimitive, SIGNAL(triggered(QAction*)), this, SLOT(setMeshWidgetParamInt(QAction*)) );
@@ -1049,6 +1052,7 @@ void QGMMainWindow::initMeshSignals() {
 	// === MeshGL/MeshQt - Function/Method CALL ============================================================================================================
 	// ... File load, save, import, export  ................................................................................................................
 	actionFileSaveAs->setProperty(                                "gmMeshFunctionCall", MeshParams::FILE_SAVE_AS                                 );
+    actionFileExportAsLegacy->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_AS_LEGACY                             );
 	actionSaveLabelsSeparated->setProperty(                       "gmMeshFunctionCall", MeshParams::EXPORT_CONNECTED_COMPONENTS                  );
 	actionExportMetaDataHTML->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_METADATA_HTML                         );
 	actionExportMetaDataJSON->setProperty(                        "gmMeshFunctionCall", MeshParams::EXPORT_METADATA_JSON                         );
@@ -1100,6 +1104,8 @@ void QGMMainWindow::initMeshSignals() {
 	actionFuncValOrthogonalAxisAngleToRaial->setProperty(         "gmMeshFunctionCall", MeshParams::FUNCVAL_ORTHOGONAL_AXIS_ANGLE_TO_RADIAL      );
 	actionFuncValFeatureVecMin->setProperty(                      "gmMeshFunctionCall", MeshParams::FUNCVAL_FEATUREVECTOR_MIN_ELEMENT            );
 	actionFuncValFeatureVecMax->setProperty(                      "gmMeshFunctionCall", MeshParams::FUNCVAL_FEATUREVECTOR_MAX_ELEMENT            );
+	actionFuncValFeatureVecMinSigned->setProperty(                "gmMeshFunctionCall", MeshParams::FUNCVAL_FEATUREVECTOR_MIN_ELEMENT_SIGNED     );
+	actionFuncValFeatureVecMaxSigned->setProperty(                "gmMeshFunctionCall", MeshParams::FUNCVAL_FEATUREVECTOR_MAX_ELEMENT_SIGNED     );
 	actionColorRGBAvgToFuncVal->setProperty(                      "gmMeshFunctionCall", MeshParams::FUNCVAL_SET_GRAY_RGB_AVERAGE                 );
 	actionColorRGBAvgWeigthToFuncVal->setProperty(                "gmMeshFunctionCall", MeshParams::FUNCVAL_SET_GRAY_RGB_AVERAGE_WEIGHTED        );
 	actionColorRGBSaturationRemovalToFuncVal->setProperty(        "gmMeshFunctionCall", MeshParams::FUNCVAL_SET_GRAY_SATURATION_REMOVAL          );
@@ -1150,6 +1156,8 @@ void QGMMainWindow::initMeshSignals() {
 	// ... Labeling ..........................................................................................................................................
 	actionLabelVertices->setProperty(                             "gmMeshFunctionCall", MeshParams::LABELING_LABEL_ALL                           );
 	actionLabelSelMVerts->setProperty(                            "gmMeshFunctionCall", MeshParams::LABELING_LABEL_SELMVERTS                     );
+    actionLabelKMeansVertPos->setProperty(                        "gmMeshFunctionCall", MeshParams::LABELING_KMEANS_VERT_POS                    );
+
 	// ... Colorramp and Isoline .............................................................................................................................
 	actionSetFixedRangeNormalized->setProperty(                   "gmMeshGLFunctionCall", MeshGLParams::TEXMAP_FIXED_SET_NORMALIZED              );
 	actionViewVerticesNone->setProperty(                          "gmMeshGLFunctionCall", MeshGLParams::SET_SHOW_VERTICES_NONE                   );
@@ -1338,7 +1346,7 @@ bool QGMMainWindow::fileOpen( QAction* rFileAction ){
 //! Handles the dialog for importing function values (per vertex AKA quality).
 //! see also QGMMainWindow:: and MeshQt::importFunctionValues
 void QGMMainWindow::menuImportFunctionValues() {
-	QSettings settings;
+    QSettings settings;
 	QString fileNames = QFileDialog::getOpenFileName( this,
 													  tr( "Import Function Values (per Vertex)" ),
 	                                                  settings.value( "lastPath" ).toString(),
@@ -2173,6 +2181,8 @@ void QGMMainWindow::updateWidgetShowFlag(MeshWidgetParams::eParamFlag rFlag, boo
 		break;
 	case MeshWidgetParams::ENABLE_SHOW_MESH_REDUCED:
 		break;
+    case MeshWidgetParams::EXPORT_TTL_WITH_PNG :
+        break;
 	case MeshWidgetParams::PARAMS_FLAG_COUNT:
 		break;
 	default:
@@ -2394,6 +2404,13 @@ void QGMMainWindow::slotHttpCheckVersion( QNetworkReply* rReply ) {
 	time( &timeNow );
 	QSettings settings;
 	settings.setValue( "lastVersionCheck", qlonglong( timeNow ) );
+}
+
+//called after the Post request to google analytics
+void QGMMainWindow::slotHttpAnalytics( QNetworkReply* rReply ) {
+    if( rReply->error() != QNetworkReply::NoError ) {
+        std::cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR: Code " << rReply->error() << ": " << rReply->errorString().toStdString() << std::endl;
+    }
 }
 
 void QGMMainWindow::slotChangeLanguage(QAction* action)

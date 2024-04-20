@@ -156,7 +156,7 @@ public slots:
 private slots:
 	// --- Network communication ---------------------------------------------------------------------------------------------------------------------------
 	void slotHttpCheckVersion( QNetworkReply* rReply );
-
+    void slotHttpAnalytics( QNetworkReply* rReply );
 	// --- Language changes ---------------------------------------------------------------------------------------------------------------------------
 	void slotChangeLanguage(QAction* action);
 
@@ -190,7 +190,6 @@ signals:
 	void sFileImportFeatureVectors( QString );               //!< passes a filename for import of a file with feature vectors to MeshWidget::importFeatureVectorsFile
 	void sFileImportNormals( QString );                      //!< passes a filename for import of a file with normal vectors to MeshQt::importNormalVectorsFile
 	void sFileSaveFlagBinary( bool );                        //!< passed down to MeshIO. However this has to be revised.
-	void sFileSaveFlagGMExtras( bool );                      //!< passed down to MeshIO. However this has to be revised.
 	void sFileSaveFlagExportTexture( bool );                 //!< passed down to MeshIO. This probably also needs to be revised.
 	void exportFuncVals();                                   //!< signal MeshQt to export the function values.
 	void sExportFeatureVectors();                            //!< signal MeshQt to export the feature vectors.
@@ -209,6 +208,7 @@ signals:
 	void saveStillImages360PlaneN();                         //!< triggers the generation of still images for a 360° rotation about the mesh plane.
 	//.
 	void sphericalImagesLight();                             //!< triggers the generation of still images with the light source in the spherical orbit.
+    void sphericalImagesLightDir();                          //!< triggers the generation of still images with the light source in the spherical orbit for a whole directory.
 	void sphericalImages();                                  //!< triggers the generation of still images in a spherical orbit.
 	void sphericalImagesStateNr();                           //!< triggers the selection of the state nr. used for naming the files during export.
 	//.
@@ -228,6 +228,8 @@ signals:
 	void funcValsAdd();                                      //!< Add a constant value to the vertices function values.
 	//-
 	void transformFunctionValuesToRGB();
+    //-
+    void sDownscaleTexture();                                //!< triggers the downscaling options, rescale and overwrite the texture
 	//.
 	void setConeData();                                      //!< triggers showing the cone data dialog window
 	void centerAroundCone();                                 //!< triggers centering the mesh around a user-specified cone
@@ -241,6 +243,7 @@ signals:
 	void sApplyMeltingSphere();                              //!< triggers melting with sqrt(r^2-x^2-y^2)
     //.
     void sAutomaticMeshAlignment();                          //! triggers the automatic mesh alignmented with PCA
+    void sAutomaticMeshAlignmentDir();                       //! triggers the automatic mesh alignmented with PCA for a whole directory
 	// --- DeSelect ----------------------------------------------------------------------------------------------------------------------------------------
 	void sDeSelVertsAll();                                   //!< removes all vertices from the selection (SelMVerts).
 	void sDeSelVertsNoLabel();                               //!< removes vertices from the selection (SelMVerts) not assigned to a label.
@@ -486,7 +489,9 @@ private:
 	QActionGroup* mRecentFiles;                      //! Group to open recent files.
 
 	// Network access e.g. for checking the version number.
-	QNetworkAccessManager* mNetworkManager;          //! manages simple http-request (cf. version number)
+    QNetworkAccessManager* mNetworkManagerVersion;          //! manages simple http-request of the version number
+    QNetworkAccessManager* mNetworkManagerAnalytics;          //! manages simple http-POST-request to Google Analytics
+
 
 	// QWidget interface
 	protected:

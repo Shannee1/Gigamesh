@@ -25,6 +25,7 @@
 #include<string>
 #include<set>
 #include<vector>
+#include<cstdint>
 
 class Matrix4D;
 

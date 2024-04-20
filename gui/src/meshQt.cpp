@@ -166,7 +166,6 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	QObject::connect( mMainWindow, SIGNAL(sFileImportNormals(QString)),        this, SLOT(importNormalVectorsFile(QString)) );
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagBinary(bool)),          this, SLOT(setFileSaveFlagBinary(bool))      );
-	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagGMExtras(bool)),        this, SLOT(setFileSaveFlagGMExtras(bool))    );
 	QObject::connect( mMainWindow, SIGNAL(sFileSaveFlagExportTexture(bool)),this, SLOT(setFileSaveFlagExportTextures(bool)));
 	//.
 	QObject::connect( mMainWindow, SIGNAL(exportPolyLinesCoords()),          this, SLOT(exportPolyLinesCoords())          );
@@ -201,9 +200,12 @@ MeshQt::MeshQt( const QString&           rFileName,           //!< File to read
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sDatumAddSphere()),            this, SLOT(datumAddSphere())         );
 	//.
+    QObject::connect( mMainWindow, SIGNAL(sDownscaleTexture()),          this, SLOT(downscaleTexture())         );
+    //.
 	QObject::connect( mMainWindow, SIGNAL(sApplyMeltingSphere()),        this, SLOT(applyMeltingSphere())     );
 	//.
     QObject::connect( mMainWindow, SIGNAL(sAutomaticMeshAlignment()),    this, SLOT(applyAutomaticMeshAlignment())     );
+
     //.
 
 
@@ -1583,7 +1585,59 @@ bool MeshQt::datumAddSphere( vector<double> rPosAndRadius ) {
 	}
 	Mesh::datumAddSphere( Vector3D( rPosAndRadius[0], rPosAndRadius[1], rPosAndRadius[2], 1.0 ), rPosAndRadius.at(3) );
 	emit updateGL();
-	return true;
+    return true;
+}
+//! Downscale the corresponding textures of the mesh
+//! Asks for the ration of downscaling
+//! Overwrites the original file
+bool MeshQt::downscaleTexture()
+{
+    ModelMetaData modelMetaData = MeshIO::getModelMetaDataRef();
+    std::vector<std::filesystem::path> textures = modelMetaData.getTexturefilesRef();
+    if(!(textures.size() > 0)){
+        cout << "[MeshQt::" << __FUNCTION__ << "] No texture for this mesh available!" << std::endl;
+        return false;
+    }
+    else{
+        // Ask for vertex normals
+        bool continueDownscaling = true;
+        bool userCancel = false;
+        SHOW_QUESTION( tr("Continue"), tr("This function overwrites the current texture. Do you want to continue?"), continueDownscaling, userCancel );
+        if( userCancel || !continueDownscaling) {
+            return false;
+        }
+
+        //Percentage of the texture that should be kept
+        //in double because the showSlider function needs it
+        double suggestPercent = 25;
+        // Show dialog
+        if( !showSlider(&suggestPercent,0,100,"How many percent of the texture do you want to keep?")) {
+            std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: bad input (1)!" << std::endl;
+            return( false );
+        }
+        if(suggestPercent > 100)suggestPercent=100;
+        //the scaling factor defines how much the image is scaled down
+        double factor = suggestPercent/100;
+        //change all textures that are assigned to the mesh
+        for(auto texture : textures){
+            QString texturePath = QString::fromStdString(std::filesystem::relative(texture).string());
+            QImage textureImg(texturePath);
+            int width = textureImg.width();
+            int height = textureImg.height();
+
+            int newWidth = round(factor*width);
+            int newHeight = round(factor*height);
+            QImage textureImgScaled = textureImg.scaled(newWidth, newHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            textureImgScaled.save(texturePath);
+        }
+        //simulate the reload click
+        emit sReloadFile();
+        //set view to texture automatically
+        //mMainWindow->sShowParamIntMeshGL(MeshGLParams::SHADER_CHOICE,5);
+
+    }
+
+    return true;
 }
 
 //! Enter radius and melting with sqrt(r^2-x^2-y^2).
@@ -1606,7 +1660,7 @@ bool MeshQt::applyMeltingSphere() {
 //! calculates principal components (PCA) of the vertices
 //! Sets the PCs as new camera vectors
 //! result should be that the biggest extension of the is equal to the y-axis
-bool MeshQt::applyAutomaticMeshAlignment()
+bool MeshQt::applyAutomaticMeshAlignment(bool askForFront)
 {
 
     std::cout << "[MeshQT::" << __FUNCTION__ << "] Start:Automatic Mesh Alignment" << std::endl;
@@ -1662,114 +1716,131 @@ bool MeshQt::applyAutomaticMeshAlignment()
 
 
 
-    //Decide which part of the mesh is the front
-    //only for stone tools
 
-    bool curvatureAlignment = false;
-    bool userCancel = false;
-    SHOW_QUESTION( tr("Front Alignment"), tr( "Do you want to align the front of the mesh based on the curvature?" ), curvatureAlignment, userCancel );
-    if( userCancel ) {
-        return false;
-    }
-    if (curvatureAlignment){
-        //define the start centroids of k-means
-        //use the points in the middle of the mesh and the minimum and the maximum of the dimension with the smallest extension
-        //0 = x
-        //1 = y
-        //2 = z
-        int smallestExtension = 0;
-        double xExtension = abs(Mesh::getMinX() - Mesh::getMaxX());
-        double yExtension = abs(Mesh::getMinY() - Mesh::getMaxY());
-        double zExtension = abs(Mesh::getMinZ() - Mesh::getMaxZ());
-        if (xExtension > yExtension){
-            smallestExtension = 1;
+    //do not ask if the method is called by the directory function
+    if(askForFront){
+        //Decide which part of the mesh is the front
+        //only for stone tools
+
+        bool curvatureAlignment = false;
+        bool userCancel = false;
+        SHOW_QUESTION( tr("Front Alignment"), tr( "Do you want to align the front of the mesh based on the curvature?" ), curvatureAlignment, userCancel );
+        if( userCancel ) {
+            return false;
         }
-        if (xExtension > zExtension && yExtension > zExtension){
-            smallestExtension = 2;
-        }
+        if (curvatureAlignment){
+            //define the start centroids of k-means
+            //use the points in the middle of the mesh and the minimum and the maximum of the dimension with the smallest extension
+            //0 = x
+            //1 = y
+            //2 = z
+            int smallestExtension = 0;
+            double xExtension = abs(Mesh::getMinX() - Mesh::getMaxX());
+            double yExtension = abs(Mesh::getMinY() - Mesh::getMaxY());
+            double zExtension = abs(Mesh::getMinZ() - Mesh::getMaxZ());
+            if (xExtension > yExtension){
+                smallestExtension = 1;
+            }
+            if (xExtension > zExtension && yExtension > zExtension){
+                smallestExtension = 2;
+            }
 
-        Vector3D centroid1;
-        Vector3D centroid2;
-        switch(smallestExtension){
-            case 0:
-                centroid1 = Vector3D(1.0,0.0,0.0);
-                centroid2 = Vector3D(-1.0,0.0,0.0);
-                break;
-            case 1:
-                centroid1 = Vector3D(0.0,1.0,0.0);
-                centroid2 = Vector3D(0.0,-1.0,0.0);
-                break;
-            case 2:
-                centroid1 = Vector3D(0.0,0.0,1.0);
-                centroid2 = Vector3D(0.0,0.0,-1.0);
-                break;
-        }
-        std::vector<Vector3D> centroids = {centroid1,centroid2};
-        std::vector<std::set<Vertex*>> clusterSets = Mesh::computeVertexNormalKMeans(&centroids,true);
+            Vector3D centroid1;
+            Vector3D centroid2;
+            switch(smallestExtension){
+                case 0:
+                    centroid1 = Vector3D(1.0,0.0,0.0);
+                    centroid2 = Vector3D(-1.0,0.0,0.0);
+                    break;
+                case 1:
+                    centroid1 = Vector3D(0.0,1.0,0.0);
+                    centroid2 = Vector3D(0.0,-1.0,0.0);
+                    break;
+                case 2:
+                    centroid1 = Vector3D(0.0,0.0,1.0);
+                    centroid2 = Vector3D(0.0,0.0,-1.0);
+                    break;
+            }
+            std::vector<Vector3D> centroids = {centroid1,centroid2};
+            std::vector<std::set<Vertex*>> clusterSets = Mesh::computeVertexNormalKMeans(&centroids,true);
 
-        //calculate ambient occlusion to get some kind of curviture values
-        //the results are stored in vertices as function values
-        //for parameters we use the recommended values of the GUI
-        /**
-        int depthBuffeRes = 512;
-        unsigned int numberOfDirections = 1000;
-        int maxValueBufferRes = 512;
-        float zTolerance = 0.0;
-        if( !funcVertAmbientOcclusionHW( depthBuffeRes, maxValueBufferRes, numberOfDirections, zTolerance ) ) {
-                return false;
-        }
+            //calculate ambient occlusion to get some kind of curviture values
+            //the results are stored in vertices as function values
+            //for parameters we use the recommended values of the GUI
+            /**
+            int depthBuffeRes = 512;
+            unsigned int numberOfDirections = 1000;
+            int maxValueBufferRes = 512;
+            float zTolerance = 0.0;
+            if( !funcVertAmbientOcclusionHW( depthBuffeRes, maxValueBufferRes, numberOfDirections, zTolerance ) ) {
+                    return false;
+            }
 
-        //calculate the average curviture of the cluster -> the cluster/mesh-side with the higher curviture should be in front
-        double meanClust1 = 0.0;
-        double meanClust2 = 0.0;
+            //calculate the average curviture of the cluster -> the cluster/mesh-side with the higher curviture should be in front
+            double meanClust1 = 0.0;
+            double meanClust2 = 0.0;
 
-        std::set<Vertex*>::iterator itr;
-        for (itr = clusterSets.at(0).begin(); itr != clusterSets.at(0).end(); itr++){
-            double funcVal = 0.0;
-            (*itr)->getFuncValue(&funcVal);
-            meanClust1 += funcVal;
-        }
-        meanClust1 = meanClust1/clusterSets.at(0).size();
+            std::set<Vertex*>::iterator itr;
+            for (itr = clusterSets.at(0).begin(); itr != clusterSets.at(0).end(); itr++){
+                double funcVal = 0.0;
+                (*itr)->getFuncValue(&funcVal);
+                meanClust1 += funcVal;
+            }
+            meanClust1 = meanClust1/clusterSets.at(0).size();
 
-        for (itr = clusterSets.at(1).begin(); itr != clusterSets.at(1).end(); itr++){
-            double funcVal = 0.0;
-            (*itr)->getFuncValue(&funcVal);
-            meanClust2 += funcVal;
-        }
-        meanClust2 = meanClust2/clusterSets.at(1).size();
-        if (meanClust1 < meanClust2){
-            //rotate 180 degree to get the side with higher curviture to front
-            const double s = sin(180 * M_PI / 180.0);
-            const double c = cos(180 * M_PI / 180.0);
-            Matrix4D rotationMatrix( {  c, 0.0,  -s, 0.0,
-                                        0.0, 1.0, 0.0, 0.0,
-                                          s, 0.0,   c, 0.0,
-                                        0.0, 0.0, 0.0, 1.0} );
-            applyTransformationToWholeMesh(rotationMatrix);
+            for (itr = clusterSets.at(1).begin(); itr != clusterSets.at(1).end(); itr++){
+                double funcVal = 0.0;
+                (*itr)->getFuncValue(&funcVal);
+                meanClust2 += funcVal;
+            }
+            meanClust2 = meanClust2/clusterSets.at(1).size();
+            if (meanClust1 < meanClust2){
+                //rotate 180 degree to get the side with higher curviture to front
+                const double s = sin(180 * M_PI / 180.0);
+                const double c = cos(180 * M_PI / 180.0);
+                Matrix4D rotationMatrix( {  c, 0.0,  -s, 0.0,
+                                            0.0, 1.0, 0.0, 0.0,
+                                              s, 0.0,   c, 0.0,
+                                            0.0, 0.0, 0.0, 1.0} );
+                applyTransformationToWholeMesh(rotationMatrix);
 
-        }
-        **/
-        if (clusterSets.at(0).size() < clusterSets.at(1).size()){
-            //rotate 180 degree to get the side with higher curviture to front
-            const double s = sin(180 * M_PI / 180.0);
-            const double c = cos(180 * M_PI / 180.0);
-            Matrix4D rotationMatrix( {  c, 0.0,  -s, 0.0,
-                                        0.0, 1.0, 0.0, 0.0,
-                                          s, 0.0,   c, 0.0,
-                                        0.0, 0.0, 0.0, 1.0} );
-            applyTransformationToWholeMesh(rotationMatrix);
+            }
+            **/
+            if (clusterSets.at(0).size() < clusterSets.at(1).size()){
+                //rotate 180 degree to get the side with higher curviture to front
+                const double s = sin(180 * M_PI / 180.0);
+                const double c = cos(180 * M_PI / 180.0);
+                Matrix4D rotationMatrix( {  c, 0.0,  -s, 0.0,
+                                            0.0, 1.0, 0.0, 0.0,
+                                              s, 0.0,   c, 0.0,
+                                            0.0, 0.0, 0.0, 1.0} );
+                applyTransformationToWholeMesh(rotationMatrix);
 
+            }
         }
     }
     //the transformation with the identity matrix resets the mesh to the center
     Matrix4D identity(Matrix4D::INIT_IDENTITY);
     applyTransformationDefaultViewMatrix(&identity);
 
+    //calculate: where is the spike of the mesh
+    //the spike should always point to the top
+    Vector3D center = getCenterOfGravity();
+    float distanceTop = mMaxY - center.getY();
+    float distanceBottom = center.getY() - mMinY;
+    if (distanceTop < distanceBottom){
+        rotationAngle = {180 * M_PI / 180.0};
+        Matrix4D zRotation(Matrix4D::INIT_ROTATE_ABOUT_Z,&rotationAngle);
+        applyTransformationToWholeMesh(zRotation);
+    }
+
     // setup initial view (emit Signal to meshwidget.cpp:
     emit sDefaultViewLight();
 
+
     return true;
 }
+
 
 
 // --- Select actions ------------------------------------------------------------------------------------------------------------------------------------------
@@ -2333,6 +2404,22 @@ bool MeshQt::selectPolyNotLabeled() {
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
+//! Deselect vertices within a polygonal area defined by the camera view direction (=prism) .
+bool MeshQt::deselectPoly( vector<QPoint> &rPixelCoords ) {
+    vector<PixCoord> polyCoords;
+    for( auto const& polyPoint: rPixelCoords ) {
+        PixCoord someCoord;
+        someCoord.x = polyPoint.x();
+        someCoord.y = polyPoint.y();
+        polyCoords.push_back( someCoord );
+    }
+
+    bool retVal = MeshGL::selectPoly( polyCoords, true );
+    if( !retVal ) {
+        SHOW_MSGBOX_WARN( tr("Deselection aborted"), tr("ERROR occured: No vertices were deselected!") );
+    }
+    return retVal;
+}
 
 //! Select vertices within a polygonal area defined by the camera view direction (=prism) .
 bool MeshQt::selectPoly( vector<QPoint> &rPixelCoords ) {
@@ -2670,11 +2757,11 @@ void MeshQt::estimateMSIIFeat( ParamsMSII params ) {
 		if( params.writeRaster ) {
 			char    fileNameStr[512];
             QString fileNamePattern = QString::fromStdWString( params.fileNameRaster.wstring() );
-			fileNamePattern.replace( QString( ".tif" ), QString( "_NEW.tif" ) );
+            fileNamePattern.replace( QString( ".png" ), QString( "_NEW.png" ) );
 			sprintf( fileNameStr, fileNamePattern.toStdString().c_str(), params.seedVertexId );
 			Image2D someImage;
 			//someImage.setSilent();
-			someImage.writeTIFF( fileNameStr, params.cubeEdgeLengthInVoxels, params.cubeEdgeLengthInVoxels, rasterArray2, -params.cubeEdgeLengthInVoxels/2.0, params.cubeEdgeLengthInVoxels/2.0, false );
+            someImage.writePNG( fileNameStr, params.cubeEdgeLengthInVoxels, params.cubeEdgeLengthInVoxels, rasterArray2, -params.cubeEdgeLengthInVoxels/2.0, params.cubeEdgeLengthInVoxels/2.0, false );
 		}
 	} else {
 		cerr << "[MeshQt::" << __FUNCTION__ << "] ERROR: fetchSphereCubeVolume25D FAILED!" << endl;
@@ -2734,7 +2821,7 @@ void MeshQt::estimateMSIIFeat( ParamsMSII params ) {
 			sprintf( fileNameStr, params.fileNameFilterMasks.string().c_str(), params.seedVertexId, i, params.multiscaleRadii[i] );
 			Image2D someImage;
 			//someImage.setSilent();
-			someImage.writeTIFF( fileNameStr, params.cubeEdgeLengthInVoxels, params.cubeEdgeLengthInVoxels, voxelFilters2D[i], 0.0, static_cast<double>(params.cubeEdgeLengthInVoxels)/2.0, false );
+            someImage.writePNG( fileNameStr, params.cubeEdgeLengthInVoxels, params.cubeEdgeLengthInVoxels, voxelFilters2D[i], 0.0, static_cast<double>(params.cubeEdgeLengthInVoxels)/2.0, false );
 		}
 	}
 
@@ -2778,7 +2865,7 @@ void MeshQt::estimateMSIIFeat( ParamsMSII params ) {
 		for( int i=0; i<params.multiscaleRadiiNr; i++ ) {
 			sprintf( fileNameStr, params.fileNameFilterResult.string().c_str(), params.seedVertexId, i, params.multiscaleRadii[i] );
 			Image2D someImage;
-			someImage.writeTIFF( fileNameStr, params.cubeEdgeLengthInVoxels, params.cubeEdgeLengthInVoxels, filterResults2D[i], 0.0, static_cast<double>(params.cubeEdgeLengthInVoxels), false );
+            someImage.writePNG( fileNameStr, params.cubeEdgeLengthInVoxels, params.cubeEdgeLengthInVoxels, filterResults2D[i], 0.0, static_cast<double>(params.cubeEdgeLengthInVoxels), false );
 			double sum = 0.0;
 			for( int j=0; j<params.cubeEdgeLengthInVoxels*params.cubeEdgeLengthInVoxels; j++ ) {
 				if( std::isnan( filterResults2D[i][j] ) ) { \
@@ -4082,7 +4169,7 @@ bool MeshQt::editMetaData() {
 	}
 
 	//! .) Edit Model Unit.
-	/*
+
 	std::string modelUnit = getModelMetaDataRef().getModelMetaString( ModelMetaData::META_MODEL_UNIT );
 	std::string modelUnitLabel;
 	getModelMetaDataRef().getModelMetaStringLabel( ModelMetaData::META_MODEL_UNIT, modelUnitLabel );
@@ -4101,8 +4188,7 @@ bool MeshQt::editMetaData() {
 			return( false );
 		}
 		getModelMetaDataRef().setModelMetaString( ModelMetaData::META_MODEL_UNIT, newUnit.toStdString() );
-	}*/
-	getModelMetaDataRef().setModelMetaString( ModelMetaData::META_MODEL_UNIT, "mm" );
+    }
 
 	return( true );
 }
@@ -4602,7 +4688,15 @@ bool MeshQt::showInfoAxisHTML() {
 //=============================================================================
 
 //! Write 3D-data to file after asking the user for a filename.
-bool MeshQt::writeFileUserInteract() {
+bool MeshQt::writeFileUserInteract(const bool asLegacy) {
+
+    if (asLegacy){
+        //! Disable the export of Features, flags and labels for the legacy export
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_FLAGS, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_LABEL, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_VERT_FTVEC, false );
+        MeshIO::setFlagExport( MeshIO::EXPORT_POLYLINE,   false );
+    }
 	QSettings settings;
 
 	QString filePath    = QString( settings.value( "lastPath" ).toString() ); // or: getFileLocation().c_str()
@@ -4626,8 +4720,12 @@ bool MeshQt::writeFileUserInteract() {
 	fileSuggest += ".ply";
 
 	QStringList filters;
-	filters << tr("3D-Data (*.ply *.obj)")
-			<< tr("3D-Data outdated (*.wrl *.txt *.xyz)");
+    filters << tr("3D-Data (*.ply)")
+            << tr("3D-Data (*.obj)")
+            << tr("3D-Data (*.gltf)")
+            << tr("3D-Data outdated (*.wrl)")
+            << tr("3D-Data outdated (*.txt)")
+            << tr("3D-Data outdated (*.xyz)");
 
 	QFileDialog dialog( mMainWindow );
 	dialog.setWindowTitle( tr("Save 3D-model as:") );
@@ -4673,6 +4771,32 @@ bool MeshQt::writeFile( const filesystem::path& rFileName ) {
 	}
 
 	std::cout << "[MeshQt::" << __FUNCTION__ << "] to: " << rFileName << std::endl;
+    std::string fileExtension = rFileName.extension().string();
+    if(fileExtension == ".gltf"){
+        bool userContinue;
+        if( showQuestion( &userContinue, tr("Continue?").toStdString(), \
+                          tr("The GLTF results in a larger file and cannot be read by GigaMesh. Do you want to continue?").toStdString() ) ) {
+            if( !userContinue ) {
+                // User cancel.
+                return( false );
+            }
+        }
+        bool exportNormals;
+        if( showQuestion( &exportNormals, tr("Normal Export?").toStdString(), \
+                          tr("Do you want to export the normals per vertex? This will result in a larger file!").toStdString() ) ) {
+            if( exportNormals ) {
+                // User cancel.
+                MeshIO::setFlagExport(EXPORT_VERT_NORMAL,true);
+            }
+            else{
+                MeshIO::setFlagExport(EXPORT_VERT_NORMAL,false);
+            }
+        }
+        else{
+            return( false );
+        }
+
+    }
 	if( !MeshGL::writeFile( rFileName ) ) {
 		std::cerr << "[MeshQt::" << __FUNCTION__ << "] could not write to file '" << rFileName << "'! " << std::endl;
 		return( false );
@@ -4685,15 +4809,6 @@ bool MeshQt::writeFile( const filesystem::path& rFileName ) {
 //! Set the MeshIO::EXPORT_BINARY flag.
 bool MeshQt::setFileSaveFlagBinary( bool rSetTo ) {
 	return setFlagExport( MeshIO::EXPORT_BINARY, rSetTo );
-}
-
-//! Set the MeshIO::EXPORT_* flags to contain or discard GigaMesh specific extensions to 3D-files.
-bool MeshQt::setFileSaveFlagGMExtras( bool rSetTo ) {
-	setFlagExport( MeshIO::EXPORT_VERT_FLAGS, rSetTo );
-	setFlagExport( MeshIO::EXPORT_VERT_LABEL, rSetTo );
-	setFlagExport( MeshIO::EXPORT_VERT_FTVEC, rSetTo );
-	setFlagExport( MeshIO::EXPORT_POLYLINE,   rSetTo );
-	return rSetTo;
 }
 
 bool MeshQt::setFileSaveFlagExportTextures(bool setTo)

@@ -174,11 +174,13 @@ class MeshWidgetParams {
 			SELECTION_MODE_VERTICES_LASSO,   //!< Selects all/multiple vertices in a polygonal area (SelMVerts).
             SELECTION_MODE_MARK_ANNOTATION,   //!< Selects all/multiple vertices in a polygonal area for surface annotations.
             SELECTION_MODE_LABEL_INFO,   //!<Selects a single Vertex and returns its annotation information if labeled.
+            DESELECTION_MODE_VERTICES_LASSO,   //!< Deselects all/multiple vertices in a polygonal area (SelMVerts).
 			SELECTION_MODE_MULTI_FACES,      //!< Select multiple Vertices by pinpointing (SelMFaces).
 			SELECTION_MODE_PLANE_3FP,  //!< Select 3 point for a plane.
 			SELECTION_MODE_CONE,       //!< Selects points for a cone.
 			SELECTION_MODE_SPHERE,     //!< Selects points for a sphere.
 			SELECTION_MODE_POSITIONS,  //!< Select positions from faces or  (solo) vertices.
+            SELECTION_MODE_THREE_POSITIONS,  //!< Select 3 positions from faces or  (solo) vertices. Special modus of Profile Lines
 			SELECTION_MODE_COUNT       //!< Number of selection choices.
 		};
 
@@ -228,9 +230,11 @@ class MeshWidgetParams {
 			// Multiple selections:
 			GUIDE_SELECT_SELMVERTS,           //!< Select multiple vertices by pinpointing (SelMVerts).
 			GUIDE_SELECT_SELMVERTS_LASSO,     //!< Select multiple vertices using a polygonal area (SelMVerts).
+            GUIDE_DESELECT_SELMVERTS_LASSO,     //!< Deselect multiple vertices using a polygonal area (SelMVerts).
 			GUIDE_SELECT_SELMFACES,           //!< Select multiple faces by pinpointing (SelMVerts).
 			// Positions:
 			GUIDE_SELECT_POSITIONS,           //! Select multiple positions on the mesh.
+            GUIDE_SELECT_THREE_POSITIONS,     //! Select three positions on the mesh. Used with the profile lines computation
 			// Plane by three points:
 			GUIDE_SELECT_PLANE_3FP_A,  //!< Define plane by three vertices - select vertex A
 			GUIDE_SELECT_PLANE_3FP_B,  //!< Define plane by three vertices - select vertex B

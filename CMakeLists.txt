@@ -47,7 +47,8 @@ string(STRIP "${COMP_GITHEAD}" COMP_GITHEAD)
 execute_process(COMMAND git log -1 --format=%ci
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 OUTPUT_VARIABLE VERSION_PACKAGE)
-set(COMP_EDIT IWR\ Open\ Source)
+#set(COMP_EDIT IWR\ Open\ Source)
+set(COMP_EDIT MLU\ Open\ Source)
 string(STRIP "${VERSION_PACKAGE}" VERSION_PACKAGE)
 string(SUBSTRING "${VERSION_PACKAGE}" 2 9 VERSION_PACKAGE)
 string(REPLACE "-" "" VERSION_PACKAGE "${VERSION_PACKAGE}")
@@ -104,10 +105,10 @@ include(InstallRequiredSystemLibraries)
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.txt")
 set(CPACK_PACKAGE_VERSION "${VERSION_PACKAGE}")
 set(CPACK_SOURCE_STRIP_FILES TRUE)
-set(CPACK_STRIP_FILES "bin/gigamesh;bin/gigamesh-tolegacy;bin/gigamesh-clean;bin/gigamesh-info;bin/gigamesh-featurevectors;bin/gigamesh-borders")
+set(CPACK_STRIP_FILES "bin/gigamesh;bin/gigamesh-tolegacy;bin/gigamesh-togltf;bin/gigamesh-clean;bin/gigamesh-info;bin/gigamesh-featurevectors;bin/gigamesh-borders")
 
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Hubert Mara <hubert.mara@iwr.uni-heidelberg.de>")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.14), libgcc1 (>= 1:3.0), qtbase5-dev(>= 5.5),libqt5core5a (>= 5), libqt5gui5 (>= 5) | libqt5gui5-gles (>= 5), libqt5opengl5 (>= 5) | libqt5opengl5-gles (>= 5), libstdc++6 (>= 5), libtiff5 (>= 4), inkscape(>=0.92)")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Hubert Mara <hubert.mara@informatik.uni-halle.de>")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.14), libgcc1 (>= 1:3.0), qtbase5-dev(>= 5.5),libqt5core5a (>= 5), libqt5gui5 (>= 5) | libqt5gui5-gles (>= 5), libqt5opengl5 (>= 5) | libqt5opengl5-gles (>= 5), libstdc++6 (>= 5), inkscape(>=0.92)")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://www.gigamesh.eu")
 set(CPACK_DEBIAN_PACKAGE_SECTION "science")
 

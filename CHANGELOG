@@ -1,4 +1,34 @@
-Current Version
++) New: Edit->Downscale Texture(s) --> reduces the texture size
++) New: CLI: gigamesh-togltf --> Converts meshes to the gltf format
++) Changed: Deconstruction of checkbox 'File->GM Extras (Features,Labels, Flags). Export without GM Extras is now in the 'File->Export as Legacy' function. 
++) Improved: PLY Import supports the metadata 'Unit:'
++) Improved: GLTF export supports multiple textures
++) New: Selection mode: exactly 3 positions in a row
+
+Version 240115
++) New: Multiple vertex deselection with a lasso 
++) Improved: GLTF export now includes vertex color
++) Changed: Suggested suffixes for mesh export as a drop-down list by type
++) Improved: GLTF Export option without normals
+
+Version 231215
++) New: GLTF Export (only vertices, normals and single texture) 
++) Improved: Warning when a user has loaded a large mesh (35000000 faces) 
++) Changed: Inkscape warning only appears when using method 'Export Plane Intersections (SVG)'
++) Bugfix: added separator for view and projection matrix values in screenshot ttl file
++) Bugfix: prevent crash when broken ply file is loaded (if face contains an index out of the index range)
+
+Version 230622
++)Improved: Tooltips were added to the menu bar
++)New: CLI: gigamesh-info -> New Option: --quick (-q) Suppress detection of self-intersections (computationally intensive)
++)New: Labeling -> Label K-Means: Vertex Position: Label vertices per cluster those are calculated by the K-Means algorithm. The initial centroids are the selected vertices.
++)New: 'Edit -> Transform Extra -> Directory: Automatic Mesh Alignment': for each mesh file in directory: do the 'Automatic Mesh Alignment' and save the transformed mesh with a file name suffix.
++)New: 'File -> Export Image Stack -> Directory': Spherical Stack Lightsource Orbiting: for each mesh file in directory: do Spherical Stack Lightsource Orbiting and save the images in a folder named after the file name.
++)New: 'Functions -> Feature Element Min Signed' showing more details than the unsigned function.
++)New: 'Functions -> Feature Element Max Signed' showing more details than the unsigned function.
++)Changed: moved less used menu items of the 'Functions' menu to a '-> Feature Vectors Extra Functions (1)'.
+
+Version 230302 (incomplete)
 +) New: Automatic mesh alignment based on PCA 
 +) New: Export and Import Polylines
 +) New: Export of mesh meta-data as HTML, JSON, XML and TTL (Terse RDF Triple Language).

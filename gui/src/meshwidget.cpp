@@ -126,6 +126,7 @@ MeshWidget::MeshWidget( const QGLFormat &format, QWidget *parent )
 	QObject::connect( mMainWindow, SIGNAL(saveStillImages360PlaneN()),     this, SLOT(saveStillImages360PlaneN())     );
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sphericalImagesLight()),         this, SLOT(sphericalImagesLight())         );
+    QObject::connect( mMainWindow, SIGNAL(sphericalImagesLightDir()),      this, SLOT(sphericalImagesLightDir())      );
 	QObject::connect( mMainWindow, SIGNAL(sphericalImages()),              this, SLOT(sphericalImages())              );
 	QObject::connect( mMainWindow, SIGNAL(sphericalImagesStateNr()),       this, SLOT(sphericalImagesStateNr())       );
 	//.
@@ -146,13 +147,16 @@ MeshWidget::MeshWidget( const QGLFormat &format, QWidget *parent )
 	//.
 	QObject::connect( mMainWindow, SIGNAL(sDefaultViewLight()),            this, SLOT(defaultViewLight())             );
 	QObject::connect( mMainWindow, SIGNAL(sDefaultViewLightZoom()),        this, SLOT(defaultViewLightZoom())         );
-	//.
+    //.
 	QObject::connect( mMainWindow, SIGNAL(sSelPrimViewReference()),        this, SLOT(selPrimViewReference())         );
 
 	// Settings menu --------------------------------------------------------------------------------------------------
 	QObject::connect( mMainWindow, &QGMMainWindow::selectColorBackground,  this, &MeshWidget::selectColorBackground  );
 	// ----------------------------------------------------------------------------------------------------------------
 
+    // Edit menu-------------------------------------------------------------------------------------------------------
+    QObject::connect( mMainWindow, SIGNAL(sAutomaticMeshAlignmentDir()),    this, SLOT(applyAutomaticMeshAlignmentDir())     );
+    //-----------------------------------------------------------------------------------------------------------------
 	// Select menu ----------------------------------------------------------------------------------------------------
 	QObject::connect( mMainWindow, &QGMMainWindow::setPlaneHNFByView,      this, &MeshWidget::setPlaneHNFByView      );
 	QObject::connect( mMainWindow, &QGMMainWindow::sOpenNormalSphereSelectionDialogVertices, [this]() {openNormalSphereSelectionDialog(false); });
@@ -176,13 +180,6 @@ MeshWidget::MeshWidget( const QGLFormat &format, QWidget *parent )
 	//! \bug Emitting inside constructor has no effect
 	emit sStatusMessage( "No Mesh loaded." );
 
-	// Information about libraries:
-	//------------------------------------------------------------------------------------------------------------------------------------------------------
-#ifdef LIBTIFF
-	cout << "[MeshWidget] compiled with " << TIFFLIB_VERSION_STR << endl;
-#else
-	cerr << "[MeshWidget] compiled without libtiff." << endl;
-#endif
 }
 
 //! Desctructor
@@ -546,6 +543,9 @@ bool MeshWidget::setParamIntegerMeshWidget( MeshWidgetParams::eParamInt rParam, 
 				case MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO:
 					emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_SELMVERTS_LASSO );
 				break;
+                case MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO:
+                    emit sGuideIDSelection( MeshWidgetParams::GUIDE_DESELECT_SELMVERTS_LASSO );
+                break;
 				case MeshWidgetParams::SELECTION_MODE_MULTI_FACES:
 					emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_SELMFACES );
 				break;
@@ -563,6 +563,9 @@ bool MeshWidget::setParamIntegerMeshWidget( MeshWidgetParams::eParamInt rParam, 
 				case MeshWidgetParams::SELECTION_MODE_POSITIONS:
 					emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_POSITIONS );
 				break;
+                case MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS:
+                    emit sGuideIDSelection( MeshWidgetParams::GUIDE_SELECT_THREE_POSITIONS );
+                break;
 				default:
 					// do nothing
 					cerr << "[MeshWidget::" << __FUNCTION__ << "] SELECTION_MODE unknown paramNr: " << rParam << " val: " << rValue << endl;
@@ -880,13 +883,29 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 		return false;
 	}
 
+    bool continueWithMesh;
+    bool userCancel;
+    uint64_t nrOfFaces = mMeshVisual->getFaceNr();
+    if (nrOfFaces > 35000000){
+        SHOW_QUESTION( tr("You are loading a large mesh"), tr("This may cause a crash if there is not enough video RAM available.") + QString("<br /><br />") + tr("Do you want to continue?"), continueWithMesh, userCancel );
+        if( !continueWithMesh || userCancel ) {
+            //stop rendering the mesh to prevent a crash
+            delete mMeshVisual;
+            mMeshVisual = nullptr;
+            return false;
+        }
+    }
+
 	QObject::connect( this,        SIGNAL(sParamFlagMesh(MeshGLParams::eParamFlag,bool)), mMeshVisual, SLOT(setParamFlagMeshGL(MeshGLParams::eParamFlag,bool)) );
-	QObject::connect( this,        SIGNAL(sSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(selectPoly(std::vector<QPoint>&))                       );
+    QObject::connect( this,        SIGNAL(sSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(selectPoly(std::vector<QPoint>&)) );
+    QObject::connect( this,        SIGNAL(sDeSelectPoly(std::vector<QPoint>&)),                  mMeshVisual, SLOT(deselectPoly(std::vector<QPoint>&)) );
 	QObject::connect( mMeshVisual, SIGNAL(updateGL()),                                    this,        SLOT(update())                                          );
 	// Interaction -----------------------------------------------------------------------------------------------------------------------------------------
 	QObject::connect( this,        SIGNAL(sApplyTransfromToPlane(Matrix4D)), mMeshVisual, SLOT(applyTransfromToPlane(Matrix4D)) );
 	QObject::connect( mMeshVisual, &MeshQt::sDefaultViewLight,               this,        &MeshWidget::defaultViewLight         );
 	QObject::connect( mMeshVisual, &MeshQt::sDefaultViewLightZoom,           this,        &MeshWidget::defaultViewLightZoom     );
+    QObject::connect( mMeshVisual, &MeshQt::sSetDefaultView,                 this,        &MeshWidget::currentViewToDefault    );
+    QObject::connect( mMeshVisual, &MeshQt::sReloadFile,                     this,        [this]{ reloadFile(false); });
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// cheks mesh for problems and fix them
@@ -944,21 +963,22 @@ bool MeshWidget::fileOpen( const QString& fileName ) {
 	cout << "[MeshWidget::" << __FUNCTION__ << "] Done." << endl;
 
 	emit loadedMeshIsTextured( mMeshVisual->getModelMetaDataRef().hasTextureCoordinates() && mMeshVisual->getModelMetaDataRef().hasTextureFiles() );
-
 	return( true );
 }
 
 //! Reloads the current file from disk.
-bool MeshWidget::reloadFile() {
+bool MeshWidget::reloadFile(const bool askQuestion) {
 	if( mMeshVisual == nullptr ) {
 		return false;
 	}
-	bool userReload;
-	bool userCancel;
-	SHOW_QUESTION( tr("Reload file"), tr("Do you really want to reload this file?"), userReload, userCancel );
-	if( ( userCancel ) || not( userReload ) ) {
-		return false;
-	}
+    if(askQuestion){
+        bool userReload;
+        bool userCancel;
+        SHOW_QUESTION( tr("Reload file"), tr("Do you really want to reload this file?"), userReload, userCancel );
+        if( ( userCancel ) || not( userReload ) ) {
+            return false;
+        }
+    }
 	auto fileName = mMeshVisual->getFullName();
     return fileOpen( QString::fromStdWString( fileName.wstring() ) );
 }
@@ -1168,7 +1188,7 @@ void MeshWidget::sphericalImagesLight() {
 		return;
 	}
 	string fileNamePattern;
-	getParamStringMeshWidget( FILENAME_EXPORT_VR, &fileNamePattern );
+    getParamStringMeshWidget( FILENAME_EXPORT_VR, &fileNamePattern );
     QString filePath = QString::fromStdWString( mMeshVisual->getFileLocation().wstring() );
 	QString fileName = QFileDialog::getSaveFileName( mMainWindow, tr( "Save as - Using a pattern for spherical images" ), \
 	                                                 filePath + QString( fileNamePattern.c_str() ), \
@@ -1190,21 +1210,58 @@ void MeshWidget::sphericalImagesLight( const QString& rFileName ) {
 	if( userCancel ) {
 		return;
 	}
-	// Execute:
 	sphericalImagesLight( rFileName, useTiled );
 }
 
 //! Compute spherical images with moving light (instead of moving the object).
-//! (3) - execute.
+//! (3) - ask about the step size.
+//! -ask if the user wants to use  a constant theta
+void MeshWidget::sphericalImagesLight( const QString& rFileName, const bool rUseTiled  ) {
+    double stepLight;
+    getParamFloatMeshWidget( LIGHT_STEPPING, &stepLight );
+
+    // Ask user for the light stepping using the current setting
+    QGMDialogEnterText dlgEnterTxt;
+    int stepLightAngle = stepLight * 180;
+    dlgEnterTxt.setWindowTitle( "Set light steps (angle between 1 and 180 degrees)" );
+    dlgEnterTxt.setInt( stepLightAngle );
+    if( dlgEnterTxt.exec() == QDialog::Rejected ) {
+        return;
+    }
+    if( !dlgEnterTxt.getText( &stepLightAngle ) ) {
+        stepLightAngle = stepLight * 180;
+    }
+    stepLight = stepLightAngle/180.0;
+
+    bool userCancel;
+    bool useConstTheta;
+    SHOW_QUESTION( tr("Constant Theta"), tr("Do you want to use a constant theta (see spherical coordinate system) ?") + QString("<br /><br />"), useConstTheta, userCancel );
+    if( userCancel ) {
+        return;
+    }
+
+    if( !saveStillImagesSettings() ) {
+        return;
+    }
+
+    // Execute:
+    if(useConstTheta){
+        sphericalImagesLightConstTheta(rFileName, rUseTiled, stepLight );
+    }else{
+        sphericalImagesLight( rFileName, rUseTiled, stepLight );
+    }
+
+}
+
+
+//! Compute spherical images with moving light (instead of moving the object).
+//! (4) - execute.
 //!
 //! String for Object2VR: 'gigamesh_still_image_'+ fill(row,5,'0') + '_' +fill(column,5,'0')+ '.png'
-void MeshWidget::sphericalImagesLight( const QString& rFileName, const bool rUseTiled ) {
+void MeshWidget::sphericalImagesLight( const QString& rFileName, const bool rUseTiled, const double rStepLight ) {
 #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
 	cout << "[MeshWidget::" << __FUNCTION__ << "]" << endl;
 #endif
-	if( !saveStillImagesSettings() ) {
-		return;
-	}
 
 	cout << "[MeshWidget::" << __FUNCTION__ << "] Pattern string for Object2VR: '" << rFileName.toStdString() << "'" << endl;
 	int stateNr;
@@ -1213,26 +1270,24 @@ void MeshWidget::sphericalImagesLight( const QString& rFileName, const bool rUse
 	// Store original light position:
 	double phiOri;
 	double thetaOri;
-	double stepLight;
 	getParamFloatMeshWidget( LIGHT_FIXED_CAM_ANGLE_PHI, &phiOri );
 	getParamFloatMeshWidget( LIGHT_FIXED_CAM_ANGLE_THETA, &thetaOri );
-	getParamFloatMeshWidget( LIGHT_STEPPING, &stepLight );
 
 	char buffer[255];
 	int  colIdx = 0;
 	int  rowIdx = 0;
 	unsigned int imageCount = 0;
 
-	for( float i=-0.5; i<+0.5; i+=stepLight ) {
+    for( float i=-0.5; i<+0.5; i+=rStepLight ) {
 		colIdx = 0;
 		double dx = sin( i * M_PI );
-		for( float j=+0.5; j>-0.5; j-=stepLight ) {
+        for( float j=+0.5; j>-0.5; j-=rStepLight ) {
 			sprintf( buffer, rFileName.toStdString().c_str(), colIdx, rowIdx, stateNr );
 			double dy = sin( j * M_PI );
 			double dz = sqrt( 1 - dx*dx - dy*dy );
 			Vector3D dirVec( dx, dy, dz );
 			setParamFloatMeshWidget( LIGHT_FIXED_CAM_ANGLE_PHI,   dirVec.getSphPhiDeg()   );
-			setParamFloatMeshWidget( LIGHT_FIXED_CAM_ANGLE_THETA, dirVec.getSphThetaDeg() );
+            setParamFloatMeshWidget( LIGHT_FIXED_CAM_ANGLE_THETA, dirVec.getSphThetaDeg() );
 			setView();
 			repaint();
 			double realWidth, realHeigth;
@@ -1255,8 +1310,8 @@ void MeshWidget::sphericalImagesLight( const QString& rFileName, const bool rUse
 	QString fileNameWithoutPath = rFileName;
 	QString pathFromFileName;
 	if( dirFileNameSplitPos > 0 ) {
-		fileNameWithoutPath = rFileName.mid( dirFileNameSplitPos+1 );
-		pathFromFileName    = rFileName.left( dirFileNameSplitPos );
+        fileNameWithoutPath = rFileName.mid( dirFileNameSplitPos+1 );
+        pathFromFileName    = rFileName.left( dirFileNameSplitPos );
 	}
 	QString obj2vrPattern = "'" + fileNameWithoutPath + "'";
 	obj2vrPattern.replace( QString( "%05i_%05i_%02i" ), QString( "'+fill(column,5,'0')+'_'+fill(row,5,'0')+'_'+fill(state,2,'0')+'" ) );
@@ -1276,6 +1331,251 @@ void MeshWidget::sphericalImagesLight( const QString& rFileName, const bool rUse
 	clipboard->setText( obj2vrPattern );
 	cout << "[MeshWidget::" << __FUNCTION__ << "] Pattern string for Object2VR: " << obj2vrPattern.toStdString() << endl;
 	emit sStatusMessage( "Spherical image stack was saved to: " + rFileName );
+}
+//! Compute spherical images with moving light (instead of moving the object).
+//! With a constant Theta
+//! (5) - execute.
+
+void MeshWidget::sphericalImagesLightConstTheta( const QString& rFileName, const bool rUseTiled, const double rStepLight ) {
+#ifdef DEBUG_SHOW_ALL_METHOD_CALLS
+    cout << "[MeshWidget::" << __FUNCTION__ << "]" << endl;
+#endif
+
+    cout << "[MeshWidget::" << __FUNCTION__ << "] Pattern string for Object2VR: '" << rFileName.toStdString() << "'" << endl;
+    int stateNr;
+    getParamIntegerMeshWidget( STATE_NUMBER, &stateNr );
+
+    // Store original light position:
+    double phiOri;
+    double thetaOri;
+    getParamFloatMeshWidget( LIGHT_FIXED_CAM_ANGLE_PHI, &phiOri );
+    getParamFloatMeshWidget( LIGHT_FIXED_CAM_ANGLE_THETA, &thetaOri );
+
+    char buffer[255];
+    unsigned int imageCount = 0;
+    int rStepAngle = rStepLight * 180;
+    for( int i=0; i<360; i+=rStepAngle ) {
+            sprintf( buffer, rFileName.toStdString().c_str(), i, stateNr );
+            setParamFloatMeshWidget( LIGHT_FIXED_CAM_ANGLE_PHI,i-180);
+            setView();
+            repaint();
+            double realWidth, realHeigth;
+            screenshotSingle( buffer, rUseTiled, realWidth, realHeigth );
+            imageCount++;
+    }
+
+    // Restore original light position:
+    setParamFloatMeshWidget( LIGHT_FIXED_CAM_ANGLE_PHI,     phiOri );
+    setParamFloatMeshWidget( LIGHT_FIXED_CAM_ANGLE_THETA, thetaOri );
+    setView();
+    repaint();
+
+    //! String for Object2VR: 'gigamesh_still_image_'+ fill(column,5,'0') + '_' +fill(row,5,'0')+ '.png'
+    // Information for the user
+    int dirFileNameSplitPos = rFileName.lastIndexOf( QDir::separator() );
+    QString fileNameWithoutPath = rFileName;
+    QString pathFromFileName;
+    if( dirFileNameSplitPos > 0 ) {
+        fileNameWithoutPath = rFileName.mid( dirFileNameSplitPos+1 );
+        pathFromFileName    = rFileName.left( dirFileNameSplitPos );
+    }
+
+    emit sStatusMessage( "Spherical image stack was saved to: " + rFileName );
+}
+
+//! Compute spherical images with moving light for a whole directory
+void MeshWidget::sphericalImagesLightDir( ) {
+    if( !saveStillImagesSettings() ) {
+        return;
+    }
+    // Store settings from current Mesh and MeshWidget
+    MeshGLParams storeMeshGLParams( (MeshGLParams)mMeshVisual );
+    MeshWidgetParams storeMeshWidgetParams( (MeshWidgetParams)this );
+    double printResDPI;
+    getViewPortDPI( printResDPI );
+    //Ask for tiled rendering
+    bool userCancel;
+    bool useTiled;
+    SHOW_QUESTION( tr("Tiled rendering"), tr("Do you want to use tiled rendering?") + QString("<br /><br />") + tr("Typically: NO"), useTiled, userCancel );
+    if( userCancel ) {
+        return;
+    }
+
+    //Ask for the step range
+    double stepLight;
+    getParamFloatMeshWidget( LIGHT_STEPPING, &stepLight );
+
+    // Ask user for the light stepping using the current setting
+    QGMDialogEnterText dlgEnterTxt;
+    int stepLightAngle = stepLight * 180;
+    dlgEnterTxt.setWindowTitle( "Set light steps (angle between 1 and 180 degrees)" );
+    dlgEnterTxt.setInt( stepLightAngle );
+    if( dlgEnterTxt.exec() == QDialog::Rejected ) {
+        return;
+    }
+    if( !dlgEnterTxt.getText( &stepLightAngle ) ) {
+        stepLightAngle = stepLight * 180;
+    }
+    stepLight = stepLightAngle/180.0;
+
+    bool useConstTheta;
+    SHOW_QUESTION( tr("Constant Theta"), tr("Do you want to use a constant theta (see spherical coordinate system) ?") + QString("<br /><br />"), useConstTheta, userCancel );
+    if( userCancel ) {
+        return;
+    }
+
+    bool renderFront;
+    SHOW_QUESTION( tr("Constant Theta"), tr("Do you want to render the front or the back (Rotated 180 degrees around the x-axis)?") +
+                   QString("<br /><br />") + QString("Yes - render the frontside (current view)") +
+                   QString("<br /><br />") + QString("No - render the backside ") , renderFront, userCancel );
+    if( userCancel ) {
+        return;
+    }
+    // Let the user choose a path
+    QString     pathChoosen;
+    QStringList currFiles;
+    //we need the same functionality as in screenshotViewsDirectoryFiles
+    if( !screenshotViewsDirectoryFiles( pathChoosen, currFiles ) ) {
+        return;
+    }
+
+    //Enter filename
+    QString targetfileName( "gigamesh_still_image_%03i.png");
+    dlgEnterTxt.setWindowTitle( "Filename" );
+    dlgEnterTxt.setText( targetfileName );
+    if( dlgEnterTxt.exec() == QDialog::Rejected ) {
+        return;
+    }
+    if( !dlgEnterTxt.getText( &targetfileName ) ) {
+        return;
+    }
+
+    // for all files
+    bool retVal = true;
+    for( int i=0; i<currFiles.size(); ++i ) {
+        QString currentFile = pathChoosen + '/' + currFiles.at(i);
+        if( !fileOpen( currentFile ) ) {
+            std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: File open failed for '"
+                      << currentFile.toStdString() << "'!" << std::endl;
+            retVal = false;
+            continue;
+        }
+        if( mMeshVisual == nullptr ) {
+            std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: No mesh loaded for '"
+                      << currentFile.toStdString() << "'!" << std::endl;
+            retVal = false;
+            continue;
+        }
+
+        this->setParamAllMeshWidget( storeMeshWidgetParams );
+        mMeshVisual->setParamAllMeshWidget( storeMeshGLParams );
+        orthoSetDPI( printResDPI );
+        //rotate mesh when the user wants to render the backside
+        if(!renderFront){
+            std::vector<double> rotationAngle = {180 * M_PI / 180.0};
+            Matrix4D rotationMatrix(Matrix4D::INIT_ROTATE_ABOUT_X,&rotationAngle);
+            mMeshVisual->applyTransformationToWholeMesh(rotationMatrix);
+            //the transformation with the identity matrix resets the mesh to the center
+            Matrix4D identity(Matrix4D::INIT_IDENTITY);
+            mMeshVisual->applyTransformationDefaultViewMatrix(&identity);
+        }
+
+        QString plyFileName = currFiles.at(i);
+        plyFileName.remove(QRegularExpression(".ply"));
+        QString targetDir = pathChoosen + '/' + plyFileName;
+        //create target dir
+        try {
+            std::filesystem::create_directory( targetDir.toStdWString()); // https://en.cppreference.com/w/cpp/filesystem/create_directory
+        } catch ( std::exception& except ) {
+            wcerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: creating '" << targetDir.toStdWString() << endl;
+            cerr << "[MeshWidget::" << __FUNCTION__ << "]        " << except.what() << endl;
+        }
+
+        QString fileTemplate = pathChoosen + '/' + plyFileName + '/' + targetfileName;
+        if(useConstTheta){
+            sphericalImagesLightConstTheta(fileTemplate,useTiled,stepLight);
+        }else{
+            sphericalImagesLight(fileTemplate,useTiled,stepLight);
+        }
+
+    } // for all files
+
+}
+
+//!Automatic Mesh Alignment
+//!calls MeshQT->applyAutomaticMeshAlignment for all files in a given directory
+//! and saves the transformed mesh to the directory
+void MeshWidget::applyAutomaticMeshAlignmentDir(){
+    // Store settings from current Mesh and MeshWidget
+    MeshGLParams storeMeshGLParams( (MeshGLParams)mMeshVisual );
+    MeshWidgetParams storeMeshWidgetParams( (MeshWidgetParams)this );
+    // Let the user choose a path
+    QString     pathChoosen;
+    QStringList currFiles;
+    //we need the same functionality as in screenshotViewsDirectoryFiles
+    if( !screenshotViewsDirectoryFiles( pathChoosen, currFiles ) ) {
+        return;
+    }
+
+    // Enter a suffix
+    QString fileNameSuffix( "_AMA");
+    QGMDialogEnterText dlgEnterTxt;
+    dlgEnterTxt.setWindowTitle( "Filename Suffix" );
+    dlgEnterTxt.setText( fileNameSuffix );
+    if( dlgEnterTxt.exec() == QDialog::Rejected ) {
+        return;
+    }
+    if( !dlgEnterTxt.getText( &fileNameSuffix ) ) {
+        return;
+    }
+
+
+    // for all files
+    bool retVal = true;
+    for( int i=0; i<currFiles.size(); ++i ) {
+        QString currentFile = pathChoosen + '/' + currFiles.at(i);
+        if( !fileOpen( currentFile ) ) {
+            std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: File open failed for '"
+                      << currentFile.toStdString() << "'!" << std::endl;
+            retVal = false;
+            continue;
+        }
+        if( mMeshVisual == nullptr ) {
+            std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: No mesh loaded for '"
+                      << currentFile.toStdString() << "'!" << std::endl;
+            retVal = false;
+            continue;
+        }
+
+        this->setParamAllMeshWidget( storeMeshWidgetParams );
+        mMeshVisual->setParamAllMeshWidget( storeMeshGLParams );
+
+        mMeshVisual->applyAutomaticMeshAlignment(false);
+
+        //save file
+        QString plyFileName = currFiles.at(i);
+        plyFileName.remove(QRegularExpression(".ply"));
+        QString newFile = pathChoosen + '/' + plyFileName;
+        newFile = newFile + fileNameSuffix +  ".ply";
+
+        //set Metadata of the mesh if not specified before
+        //otherwise gigamesh will ask the metadata and the doesn't continue the process
+
+        std::string modelID = mMeshVisual->getModelMetaDataRef().getModelMetaString( ModelMetaData::META_MODEL_ID );
+        if( modelID.empty() ) {
+            QString suggestId( QString::fromStdWString(mMeshVisual->getBaseName().wstring()) );
+            suggestId.replace( "_", " " );
+            suggestId.replace( QRegularExpression( "GM[oOcCfFpPxX]*$" ), "" );
+            mMeshVisual->getModelMetaDataRef().setModelMetaString( ModelMetaData::META_MODEL_ID, suggestId.toStdString() );
+        }
+        std::string modelMaterial = mMeshVisual->getModelMetaDataRef().getModelMetaString( ModelMetaData::META_MODEL_MATERIAL );
+        if( modelMaterial.empty() ) {
+            QString newMaterial = tr( "original, clay" );
+            mMeshVisual->getModelMetaDataRef().setModelMetaString( ModelMetaData::META_MODEL_MATERIAL, newMaterial.toStdString() );
+        }
+
+        mMeshVisual->writeFile(newFile);
+    } // for all files
 }
 
 //! Compute spherical images (moving the object).
@@ -1781,7 +2081,7 @@ bool MeshWidget::askForCCLicenseParameters(QString *ccParameter, QString *ccVers
      possibleParameters.append("by-nc-nd");
 
      bool userCancel;
-     SHOW_DIALOG_COMBO_BOX( tr("CC-Attribution"), tr("Which type of CC-License you want to use?"), possibleParameters, *ccParameter, userCancel );
+     SHOW_DIALOG_COMBO_BOX( tr("CC-Attribution"), tr("Which type of CC-License do you want to use?"), possibleParameters, *ccParameter, userCancel );
      if( userCancel ) {
          return( false );
      }
@@ -1789,7 +2089,7 @@ bool MeshWidget::askForCCLicenseParameters(QString *ccParameter, QString *ccVers
      QStringList possibleVersions;
      possibleVersions.append("3.0");
      possibleVersions.append("4.0");
-     SHOW_DIALOG_COMBO_BOX( tr("CC-Version"), tr("Which version of CC-License you want to use?"), possibleVersions, *ccVersion, userCancel );
+     SHOW_DIALOG_COMBO_BOX( tr("CC-Version"), tr("Which version of CC-License do you want to use?"), possibleVersions, *ccVersion, userCancel );
      if( userCancel ) {
          return( false );
      }
@@ -2375,7 +2675,7 @@ void MeshWidget::screenshotViews() {
 	//qDebug() << filePath + QString( fileNamePattern.c_str() );
 	QString fileName = QFileDialog::getSaveFileName( mMainWindow, tr( "Save as - Using a pattern for side, top and bottom views" ), \
 													 filePath + "/" + QString( fileNamePattern.c_str() ),
-													 tr( "Image (*.png *.tiff *.tif)" ),
+                                                     tr( "Image (*.png)" ),
 	                                                 nullptr, 
 	                                                 QFileDialog::DontUseNativeDialog  ); // Native dialog won't show patterns anymore on recent versions of Qt+Linux.
 
@@ -2643,7 +2943,7 @@ bool MeshWidget::screenshotSingle() {
     QString fileSuggest = QString::fromStdWString( mMeshVisual->getBaseName().wstring() ) + ".png";
 
 	QStringList filters;
-	filters << tr("Image (*.png *.tiff *.tif)");
+    filters << tr("Image (*.png)");
 
 	QFileDialog dialog( mMainWindow );
 	dialog.setWindowTitle( tr("Save screenshot as:") );
@@ -2732,8 +3032,8 @@ bool MeshWidget::screenshotSingle( const QString&   rFileName,   //!< Filename t
 	QString fileExtension = QFileInfo(rFileName).suffix().toLower();
 
 	if( fileExtension.isEmpty() ) {
-		cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: No extension/type for file '" << rFileName.toStdString() << "' specified!" << endl;
-		return( false );
+        cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: No extension/type for file '" << rFileName.toStdString() << "' specified!" << endl;
+        return( false );
 	}
 
 	cout << "[MeshWidget::" << __FUNCTION__ << "] extension: " << fileExtension.toStdString() << endl;
@@ -2748,31 +3048,21 @@ bool MeshWidget::screenshotSingle( const QString&   rFileName,   //!< Filename t
 		repaint();
 
 
-		if( ( fileExtension == "tif" ) || ( fileExtension == "tiff" ) ) {
-			if( rUseTiled ) {
-				//! \todo add tiled rendering of TIFFs
-				cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: tiled rendering not implemented for TIFF!"<< endl;
-			} else {
-				ret = screenshotTIFF( rFileName, &offscreenBuffer );
-			}
-		}
+        if( rUseTiled ) {
+            int shaderChoice;
+            mMeshVisual->getParamIntMeshGL( MeshGLParams::SHADER_CHOICE, &shaderChoice );
+            bool drawNPR = ( MeshGLParams::SHADER_NPR==shaderChoice );
+            if( !drawNPR ) {
+                ret = screenshotTiledPNG( rFileName, rWidthReal, rHeigthReal, &offscreenBuffer, 1 );
+            } else {
+                double borderSize;
+                mMeshVisual->getParamFloatMeshGL( MeshGLParams::NPR_OUTLINE_WIDTH, &borderSize );
+                ret = screenshotTiledPNG( rFileName, rWidthReal, rHeigthReal, &offscreenBuffer, static_cast<int>(borderSize) );
+            }
+        } else {
+            ret = screenshotPNG( rFileName, rWidthReal, rHeigthReal, &offscreenBuffer );
+        }
 
-		else if( fileExtension == "png" ) {
-			if( rUseTiled ) {
-				int shaderChoice;
-				mMeshVisual->getParamIntMeshGL( MeshGLParams::SHADER_CHOICE, &shaderChoice );
-				bool drawNPR = ( MeshGLParams::SHADER_NPR==shaderChoice );
-				if( !drawNPR ) {
-					ret = screenshotTiledPNG( rFileName, rWidthReal, rHeigthReal, &offscreenBuffer, 1 );
-				} else {
-					double borderSize;
-					mMeshVisual->getParamFloatMeshGL( MeshGLParams::NPR_OUTLINE_WIDTH, &borderSize );
-					ret = screenshotTiledPNG( rFileName, rWidthReal, rHeigthReal, &offscreenBuffer, static_cast<int>(borderSize) );
-				}
-			} else {
-				ret = screenshotPNG( rFileName, rWidthReal, rHeigthReal, &offscreenBuffer );
-			}
-		}
 
 		bindFramebuffer(defaultFramebuffer);
 
@@ -3298,39 +3588,6 @@ bool MeshWidget::fetchFrameBuffer(
 
 // Write screenshots -------------------------------------------------------------------------------------------------------------------------------------------
 
-//! Copies the Framebuffer to an RGB array, which can be stored as a TIFF Image.
-bool MeshWidget::screenshotTIFF(const QString& rFileName , OffscreenBuffer* offscreenBuffer) {
-#ifdef DEBUG_SHOW_ALL_METHOD_CALLS
-	cout << "[MeshWidget::" << __FUNCTION__ << "]" << endl;
-#endif
-	double realWidth  = 0.0;
-	double realHeight = 0.0;
-	bool orthoMode;
-	getParamFlagMeshWidget( ORTHO_MODE, &orthoMode );
-	if( orthoMode ) {
-		getViewPortResolution( realWidth, realHeight );
-	}
-
-	int imWidth;
-	int imHeight;
-	unsigned char* imArray = nullptr;
-	fetchFrameBuffer( &imArray, &imWidth, &imHeight, mParamFlag[CROP_SCREENSHOTS], offscreenBuffer );
-
-	Image2D frameBufIm;
-	if( orthoMode ) {
-		//! When the widget is in orthographic mode, the proper resolution is set for the image.
-		//! Therefore it is printable in scale.
-		frameBufIm.setResolution( width()/realWidth*10.0, height()/realHeight*10.0 );
-	}
-	frameBufIm.writeTIFF( rFileName.toStdWString(), imWidth, imHeight, imArray, true );
-	delete[] imArray;
-	if( ( realWidth > 0.0 ) && ( realHeight > 0.0 ) ) {
-		cout << "[MeshWidget::" << __FUNCTION__ << "] Ortho Image Size: " << realWidth << " x " << realHeight << " mm (unit assumed)." << endl;
-	}
-	emit sStatusMessage( "Screenshot saved to: " + rFileName );
-	return true;
-}
-
 //! Saves the PNG with transparency to the given filename.
 bool MeshWidget::screenshotPNG(const QString& rFileName,
                                 double&         rWidthReal,
@@ -3641,6 +3898,7 @@ bool MeshWidget::getViewSettingsTTL(
     rSettingsStr += QString(uri+" giga:projectionMatrix \"");
     for( unsigned int i=0; i<16; i++ ) {
 		rSettingsStr += QString("%1").arg( matProjection[i] );
+        rSettingsStr += ";";
 	}
 	rSettingsStr+="\"^^xsd:string .\n"; 
 	rSettingsStr += "giga:modelViewMatrix rdf:type owl:DatatypeProperty .\n";
@@ -3649,6 +3907,7 @@ bool MeshWidget::getViewSettingsTTL(
 	const float* matModelView = mMatModelView.constData();
 	for( unsigned int i=0; i<16; i++ ) {
 		rSettingsStr += QString("%1").arg( matModelView[i] );
+        rSettingsStr += ";";
 	}
 	rSettingsStr+="\"^^xsd:string .\n"; 
 	// As well as further parameters (again):
@@ -4513,10 +4772,44 @@ bool MeshWidget::screenshotSVG( const QString& rFileName, const QString& rFileNa
 	return( true );
 }
 
+//! Check if inkscape is available/installed
+//! @returns false in case of error or no inkscape on the system
+bool MeshWidget::checkInkscapeAvailability() {
+    // --- Check external Tools i.e. Inkscape and convert/ImageMagick --------------------------------------------------------------------------------------
+    QSettings settings;
+    auto inkscapePath = settings.value("Inkscape_Path", "").toString();
+    if(inkscapePath.length() == 0)
+        inkscapePath = "inkscape";
+    bool checkInkscapeFailed = false;
+    QProcess testRunInkscape;
+    testRunInkscape.start( inkscapePath + " --version" );
+    if( !testRunInkscape.waitForFinished() ) {
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had a timeout!" << endl;
+        checkInkscapeFailed = true;
+    }
+    if( testRunInkscape.exitStatus() != QProcess::NormalExit ) {
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR testing Inkscape had no normal exit!" << endl;
+        checkInkscapeFailed = true;
+    }
+    if( testRunInkscape.exitCode() != 0 ) {
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] ERROR Inkscape exit code: " << testRunInkscape.exitCode() << endl;
+        QString outInkscapeErr( testRunInkscape.readAllStandardError() );
+        cerr << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape error: " << outInkscapeErr.toStdString().c_str() << endl;
+        checkInkscapeFailed = true;
+    }
+    QString outInkscape( testRunInkscape.readAllStandardOutput() );
+    cout << "[QGMMainWindow::" << __FUNCTION__ << "] Inkscape check: " << outInkscape.simplified().toStdString().c_str() << endl;
+    if( checkInkscapeFailed ) {
+        SHOW_MSGBOX_WARN_TIMEOUT( tr("Inkscape error"), tr("Checking Inkscape for presence and functionality failed!"), 5000 );
+    }
+    return( true );
+}
+
 //! Export polylines defined by an intersecting plane as SVG.
 //!
 //! @returns false in case of an error or user abort or no qualified polylines present. True otherwise.
 bool MeshWidget::exportPlaneIntersectPolyLinesSVG() {
+
 	// 0.) Sanity check
 	if( mMeshVisual == nullptr ) {
 		SHOW_MSGBOX_CRIT( tr("ERROR"), tr("No mesh present.") );
@@ -4525,6 +4818,11 @@ bool MeshWidget::exportPlaneIntersectPolyLinesSVG() {
 
 	std::set<unsigned int> axisPolylines;
 	std::set<unsigned int> planePolylines;
+
+    // 0.5.) Is Inkscape available?
+    if(!checkInkscapeAvailability()){
+        return( false );
+    }
 
 	// 1.) get qualified polylines and store their ID's into the appropriate set
 	for(unsigned int i = 0; i<mMeshVisual->getPolyLineNr(); ++i)
@@ -5209,7 +5507,7 @@ bool MeshWidget::screenshotRuler(const QString& fileName ) {
 	Image2D imRuler;
 	//cout << "[MeshWidget::" << __FUNCTION__ << "] " << 10.0/pixelWidth << " " << 10.0/pixelHeight << " dots/cm." << endl;
 	imRuler.setResolution( 10.0/pixelWidth, 10.0/pixelHeight );
-	imRuler.writeTIFF( fileName.toStdString(), imWidth, imHeight, imArray, true );
+    imRuler.writePNG( fileName.toStdString(), imWidth, imHeight, imArray, true );
 
 	delete[] imArray;
 
@@ -5398,7 +5696,7 @@ bool MeshWidget::writePNG( const QString& rFileName,        //!< Filename for wr
 
         if( file.open( QIODevice::ReadWrite ) ){
             QTextStream stream( &file );
-            stream << exifttl << Qt::endl;
+            stream << exifttl << endl;
         }
         file.close();
     }
@@ -6172,10 +6470,10 @@ void MeshWidget::paintSelection() {
 	}
 	MeshWidgetParams::eSelectionModes selectionMode;
 	getParamIntegerMeshWidget( MeshWidgetParams::SELECTION_MODE, reinterpret_cast<int*>(&selectionMode) );
-	if( selectionMode != MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO && selectionMode != MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION) {
+    if( !(selectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || selectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO) ) {
 		return;
 	}
-	
+
 	QImage imPoly( width(), height(), QImage::Format_ARGB32 );
 	imPoly.fill( QColor( 255, 255, 255, 0 ) );
 
@@ -6399,7 +6697,7 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 	//! Selection of a point of a polyline (left click):
 	if( ( mouseButtonsPressed == Qt::LeftButton ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT ) &&
-	    ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION)
+        ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO )
 	  ) {
 		mSelectionPoly.push_back( mLastPos );
 		if( mSelectionPoly.size() == 1 ) {
@@ -6411,7 +6709,7 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 	//! Close the selection of a polyline by right-click:
 	if( ( mouseButtonsPressed == Qt::RightButton ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT ) &&
-	    ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION) &&
+        ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO || MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION ) &&
 	    ( mSelectionPoly.size() > 1 )
 	  ) {
 		// Check if the last two points are the same, as this can cause a segmentation fault.
@@ -6424,7 +6722,12 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 		for( auto & somePoint: mSelectionPoly ) {
 			somePoint.setY( height() - somePoint.y() );
 		}
-		emit sSelectPoly( mSelectionPoly );
+        if ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO){
+            emit sSelectPoly( mSelectionPoly );
+        }
+        if( currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO ){
+            emit sDeSelectPoly( mSelectionPoly );
+        }
 		mSelectionPoly.clear();
 		return;
 	}
@@ -6433,7 +6736,7 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 	if( ( mouseButtonsPressed & ( Qt::LeftButton | Qt::MiddleButton | Qt::RightButton ) ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT )
 	  ) {
-		if( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION) {
+        if( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO  || MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION ) {
 			std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: Wrong selection mode (SELECTION_MODE_POLYLINE)!" << std::endl;
 			return;
 		}
@@ -6510,7 +6813,7 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
 	//! Display the selection of a polyline:
 	if( ( rEvent->buttons() == Qt::NoButton ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT ) &&
-	    ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION )
+        ( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO ||  currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION)
 	  ) {
 		if( mSelectionPoly.size()>0 ) {
 			mSelectionPoly.pop_back();
@@ -7051,6 +7354,7 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
 			return( true );
 			break;
         case MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION:
+        case MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO:
             // Nothing to do.
             return( true );
             break;
@@ -7060,6 +7364,17 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
 		case MeshWidgetParams::SELECTION_MODE_POSITIONS:
 			retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, false );
 			break;
+        case MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS:
+            if (mMeshVisual->isMoreThanNconSelPosition(1)){
+                //last point of the position set --> start automatically a new one
+                retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, true );
+            }
+            else{
+                //add point to the same set
+                retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, false );
+            }
+
+            break;
 		case MeshWidgetParams::SELECTION_MODE_CONE: {
 			retVal = mMeshVisual->selectConePoints( xPixel, yPixel );
 			break;
@@ -7103,6 +7418,7 @@ bool MeshWidget::userSelectAtMouseRight( const QPoint& rPoint ) {
 		case MeshWidgetParams::SELECTION_MODE_FACE:
 		case MeshWidgetParams::SELECTION_MODE_VERTICES:
 		case MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO:
+        case MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO:
 		case MeshWidgetParams::SELECTION_MODE_MULTI_FACES:
 		case MeshWidgetParams::SELECTION_MODE_PLANE_3FP:
 		case MeshWidgetParams::SELECTION_MODE_CONE:
@@ -7113,6 +7429,10 @@ bool MeshWidget::userSelectAtMouseRight( const QPoint& rPoint ) {
 		case MeshWidgetParams::SELECTION_MODE_POSITIONS:
 			retVal = mMeshVisual->selectPositionAt( rPoint.x(), yPixel, true );
 			break;
+        case MeshWidgetParams::SELECTION_MODE_THREE_POSITIONS:
+            // Nothing to do.
+            retVal = true;
+            break;
 		default:
 			std::cerr << "[MeshGL::" << __FUNCTION__ << "] invalid selection mode: " << selectionMode << "!" << std::endl;
 			retVal = false;

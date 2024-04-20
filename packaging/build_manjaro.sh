@@ -12,6 +12,9 @@ fi
 
 # Everything should be done in a fresh repo pulled from master and in /tmp
 STARTDIR=$(pwd)
+#copy google analytics key to tmp
+cp ./analyticsConfig.h /tmp/analyticsConfig.h 
+
 cd /tmp/
 NAME=gigamesh$(uuidgen)
 git clone --recurse-submodules https://gitlab.com/fcgl/GigaMesh.git $NAME
@@ -27,7 +30,10 @@ cd $NAME
 #uncomment to specifiy commit to build
 #git reset 937b4ca963ade717e1 --hard
 
-git checkout develop
+#git checkout develop
+
+#copy key from tmp to the actual position 
+cp ../analyticsConfig.h ./gui/src/analyticsConfig.h 
 
 # Get NUM_PROCESSORS and CURRENT_VERSION
 NUM_PROCESSORS=$(nproc)

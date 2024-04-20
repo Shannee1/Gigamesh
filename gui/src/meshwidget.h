@@ -117,7 +117,7 @@ private slots:
 public slots:
 	// File menu (and related)
 	bool fileOpen( const QString& rFileName );
-	bool reloadFile();
+    bool reloadFile(const bool askQuestion=true);
 	//.
 	bool saveStillImagesSettings();
 	void saveStillImages360( Vector3D rotCenter, Vector3D rotAxis );
@@ -129,13 +129,19 @@ public slots:
 	//.
 	void sphericalImagesLight();
 	void sphericalImagesLight(const QString& rFileName );
-	void sphericalImagesLight(const QString& rFileName, const bool rUseTiled );
-	void sphericalImages();
+    void sphericalImagesLight(const QString& rFileName, const bool rUseTiled );
+    void sphericalImagesLight(const QString& rFileName, const bool rUseTiled, const double rStepLight );
+    void sphericalImagesLightConstTheta(const QString& rFileName, const bool rUseTiled, const double rStepLight );
+    void sphericalImagesLightDir();
+    void sphericalImages();
 	void sphericalImages(const QString& rFileName );
 	void sphericalImages(const QString& rFileName, const bool rUseTiled );
 	bool sphericalImagesStateNr();
 	//.
 	void unloadMesh();
+
+    //. Edit->Transform
+    void applyAutomaticMeshAlignmentDir();
 
 private:
 	// Screenshot - Single
@@ -227,7 +233,6 @@ private:
 	bool fetchFrameAndZBuffer( unsigned char*& rImRGBA, uint64_t& rImWidth, uint64_t& rImHeight, bool rCropUsingZBuffer, OffscreenBuffer* offscreenBuffer, bool keepBackground = false );
 	bool fetchFrameBuffer( unsigned char** rImArray, int* rImWidth, int* rImHeight, bool rCropUsingZBuffer, OffscreenBuffer* offscreenBuffer );
 	// Write screenshots:
-	bool screenshotTIFF(const QString& rFileName , OffscreenBuffer *offscreenBuffer);
 	bool screenshotPNG(const QString& rFileName, double& rWidthReal, double& rHeigthReal , OffscreenBuffer *offscreenBuffer);
 
 	// View menu
@@ -250,6 +255,7 @@ public slots:
 	bool screenshotSVG();
 	bool screenshotSVG(const QString& rFileName, const QString& rFileNamePNG );
 
+    bool checkInkscapeAvailability();
 	bool exportPlaneIntersectPolyLinesSVG();
 	bool screenshotSVGexportPlaneIntersections( double rOffsetX, double rOffsetY, double rPolyLineWidth, double axisOffset, SvgWriter& svgWriter, const std::set<unsigned int>& polylineIDs );
 
@@ -295,7 +301,8 @@ signals:
 	void sParamFlagMesh(MeshGLParams::eParamFlag,bool);             //!< Sets a specific display flag see MeshGL::setShowFlag.
 	void sParamFlagMeshWidget(MeshWidgetParams::eParamFlag,bool);   //!< Sets a specific display flag see MeshWidget::setShowFlag.
 	void sParamIntegerMeshWidget(MeshWidgetParams::eParamInt,int);  //!< Sets a specific display integer see MeshWidget::
-	void sSelectPoly(std::vector<QPoint>&);                              //!< Pixel coordinates for polygonal/prism selection.
+    void sSelectPoly(std::vector<QPoint>&);                         //!< Pixel coordinates for polygonal/prism selection.
+    void sDeSelectPoly(std::vector<QPoint>&);                       //!< Pixel coordinates for polygonal/prism deselection.
 	// changes to plane position
 	void sApplyTransfromToPlane(Matrix4D);                          //!< Emitted when the planes postion was (interactivly) changed.
 	// guide for docked window
