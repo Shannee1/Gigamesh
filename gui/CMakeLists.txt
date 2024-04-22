@@ -13,6 +13,7 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
 	set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
+# changed from set to list (need to append analyticsConfig.h later)
 list(APPEND GUI_SOURCES src/main.cpp
 				src/QGMMainWindow.cpp                 src/QGMMainWindow.h
 				src/meshQt.cpp                        src/meshQt.h
@@ -61,8 +62,11 @@ list(APPEND GUI_SOURCES src/main.cpp
                                 src/automaticalignmentpyinterface.cpp src/automaticalignmentpyinterface.h
                                 #src/analyticsConfig.h
                                 )
-if(ANALYTICS)
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/analyticsConfig.h")
+    set(ANALYTICS True)
     list(APPEND GUI_SOURCES src/analyticsConfig.h)
+else()
+    set(ANALYTICS False) # Needs to be set to True for releases!!
 endif()
 
 #add ui files, so they appear it qtcreator projects view
