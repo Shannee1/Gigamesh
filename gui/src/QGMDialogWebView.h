@@ -7,8 +7,8 @@
 
 #include <QtGui>
 #include <QDialog>
-#include <QtWebEngineWidgets/QWebEngineView>
-#include <QtWebEngineWidgets/QWebEngineDownloadItem>
+//#include <QtWebEngineWidgets/QWebEngineView>
+//#include <QtWebEngineWidgets/QWebEngineDownloadItem>
 
 // Qt Interface includes:
 #include "ui_dialogWebView.h"
@@ -80,16 +80,16 @@ QString htmltemplate="<html><head><link rel=\"stylesheet\" href=\"https://maxcdn
 public:
     QGMDialogWebView( QWidget *parent = nullptr);
     bool loadImageInWebView(QWidget *parent = nullptr, QString imagepath="");
-    QWebEngineView *webView;
+
 signals:
 
 public slots:
 
-
+//QWebEngineView *webView;
     // QWidget interface
 protected:
 
-    void downloadRequested(QWebEngineDownloadItem *download);
+    //void downloadRequested(QWebEngineDownloadItem *download);
 };
 
 #endif //GIGAMESH_QGMDIALOGWEBVIEW_H

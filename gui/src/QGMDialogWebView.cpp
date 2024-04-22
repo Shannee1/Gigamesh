@@ -9,11 +9,11 @@
 QGMDialogWebView::QGMDialogWebView( QWidget *parent) : QDialog( parent) {
     //! Constructor
     setupUi( this );
-    auto *webVieww  = new QWebEngineView(this);
-    webVieww->load(QUrl("http://www.google.de"));
+    //auto *webVieww  = new QWebEngineView(this);
+    /*webVieww->load(QUrl("http://www.google.de"));
     this->webView=webVieww;
-    this->gridLayout_2->addWidget(webView,1,0,1,0);
-    this->loadImageInWebView(this,"https://heidicon.ub.uni-heidelberg.de/iiif/2/1667900:870974/full/full/0/default.jpg");
+    this->gridLayout_2->addWidget(webView,1,0,1,0);*/
+    //this->loadImageInWebView(this,"https://heidicon.ub.uni-heidelberg.de/iiif/2/1667900:870974/full/full/0/default.jpg");
     //this->webView=QWebEngineView(this);
     // Set logo
     //QObject::connect(this->webView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem*)),
@@ -21,7 +21,7 @@ QGMDialogWebView::QGMDialogWebView( QWidget *parent) : QDialog( parent) {
     setWindowIcon( QIcon( _GIGAMESH_LOGO_ ) );
     this->show();
 }
-
+/*
 void QGMDialogWebView::downloadRequested(QWebEngineDownloadItem* download) {
     Q_ASSERT(download && download->state() == QWebEngineDownloadItem::DownloadRequested);
 
@@ -39,4 +39,4 @@ bool QGMDialogWebView::loadImageInWebView(QWidget *parent, QString imagepath){
     //QWebEnginePage page = QWebEnginePage(this->webView);
     this->webView->setHtml(htmltemplate);
     return true;
-}
+}*/

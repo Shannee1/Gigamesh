@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(OpenGL_GL_PREFERENCE GLVND)
-
+list(APPEND CMAKE_PREFIX_PATH "C:\\Qt\\5.15.2\\mingw81_64\\bin")
 find_package(OpenGL REQUIRED)
 find_package(Qt5 COMPONENTS Core Widgets Gui OpenGL Network Svg REQUIRED)
-find_package(Qt5WebEngineWidgets REQUIRED)
+#find_package(Qt5WebEngineWidgets REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -61,8 +61,16 @@ set(GUI_SOURCES src/main.cpp
 				src/normalSphereSelection/NormalSphereSelectionRenderWidget.cpp
 				src/normalSphereSelection/NormalSphereSelectionRenderWidget.h
                                 src/automaticalignmentpyinterface.cpp src/automaticalignmentpyinterface.h
-                                src/analyticsConfig.h
+                                #src/analyticsConfig.h
                                 )
+
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/analyticsConfig.h")
+	set(ANALYTICS True)
+	list(APPEND GUI_SOURCES src/analyticsConfig.h)
+else ()
+	set(ANALYTICS False)
+endif ()
+
 #add ui files, so they appear it qtcreator projects view
 set(GUI_UI_FILES
 	src/normalSphereSelection/NormalSphereSelectionDialog.ui
@@ -126,7 +134,7 @@ target_include_directories(gigamesh PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 #needed, if ui-header files need references to custom classes (e.g. NormalSphereSelectionRenderWidget.h)
 target_include_directories(gigamesh PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(gigamesh PRIVATE Qt5::WebEngineWidgets ${Qt5Widgets_LIBRARIES} ${Qt5OpenGL_LIBRARIES} ${Qt5Gui_LIBRARIES} ${Qt5Network_LIBRARIES} psalm OpenGL::GL gigameshCore triangle)
+target_link_libraries(gigamesh PRIVATE Qt5::Gui Qt5::Widgets Qt5::Core Qt5::Network ${Qt5Widgets_LIBRARIES} ${Qt5OpenGL_LIBRARIES} ${Qt5Gui_LIBRARIES} ${Qt5Network_LIBRARIES} psalm OpenGL::GL gigameshCore triangle)
 
 #extras for static linking using the MXE mingw static build (set this via "export MINGW_CI_BUILD=True" on the command line)
 if(MINGW_CI_BUILD)

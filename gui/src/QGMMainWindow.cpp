@@ -39,7 +39,10 @@
 #include "QGMDialogWebView.h"
 #include "QGMAnnotationTemplateDialog.h"
 #include "QGMAnnotationDialog.h"
+
+#ifdef ANALYTICS
 #include "analyticsConfig.h"
+#endif
 
 using namespace std;
 
@@ -375,6 +378,7 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
     //daysSinceLastCheck = 356.0; // for testing (1/2)
 	std::cout << "[QGMMainWindow::" << __FUNCTION__ << "] Last check " << daysSinceLastCheck << " days ago." << std::endl;
 	if( daysSinceLastCheck > 3.0 ) {
+        #ifdef ANALYTICS
         mNetworkManagerVersion = new QNetworkAccessManager( this );
         QObject::connect( mNetworkManagerVersion, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpCheckVersion );
 		QNetworkRequest request;
@@ -390,16 +394,17 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
         QObject::connect( mNetworkManagerAnalytics, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpAnalytics );
         QNetworkRequest analyticsRequest;
 
-        QString apiUrl = QString( "https://www.google-analytics.com/mp/collect?measurement_id=G-CJ9E5M832W&api_secret=%1" ).arg(KEY);
-        analyticsRequest.setUrl( QUrl( apiUrl ));
+        //QString apiUrl = QString( "https://www.google-analytics.com/mp/collect?measurement_id=G-CJ9E5M832W&api_secret=%1" ).arg(KEY);
+        //analyticsRequest.setUrl( QUrl( apiUrl ));
 
-        analyticsRequest.setRawHeader("Content-Type", "application/json");
+        //analyticsRequest.setRawHeader("Content-Type", "application/json");
 
         QString bodyText = QString( "{\"client_id\":\"gigamesh.application\",\"events\":[{ \"name\": \"login\", \"params\": {\"method\": \"%1\"}}]}" ).arg( VERSION_PACKAGE ).toStdString().c_str();
 
         QByteArray body = bodyText.toUtf8();
         std::cout << bodyText.toStdString() << std::endl;
         mNetworkManagerAnalytics->post(analyticsRequest,body);
+        #endif
 	}
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
