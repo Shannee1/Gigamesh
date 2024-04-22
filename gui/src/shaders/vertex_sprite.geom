@@ -15,7 +15,7 @@ uniform float uNormalLength = 2.5;
 uniform float uNormalWidth  = 0.1;
 
 // +++ Values to be passed from the vertex.
-layout(location = 0) in struct grVertex {
+in struct grVertex {
 	vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
 	vec3  normal_interp; // Normal vector, which will be interpolated
 	vec3  FixedCam_halfVector,FixedCam_L;

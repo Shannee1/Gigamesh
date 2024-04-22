@@ -18,7 +18,7 @@ uniform int uHatchDitherStyle = 0;
 uniform float uOutlineWidth;
 uniform vec4 uHatchColor = vec4(1.0,0.0,0.0,1.0);
 
-in vec2 texCoord;         //texture coord
+layout(location = 0) in vec2 texCoord;         //texture coord
 
 float bayerDither(int x, int y, float c0)
 {
@@ -45,7 +45,7 @@ float randomDither(int x, int y, float c0)
 }
 
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 
 void main(void) {

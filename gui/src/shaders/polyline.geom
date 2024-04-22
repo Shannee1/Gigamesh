@@ -33,12 +33,12 @@ in struct grVertex {
 } oVertex[];
 
 out grVertex gVertex;
-flat out uint gInvertColor;
+layout(location = 1) flat out uint gInvertColor;
 
 // +++ Edge/Wireframe Rendering 
-noperspective out vec3 vEdgeDist;              // Barycenter coordinates. REQUIRED by funcval.frag
-out vec3 vBarycenter;            // normalized Barycenter coordinates
-flat out vec3 vLabelNumbers;                        // vector to hold all three labelNr's to get uninterpolated result
+layout(location = 2) noperspective out vec3 vEdgeDist;              // Barycenter coordinates. REQUIRED by funcval.frag
+layout(location = 3) out vec3 vBarycenter;            // normalized Barycenter coordinates
+layout(location = 4) flat out vec3 vLabelNumbers;                        // vector to hold all three labelNr's to get uninterpolated result
 
 //uniform float uExplodeFactor = 0.12;
 

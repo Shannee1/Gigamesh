@@ -12,9 +12,9 @@ uniform vec3 uOutlineColor;
 uniform float uOutlineThreshold = 0.0;
 uniform float uOutlineWidth = 4.0;
 
-in vec2 texCoord;
+layout(location = 0) in vec2 texCoord;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 
 

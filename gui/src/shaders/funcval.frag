@@ -64,7 +64,7 @@ uniform bool uIsoSolidFlag  = true;
 uniform vec4 uIsoSolidColor = vec4( 0.0, 0.0, 0.0, 1.0 );
 
 // +++ Values to be passed from the vertex or geometry shader
-layout(location = 0) in struct grVertex {
+in struct grVertex {
 	vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
 	vec3  normal_interp; // Normal vector, which will be interpolated
         vec3  FixedCam_halfVector;

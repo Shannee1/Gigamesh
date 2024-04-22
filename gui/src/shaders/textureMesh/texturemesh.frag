@@ -1,12 +1,11 @@
 #version 430
 
-in vec3 normal;
-in vec3 FixedCam_halfVector;
-in vec3 FixedWorld_halfVector;
-in vec3 FixedCam_L;
-in vec3 FixedWorld_L;
-
-in vec2 uv;
+layout(location = 0) in vec3 normal;
+layout(location = 1) in vec3 FixedCam_halfVector;
+layout(location = 2) in vec3 FixedWorld_halfVector;
+layout(location = 3) in vec3 FixedCam_L;
+layout(location = 4) in vec3 FixedWorld_L;
+layout(location = 5) in vec2 uv;
 
 uniform sampler2D uTexture;
 
@@ -20,7 +19,7 @@ uniform vec3 uBackFaceColor;
 
 uniform float Shininess;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // --- Light function (Phong) ----------------------------------------------------------------------------------------------------------------------------------
 vec4 getLightAmount( vec3 L, vec3 normal, vec3 halfVector, vec4 diffuseProduct, vec4 specularProduct ) { // Product essentially means color

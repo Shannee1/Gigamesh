@@ -148,6 +148,9 @@ int main( int argc, char *argv[] ) {
 
     glFormat.setDepthBufferSize(24); //! \todo needed?
     glFormat.setStencilBufferSize(8); //! \todo needed?
+    glFormat.setRedBufferSize(8); //! \todo needed?
+    glFormat.setGreenBufferSize(8); //! \todo needed?
+    glFormat.setBlueBufferSize(8); //! \todo needed?
 	//! \todo QSurfaceFormat is the replacment for the deprecated QGLFormat
     //if(QSurfaceFormat::openGLVersionFlags() & QSurfaceFormat::OpenGL_Version_4_3)
     //	glFormat.setVersion( 4, 3 );        //Higher Version needed to handle transparency in shader. Revert to 3.3 if it breaks core functionalities...

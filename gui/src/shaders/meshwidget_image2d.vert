@@ -6,8 +6,8 @@ uniform float uDepthPos = 0.0;    // Offset for the default range for the frustu
 layout(location = 0) in vec2 vertPosition;        // Positions of the veritces defining the background - their typicall position is equal to the four corners of the viewport
 layout(location = 1) in vec2 textureCoords;       // Texture Coordinates.
 
-out vec4 ecPosition;         // Interpolated position of the fragment in eye coordinates.
-out vec2 texCoord;           // Texture coordiantes -- passed thru.
+layout(location = 0) out vec4 ecPosition;         // Interpolated position of the fragment in eye coordinates.
+layout(location = 1) out vec2 texCoord;           // Texture coordiantes -- passed thru.
 
 void main(void) {
 	texCoord = textureCoords;

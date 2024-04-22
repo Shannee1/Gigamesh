@@ -1,14 +1,14 @@
 #version 430
 
 // +++ Values to be passed from the vertex or geometry shader
-in struct grVertex {
+layout(location = 0) in struct grVertex {
         vec4  ec_pos;        // eye coordinate position
         vec3  normal_interp; // Normal vector, which will be interpolated
 	vec4  vColor;
         vec3  FixedCam_L;
         vec3  FixedWorld_L;
-        vec3 FixedCam_halfVector;
-        vec3 FixedWorld_halfVector;
+        vec3  FixedCam_halfVector;
+        vec3  FixedWorld_halfVector;
 	float funcValNormalized;
 } oVertex;
 

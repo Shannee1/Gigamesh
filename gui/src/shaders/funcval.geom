@@ -44,9 +44,9 @@ struct grVertex {
         float flagNoLabel;
 };
 // +++ Values to be passed from the vertex.
-layout(location = 0) in grVertex oVertex[];
+in grVertex oVertex[];
 
-out grVertex gVertex;
+out grVertex gVertex; // somehow need different location than 0 here... not sure why
 layout(location = 1) flat out uint gInvertColor;
 
 // +++ Edge/Wireframe Rendering 

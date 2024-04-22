@@ -13,8 +13,8 @@ uniform vec4  uLineColor1 = vec4( 215.0/255.0, 187.0/255.0, 190.0/255.0, 1.0 );
 uniform vec4  uLineColor2 = vec4( 167.0/255.0, 128.0/255.0, 131.0/255.0, 1.0 );
 uniform vec4  uLineColor3 = vec4( 119.0/255.0,  70.0/255.0,  66.0/255.0, 1.0 );
 
-in vec2  gridPos;              // Interpolated position of the grid i.e. pixel coordinates converted to world coordinates
-in vec4  ecPosition;         // Interpolated position of the fragment in eye coordinates.
+layout(location = 0) in vec2  gridPos;              // Interpolated position of the grid i.e. pixel coordinates converted to world coordinates
+layout(location = 1) in vec4  ecPosition;         // Interpolated position of the fragment in eye coordinates.
 
 // Output i.e. color of the fragment
 layout(location = 0) out vec4 fragColor;

@@ -57,7 +57,7 @@ uniform struct FogParameters {
 uniform sampler2D uFuncValTexMap;
 
 // +++ Values to be passed from the vertex.
-layout(location = 0) in struct grVertex {
+in struct grVertex {
 	vec4  ec_pos;        // Interpolated position of the fragment in eye coordinates.
 	vec3  normal_interp; // Interpolated normal (also in eye coordinates).
 	vec3  FixedCam_halfVector,FixedCam_L;

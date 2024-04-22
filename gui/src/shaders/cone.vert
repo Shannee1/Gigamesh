@@ -25,8 +25,10 @@ uniform vec3 uClipBefore = vec3( 0.0, 0.0, 0.0 );       // Point in world coordi
 out struct grVertex {
 	vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
 	vec3  normal_interp; // Normal vector, which will be interpolated
-	vec3  FixedCam_halfVector,FixedCam_L;
-	vec3  FixedWorld_halfVector,FixedWorld_L;
+        vec3  FixedCam_halfVector;
+        vec3  FixedCam_L;
+        vec3  FixedWorld_halfVector;
+        vec3  FixedWorld_L;
 	//+++ Color of the vertex
 	vec4  vertexColor;
 	// +++ Function value of the vertex passed to the fragment shader:

@@ -3,8 +3,10 @@
 in struct grVertex {
 	vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
 	vec3  normal_interp; // Normal vector, which will be interpolated
-	vec3  FixedCam_halfVector,FixedCam_L;
-	vec3  FixedWorld_halfVector,FixedWorld_L;
+        vec3  FixedCam_halfVector;
+        vec3  FixedCam_L;
+        vec3  FixedWorld_halfVector;
+        vec3  FixedWorld_L;
 	//+++ Color of the vertex
 	vec4  vertexColor;
 	// +++ Function value of the vertex passed to the fragment shader:
@@ -66,7 +68,7 @@ uniform struct FogParameters {
 // Function value of the vertex
 uniform sampler2D uFuncValTexMap;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // --- Light function (Phong) ----------------------------------------------------------------------------------------------------------------------------------
 vec4 getLightAmount( vec3 L, vec3 normal, vec3 halfVector, vec4 diffuseProduct, vec4 specularProduct ) { // Product essentially means color

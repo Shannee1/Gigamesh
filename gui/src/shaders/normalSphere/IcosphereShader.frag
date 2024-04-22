@@ -1,6 +1,6 @@
 #version 430
-in float data;
-in float selected;
+layout(location = 0) in float data;
+layout(location = 1) in float selected;
 
 uniform sampler2D uFuncValTexture;
 uniform float uColorMapIndex = 0.0f;
@@ -9,7 +9,7 @@ uniform bool invertFuncVal = false;
 
 uniform float uUpperQuantil = 1.0f;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 void main(void)
 {

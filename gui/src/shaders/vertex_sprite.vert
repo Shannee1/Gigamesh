@@ -32,7 +32,7 @@ uniform bool  uFuncValRepeat    = false;
 uniform float uFuncValIntervall = 10.0;
 
 // +++ Values to be passed on to the geometry shader:
-layout(location = 0) out struct grVertex {
+out struct grVertex {
 	vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
 	vec3  normal_interp; // Normal vector, which will be interpolated
         vec3  FixedCam_halfVector;

@@ -6,9 +6,9 @@ uniform vec2 uViewPortSize = vec2( 860, 718 ); // ( width, height ) of the viewp
 uniform float upperThreshold = 0.995;
 uniform float lowerThreshold = 0.1;
 
-in vec2 texCoord;
+layout(location = 0) in vec2 texCoord;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 
 

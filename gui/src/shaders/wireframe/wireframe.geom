@@ -32,15 +32,17 @@ uniform float uLightVecWidth   =  0.005;
 in struct grVertex {
 	vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
 	vec3  normal_interp; // Normal vector, which will be interpolated
-	vec3  FixedCam_halfVector,FixedCam_L;
-	vec3  FixedWorld_halfVector,FixedWorld_L;
+        vec3  FixedCam_halfVector;
+        vec3  FixedCam_L;
+        vec3  FixedWorld_halfVector;
+        vec3  FixedWorld_L;
 } oVertex[];
 
 out grVertex gVertex;
-flat out uint gInvertColor;
+layout(location = 1) flat out uint gInvertColor;
 
 // +++ Edge/Wireframe Rendering 
-noperspective out vec3 vEdgeDist;              // Barycenter coordinates.
+layout(location = 2) noperspective out vec3 vEdgeDist;              // Barycenter coordinates.
 uniform vec2 uViewPortSize = vec2( 860, 718 ); // ( width, height ) of the viewport in pixel
 
 //uniform float uExplodeFactor = 0.12;

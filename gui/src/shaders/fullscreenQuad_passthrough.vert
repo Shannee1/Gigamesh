@@ -7,7 +7,7 @@ uniform float uDepthPos = -.5;    // Offset for the default range for the frustu
 // +++ Vertex buffers
 layout(location = 0) in vec2 vertPosition;        // Positions of the vertices defining the screenquad
 
-out vec2 texCoord;         //texture coord
+layout(location = 0) out vec2 texCoord;         //texture coord
 
 void main(void) {
 

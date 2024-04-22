@@ -16,9 +16,9 @@ uniform float uScaleRadialBottom = 1.0;
 uniform float uScaleRadialTop    = 1.0;
 
 // +++ Vertex buffers -- this corresponds to MeshGL::grVertexElmentBasic
-in vec3  position;
-in vec3  vNormal;
-in vec4  vColor;
+layout(location = 0) in vec3  position;
+layout(location = 1) in vec3  vNormal;
+layout(location = 2) in vec4  vColor;
 /*
 in float vFuncVal;
 // +++ Vertex buffers -- this corresponds to MeshGL::grVertexStripeElment
@@ -48,13 +48,13 @@ uniform float uFuncValLogGamma  =  1.0;
 */
 
 // +++ Values to be passed on to the geometry shader:
-out struct grVertex {
+layout(location = 0) out struct grVertex {
 	vec4  ec_pos;        // eye coordinate position
 	vec3  normal_interp; // Normal vector, which will be interpolated
 	vec3  FixedCam_L;
 	vec3  FixedWorld_L;
-	vec3 FixedCam_halfVector;
-	vec3 FixedWorld_halfVector;
+        vec3  FixedCam_halfVector;
+        vec3  FixedWorld_halfVector;
 } oVertex;
 
 void main(void)

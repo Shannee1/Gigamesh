@@ -1,7 +1,7 @@
 #version 430
 
-in vec3 vPosition;
-in float vData;
+layout(location = 0) in vec3 vPosition;
+layout(location = 1) in float vData;
 
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
@@ -9,8 +9,8 @@ uniform mat4 uProjectionMatrix;
 uniform sampler2D uSelectionTexture;
 uniform int uTextureWidth;
 
-out float data;
-out float selected;
+layout(location = 0) out float data;
+layout(location = 1) out float selected;
 
 
 uniform float uMaxData;

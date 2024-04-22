@@ -16,7 +16,7 @@ layout(location = 4) in float vLabelID; // this should be UINT, but thanks to fi
 layout(location = 5) in float vFlags;   // this should be UINT, but thanks to fixed normalization this does not work -- see: http://qt-project.org/forums/viewthread/38929
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-out float brightness;
+layout(location = 0) out float brightness;
 
 void main() {
 	vec4 clipSpacePos = transformMat * vec4(position, 1.0f);

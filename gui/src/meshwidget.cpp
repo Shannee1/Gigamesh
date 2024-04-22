@@ -1757,6 +1757,7 @@ void MeshWidget::initializeGL() {
 #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
 	cout << "[MeshWidget::" << __FUNCTION__ << "] " << endl;
 #endif
+    makeCurrent();
     initializeOpenGLFunctions();
 
 	cout << "[MeshWidget::" << __FUNCTION__ << "] -----------------------------------------------------------" << endl;
@@ -1774,7 +1775,7 @@ void MeshWidget::initializeGL() {
     //! \todo look for similar fct to old sampleBuffer in QSurfaceFormat (maybe hasAlpha() ???
     //! QGLFormat::sampleBuffers() previously returned true if multisample buffer support was enabled
     //! QSurfaceFormat::samples() returns number of samples per pixel when multisampling is enabled, -1 otherwise
-    if( QOpenGLContext::currentContext()->format().samples() == -1 ) {
+    if( context()->format().samples() == -1 ) {
         cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: Could not enable sample buffers!" << endl;
     }
     // deprecated:
@@ -3419,6 +3420,8 @@ bool MeshWidget::fetchFrameAndZBuffer(unsigned char*&   rImRGBA,          //!< I
 
 	imArrayGL = offscreenBuffer->getColorTexture(colWidth, colHeight);
 	pixelZBuffer = offscreenBuffer->getDepthTexture(colWidth, colHeight);
+    cout << imArrayGL << endl;
+    cout << pixelZBuffer << endl;
 	rImWidth = colWidth;
 	rImHeight = colHeight;
 	rImRGBA   = new unsigned char[rImWidth*4*rImHeight];
@@ -8122,7 +8125,7 @@ unsigned char* MeshWidget::OffscreenBuffer::getColorTexture(int &width, int &hei
 
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, mColorTextureBuffer);
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 	return mColorTextureBuffer;
 }
 

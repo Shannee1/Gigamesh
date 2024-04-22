@@ -1,5 +1,5 @@
 #version 430
-in float brightness;
+layout(location = 0) in float brightness;
 
 layout(location = 0) out vec4 FragColor;
 

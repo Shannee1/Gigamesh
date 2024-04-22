@@ -14,9 +14,9 @@ uniform float uHSV_H_Steps = 20.0;
 uniform float uHSV_S_Steps = 10.0;
 uniform float uHSV_V_Steps = 10.0;
 
-in vec2 texCoord;
+layout(location = 0) in vec2 texCoord;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 //conversion routines from:
 //http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl

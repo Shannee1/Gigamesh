@@ -37,6 +37,8 @@ option(BUILD_CLI "Build the GigaMesh-CLI tools" ON)
 option(BUILD_GUI "Build GigaMesh-GUI" ON)
 option(ENABLE_TESTS "Build tests" ON)
 
+set(ANALYTICS False) # Needs to be set True for Releases!!
+
 #--------- get git version and other useful information ---------
 string(TIMESTAMP COMP_DATE "%d.%b.%y")
 execute_process(COMMAND git rev-parse HEAD

@@ -1,13 +1,13 @@
 #version 430
 
 // +++ Values to be passed from the vertex or geometry shader
-in struct grVertex {
+layout(location = 0) in struct grVertex {
 	vec4  ec_pos;        // eye coordinate position
 	vec3  normal_interp; // Normal vector, which will be interpolated
 	vec3  FixedCam_L;
 	vec3  FixedWorld_L;
-	vec3 FixedCam_halfVector;
-	vec3 FixedWorld_halfVector;
+        vec3  FixedCam_halfVector;
+        vec3  FixedWorld_halfVector;
 } oVertex;
 
 uniform float Shininess      = 14.154;
@@ -21,7 +21,7 @@ uniform vec4  AmbientProduct = vec4( 1.0, 1.0, 1.0, 1.0 ); // vec4( 0.1, 0.1, 0.
 // Switch betwenn flat and smooth shading
 uniform bool  flatShade = false;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // --- Light function (Phong) ----------------------------------------------------------------------------------------------------------------------------------
 vec4 getLightAmount( vec3 L, vec3 normal, vec3 halfVector, vec4 diffuseProduct, vec4 specularProduct ) { // Product essentially means color

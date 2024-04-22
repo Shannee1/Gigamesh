@@ -9,8 +9,8 @@ uniform vec2 uCenterOffset = vec2(0.0,0.0);
 // +++ Vertex buffers
 layout(location = 0) in vec2 vertPosition;        // Positions of the veritces defining the background - their typicall position is equal to the four corners of the viewport
 
-out vec2 gridPos;            // Interpolated position of the grid i.e. pixel coordinates converted to world coordinates
-out vec4 ecPosition;         // Interpolated position of the fragment in eye coordinates.
+layout(location = 0) out vec2 gridPos;            // Interpolated position of the grid i.e. pixel coordinates converted to world coordinates
+layout(location = 1) out vec4 ecPosition;         // Interpolated position of the fragment in eye coordinates.
 
 void main(void) {
 	gridPos = (vertPosition + uCenterOffset) * vec2( uScaleX, uScaleY );

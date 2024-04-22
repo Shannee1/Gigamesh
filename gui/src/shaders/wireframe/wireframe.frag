@@ -34,20 +34,22 @@ uniform struct FogParameters {
 in struct grVertex {
 	vec4  ec_pos;        // eye coordinate position to be used for on-the-fly-computation of a triangles normal within the fragment shader.
 	vec3  normal_interp; // Normal vector, which will be interpolated
-	vec3  FixedCam_halfVector,FixedCam_L;
-	vec3  FixedWorld_halfVector,FixedWorld_L;
+        vec3  FixedCam_halfVector;
+        vec3  FixedCam_L;
+        vec3  FixedWorld_halfVector;
+        vec3  FixedWorld_L;
 } gVertex;
 
-flat in uint gInvertColor;
+layout(location = 1) flat in uint gInvertColor;
 
 // +++ Edge/Wireframe Rendering
-noperspective in vec3 vEdgeDist;                           // Barycenter coordinates.
+layout(location = 2) noperspective in vec3 vEdgeDist;                           // Barycenter coordinates.
 uniform vec4 uEdgeColor      = vec4( 0.1, 0.1, 0.1, 1.0 ); // Color of the edge
 uniform bool uWireFrame      = false;
 uniform vec4 uWireFrameColor = vec4( 1.0, 1.0, 1.0, 1.0 ); // This color should be equal to the background color of the scence.
 
 // Output i.e. color of the fragment
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // --- Light function (Phong) ----------------------------------------------------------------------------------------------------------------------------------
 vec4 getLightAmount( vec3 L, vec3 normal, vec3 halfVector, vec4 diffuseProduct, vec4 specularProduct ) { // Product essentially means color

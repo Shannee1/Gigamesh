@@ -37,7 +37,10 @@
 #include "qgmdockview.h"
 #include "ExternalProgramsDialog.h"
 #include "dialogGridCenterSelect.h"
-#include "analyticsConfig.h"
+
+#ifdef ANALYTICS
+    #include "analyticsConfig.h"
+#endif
 
 using namespace std;
 
@@ -369,22 +372,23 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 
         //send to google analytics
         //Caution! This request is not working in some network e. g. Eduroam
+        #ifdef ANALYTICS
+            //Using different managers, since the first manager is waiting for a response --> gigaMesh stops until the response is received
+            mNetworkManagerAnalytics = new QNetworkAccessManager( this );
+            QObject::connect( mNetworkManagerAnalytics, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpAnalytics );
+            QNetworkRequest analyticsRequest;
 
-        //Using different managers, since the first manager is waiting for a response --> gigaMesh stops until the response is received
-        mNetworkManagerAnalytics = new QNetworkAccessManager( this );
-        QObject::connect( mNetworkManagerAnalytics, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpAnalytics );
-        QNetworkRequest analyticsRequest;
+            QString apiUrl = QString( "https://www.google-analytics.com/mp/collect?measurement_id=G-CJ9E5M832W&api_secret=%1" ).arg(KEY);
+            analyticsRequest.setUrl( QUrl( apiUrl ));
 
-        QString apiUrl = QString( "https://www.google-analytics.com/mp/collect?measurement_id=G-CJ9E5M832W&api_secret=%1" ).arg(KEY);
-        analyticsRequest.setUrl( QUrl( apiUrl ));
+            analyticsRequest.setRawHeader("Content-Type", "application/json");
 
-        analyticsRequest.setRawHeader("Content-Type", "application/json");
+            QString bodyText = QString( "{\"client_id\":\"gigamesh.application\",\"events\":[{ \"name\": \"login\", \"params\": {\"method\": \"%1\"}}]}" ).arg( VERSION_PACKAGE ).toStdString().c_str();
 
-        QString bodyText = QString( "{\"client_id\":\"gigamesh.application\",\"events\":[{ \"name\": \"login\", \"params\": {\"method\": \"%1\"}}]}" ).arg( VERSION_PACKAGE ).toStdString().c_str();
-
-        QByteArray body = bodyText.toUtf8();
-        std::cout << bodyText.toStdString() << std::endl;
-        mNetworkManagerAnalytics->post(analyticsRequest,body);
+            QByteArray body = bodyText.toUtf8();
+            std::cout << bodyText.toStdString() << std::endl;
+            mNetworkManagerAnalytics->post(analyticsRequest,body);
+        #endif
     }
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 

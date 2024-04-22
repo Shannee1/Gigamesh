@@ -60,7 +60,7 @@ struct grVertex {
         float flagNoLabel;
 };
 // +++ Values to be passed on to the geometry shader:
-layout(location = 0) out grVertex oVertex;
+out grVertex oVertex;
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 uniform float uFaceShiftViewZ = 0.0; // offset in view coordinates to prevent z-fighting. e.g. when selected faces are drawn.

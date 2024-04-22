@@ -1,15 +1,15 @@
 #version 430
 
-in vec3 vPosition;
-in vec3 vNormal;
-in vec2 vUV;
+layout(location = 0) in vec3 vPosition;
+layout(location = 1) in vec3 vNormal;
+layout(location = 2) in vec2 vUV;
 
-out vec3 normal;
-out vec3 FixedCam_halfVector;
-out vec3 FixedWorld_halfVector;
-out vec3 FixedCam_L;
-out vec3 FixedWorld_L;
-out vec2 uv;
+layout(location = 0) out vec3 normal;
+layout(location = 1) out vec3 FixedCam_halfVector;
+layout(location = 2) out vec3 FixedWorld_halfVector;
+layout(location = 3) out vec3 FixedCam_L;
+layout(location = 4) out vec3 FixedWorld_L;
+layout(location = 5) out vec2 uv;
 
 uniform mat4 modelViewMat;
 uniform mat4 projectionMat;

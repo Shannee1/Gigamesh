@@ -3,7 +3,7 @@
 uniform sampler2D uLabelTexMap;  // Texturemap holding an image e.g. logo.
 
 //in vec4  ecPosition;           // Interpolated position of the fragment in eye coordinates.
-in vec2 texCoord;
+layout(location = 1) in vec2 texCoord;
 
 // Output i.e. color of the fragment
 layout(location = 0) out vec4 fragColor;

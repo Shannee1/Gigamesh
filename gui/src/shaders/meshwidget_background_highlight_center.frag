@@ -16,7 +16,7 @@ uniform vec4  uLineColor5 = vec4( 215.0/255.0, 215.0/255.0,   0.0/255.0, 1.0 ); 
 //=============================================
 uniform float uHighlightDepth = 0.0;
 
-in vec2  gridPos;              // Interpolated position of the grid i.e. pixel coordinates converted to world coordinates
+layout(location = 0) in vec2  gridPos;              // Interpolated position of the grid i.e. pixel coordinates converted to world coordinates
 //in vec4  ecPosition;         // Interpolated position of the fragment in eye coordinates.
 
 // Output i.e. color of the fragment
