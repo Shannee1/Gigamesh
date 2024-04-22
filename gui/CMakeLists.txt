@@ -13,7 +13,7 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
 	set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
-set(GUI_SOURCES src/main.cpp
+list(APPEND GUI_SOURCES src/main.cpp
 				src/QGMMainWindow.cpp                 src/QGMMainWindow.h
 				src/meshQt.cpp                        src/meshQt.h
 				src/image2d.cpp                       src/image2d.h
@@ -59,8 +59,12 @@ set(GUI_SOURCES src/main.cpp
 				src/normalSphereSelection/NormalSphereSelectionRenderWidget.cpp
 				src/normalSphereSelection/NormalSphereSelectionRenderWidget.h
                                 src/automaticalignmentpyinterface.cpp src/automaticalignmentpyinterface.h
-                                src/analyticsConfig.h
+                                #src/analyticsConfig.h
                                 )
+if(ANALYTICS)
+    list(APPEND GUI_SOURCES src/analyticsConfig.h)
+endif()
+
 #add ui files, so they appear it qtcreator projects view
 set(GUI_UI_FILES
 	src/normalSphereSelection/NormalSphereSelectionDialog.ui

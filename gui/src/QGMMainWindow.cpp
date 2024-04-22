@@ -36,7 +36,10 @@
 #include "qgmdockview.h"
 #include "ExternalProgramsDialog.h"
 #include "dialogGridCenterSelect.h"
-#include "analyticsConfig.h"
+
+#ifdef ANALYTICS
+    #include "analyticsConfig.h"
+#endif
 
 using namespace std;
 
@@ -370,7 +373,7 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 
         //send to google analytics
         //Caution! This request is not working in some network e. g. Eduroam
-
+#ifdef ANALYTICS
         //Using different managers, since the first manager is waiting for a response --> gigaMesh stops until the response is received
         mNetworkManagerAnalytics = new QNetworkAccessManager( this );
         QObject::connect( mNetworkManagerAnalytics, &QNetworkAccessManager::finished, this, &QGMMainWindow::slotHttpAnalytics );
@@ -386,6 +389,7 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
         QByteArray body = bodyText.toUtf8();
         std::cout << bodyText.toStdString() << std::endl;
         mNetworkManagerAnalytics->post(analyticsRequest,body);
+#endif
 	}
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------
 
