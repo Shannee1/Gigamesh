@@ -26,11 +26,13 @@ class Annotation {
         std::string annotationid;
         MeshQt* themesh;
 
+        bool determineZBBOXFromVertices();
+
         bool pointInAnnotationBBOX3D(double x, double y, double z);
 
         bool pointInAnnotationBBOX2D(double x, double y);
 
-        bool bboxToVertexIds(MeshQt* meshToTest);
+        bool bboxToVertexIds(MeshQt* meshToTest, bool twodimensional);
 
         QJsonObject getAnnotationBody();
 

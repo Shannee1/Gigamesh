@@ -18,20 +18,19 @@
 QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation annodata,QWidget *parent) : QDialog( parent) {
     if(annotemplate.empty()){
         QFile jsonfile;
-        jsonfile.setFileName("annotemplates.json");
+        jsonfile.setFileName("C:/Users/timo.homburg/git/GigaMesh/cmake-build-debug/annotemplates.json");
         jsonfile.open(QIODevice::ReadOnly);
         QByteArray data = jsonfile.readAll();
         qDebug()<<QJsonDocument::fromJson(data);
         QJsonDocument annoDoc;
         annoDoc=QJsonDocument::fromJson(data);
-        QJsonObject mainObject=annoDoc.object();
-        const QJsonArray &annotemplate = annoDoc.array();
+        annotemplate=annoDoc.array().at(0).toObject();
     }
     auto * gridLayout = new QGridLayout(this);
     int linecounter=0;
     auto tablabels=new QHash<QString,int>();
     auto * titlelabel=new QLabel(this);
-    QString firstkey=QString().fromStdString(annodata.annotationid);
+    QString firstkey=QString::fromStdString(annodata.annotationid);
     QJsonArray curanno=annodata.annotationbody;
     titlelabel->setText("Edit Annotation "+firstkey);
     gridLayout->addWidget(titlelabel,0,0,1,2);
@@ -87,10 +86,10 @@ QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation ann
     auto * cancelbutton=new QPushButton(this);
     cancelbutton->setText("Cancel");
     gridLayout->addWidget(cancelbutton,linecounter,0);
-    connect(okbutton,SIGNAL(clicked),
+    /*connect(okbutton,SIGNAL(clicked),
             this,SLOT(this->close));
     connect(cancelbutton,SIGNAL(clicked),
-            this,SLOT(this->close));
+            this,SLOT(this->close));*/
     this->setLayout(gridLayout);
     setWindowIcon( QIcon( _GIGAMESH_LOGO_ ) );
     this->show();

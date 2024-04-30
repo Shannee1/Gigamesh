@@ -6829,13 +6829,13 @@ bool Mesh::labelVertices(
 	return Mesh::labelVertices( verticesToLabelVec, rVerticesSeeds );
 }
 
-std::set<Vertex*> Mesh::getVerticesInBBOX( double minX, double maxX, double minY, double maxY, double minZ, double maxZ){
+std::set<Vertex*> Mesh::getVerticesInBBOX(double minX, double maxX, double minY, double maxY, double minZ, double maxZ){
     std::set<Vertex*> result;
     for( auto const& currVertex: mVertices ) {
         double x=currVertex->getX();
         double y=currVertex->getY();
         double z=currVertex->getZ();
-        if(x>minX && x<minX && y>minY && y<maxY && z>minZ && z<maxZ){
+        if(x>minX && x<maxX && y>minY && y<maxY && z>minZ && z<maxZ){
             result.insert(currVertex);
         }
     }
@@ -6848,7 +6848,7 @@ std::set<Vertex*> Mesh::getVerticesIn2DBBOX(double minX, double maxX, double min
         double x=currVertex->getX();
         double y=currVertex->getY();
         double z=currVertex->getZ();
-        if(x>minX && x<minX && y>minY && y<maxY){
+        if(x>minX && x<maxX && y>minY && y<maxY){
             result.insert(currVertex);
         }
     }

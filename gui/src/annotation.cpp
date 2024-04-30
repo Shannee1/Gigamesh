@@ -31,7 +31,7 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh) {
         maxX=res[3];
         maxY=res[4];
         maxZ=res[5];
-        hasbbox=true;
+        bboxToVertexIds(mesh,false);
     }else if(annotype=="SvgSelector" || annotype=="SVGSelector"){
         annovalue=annovalue.replace("<svg><polygon","").replace("points=\"","").replace("\"></polygon></svg>","").trimmed();
         double imgheight=0.0;
@@ -47,32 +47,38 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh) {
         minY=res[1];
         maxX=res[2];
         maxY=res[3];
-        hasbbox=true;
-    }
-    if(hasbbox){
-        bboxToVertexIds(mesh);
+        bboxToVertexIds(mesh,true);
     }
 
 }
 
 bool Annotation::determineZBBOXFromVertices(){
-    for(vert:vertices){
-
+    double minZz=DBL_MAX;
+    double maxZz=DBL_MIN;
+    for(Vertex* vert:vertices){
+        if(vert->getZ()<minZz){
+            minZz=vert->getZ();
+        }
+        if(vert->getZ()>maxZz){
+            maxZz=vert->getZ();
+        }
     }
+    this->minZ=minZz;
+    this->maxZ=maxZz;
+    return true;
 }
 
-bool Annotation::bboxToVertexIds(MeshQt* meshToTest){
-    if(minZ==0 && maxZ==0){
-        vertices=meshToTest->getVerticesIn2DBBOX(minX,maxX,minY,maxY);
+bool Annotation::bboxToVertexIds(MeshQt* meshToTest,bool twodimensional){
+    if(twodimensional){
+        this->vertices=meshToTest->getVerticesIn2DBBOX(minX,maxX,minY,maxY);
+        determineZBBOXFromVertices();
     }else{
-        vertices=meshToTest->getVerticesInBBOX(minX,maxX,minY,maxY,minZ,maxZ);
+        this->vertices=meshToTest->getVerticesInBBOX(minX,maxX,minY,maxY,minZ,maxZ);
     }
     return true;
 }
 
 bool Annotation::pointInAnnotationBBOX3D(double x, double y, double z){
-    std::cout << "The Point: " << std::to_string(x) << " " <<  std::to_string(y) << " " <<  std::to_string(z)  << "\n";
-    std::cout << "The Box: " << std::to_string(minX)  << " " << std::to_string(maxX)  << " " << std::to_string(minY)  << " " << std::to_string(maxY)  << " " << std::to_string(minZ) << " " << std::to_string(maxZ)  << "\n";
     if(x>minX && x<maxX && y>minY && y<maxY && z>minZ && z<maxZ){
         return true;
     }
