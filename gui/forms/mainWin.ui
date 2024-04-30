@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -207,6 +207,7 @@
     <addaction name="actionLabelColorShift"/>
     <addaction name="actionAnnotateRendering"/>
     <addaction name="actionLoad_Annotations_From_File"/>
+    <addaction name="actionExport_Annotations"/>
     <addaction name="actionMarkAnnotation"/>
     <addaction name="actionGet_Label_Info"/>
     <addaction name="actionEdit_Annotation_Templates"/>
@@ -4847,6 +4848,11 @@ The latter will be shown, when the processing has finished.</string>
   <action name="actionDownscaleTexture">
    <property name="text">
     <string>Downscale Texture(s)</string>
+   </property>
+  </action>
+  <action name="actionExport_Annotations">
+   <property name="text">
+    <string>Export Annotations</string>
    </property>
   </action>
  </widget>

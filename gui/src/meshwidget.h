@@ -36,6 +36,7 @@
 
 // Qt includes:
 #include "meshQt.h"
+#include "annotation.h"
 
 #include "QDir"
 
@@ -78,7 +79,7 @@ class MeshQt;
 class MeshWidget : public QGLWidget, public MeshWidgetParams, public MeshGLColors {
     Q_OBJECT
 
-
+    std::list<Annotation> annotationlist;
 
     MeshQt*             mMeshVisual;
 
@@ -87,15 +88,19 @@ public:
 	MeshWidget( const QGLFormat& format, QWidget* parent );
 	~MeshWidget() override;
 
-
+    std::list<Annotation> getAnnotations();
     MeshQt *getMesh();
 	bool    getViewPortResolution( double& rRealWidth, double& rRealHeight ) const;
 	bool    getViewPortPixelWorldSize( double& rPixelWidth, double& rPixelHeight ) const;
 	bool    getViewPortDPI( double& rDPI ) const;
 	bool    getViewPortDPM( double& rDPM ) const;
 
-public slots: // ... overloaded from MeshWidgetParams:
-	bool    setParamFlagMeshWidget(    MeshWidgetParams::eParamFlag rFlagNr,  bool   rState  ) override;
+public slots: // ... overloaded from MeshWidgetParams:s
+    bool setAnnotations(std::list<Annotation> annos);
+    bool addAnnotation(Annotation anno);
+    bool removeAnnotation(QString annoid);
+    std::list<Annotation> getAnnotationsByCoordinate(double x,double y, double z);
+    bool    setParamFlagMeshWidget(    MeshWidgetParams::eParamFlag rFlagNr,  bool   rState  ) override;
 	bool    toggleShowFlag(            MeshWidgetParams::eParamFlag rFlagNr ) override;
 	virtual bool    setParamIntegerMeshWidget( MeshWidgetParams::eParamInt  rParam ); // will trigger an enter-text-dialog.
 	bool    setParamIntegerMeshWidget( MeshWidgetParams::eParamInt  rParam,   int    rValue  ) override;

@@ -4,6 +4,7 @@
 
 #include "QGMAnnotationDialog.h"
 #include "CompleterDelegate.h"
+#include "annotation.h"
 #include <iostream>
 #include <ostream>
 #include <QUrl>
@@ -14,13 +15,24 @@
 #include <QDialog>
 
 
-QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,QJsonObject annodata,QWidget *parent) : QDialog( parent) {
+QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation annodata,QWidget *parent) : QDialog( parent) {
+    if(annotemplate.empty()){
+        QFile jsonfile;
+        jsonfile.setFileName("annotemplates.json");
+        jsonfile.open(QIODevice::ReadOnly);
+        QByteArray data = jsonfile.readAll();
+        qDebug()<<QJsonDocument::fromJson(data);
+        QJsonDocument annoDoc;
+        annoDoc=QJsonDocument::fromJson(data);
+        QJsonObject mainObject=annoDoc.object();
+        const QJsonArray &annotemplate = annoDoc.array();
+    }
     auto * gridLayout = new QGridLayout(this);
     int linecounter=0;
     auto tablabels=new QHash<QString,int>();
     auto * titlelabel=new QLabel(this);
-    QString firstkey=annodata.keys().at(0);
-    QJsonArray curanno=annodata.value(firstkey).toObject().value("body").toArray();
+    QString firstkey=QString().fromStdString(annodata.annotationid);
+    QJsonArray curanno=annodata.annotationbody;
     titlelabel->setText("Edit Annotation "+firstkey);
     gridLayout->addWidget(titlelabel,0,0,1,2);
     tabw=new QTabWidget(this);

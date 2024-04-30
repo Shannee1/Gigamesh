@@ -43,6 +43,7 @@
 #include "normalSphereSelection/NormalSphereSelectionDialog.h"
 
 #include "DialogFindTextures.h"
+#include "QGMAnnotationDialog.h"
 
 //#include <iostream>
 //#include <typeinfo> // see: http://www.cplusplus.com/reference/std/typeinfo/type_info/
@@ -77,7 +78,7 @@ MeshWidget::MeshWidget( const QGLFormat &format, QWidget *parent )
 	setAutoBufferSwap( false ); // to preven flickering in ::paintEvent when QPainter.end is called!
 	// Store pointer to the main window.
 	mMainWindow = static_cast<QGMMainWindow*>(parent);
-
+    annotationlist=list<Annotation>();
 	//needed for selection
 	setMouseTracking(true);
 
@@ -182,7 +183,7 @@ MeshWidget::MeshWidget( const QGLFormat &format, QWidget *parent )
 
 }
 
-//! Desctructor
+//! Destructor
 MeshWidget::~MeshWidget() {
 	//makeCurrent();
 	cout << "[MeshWidget::" << __FUNCTION__ << "] Destructor called." << endl;
@@ -265,6 +266,33 @@ bool MeshWidget::getViewPortResolution(
 MeshQt* MeshWidget::getMesh(){
     return mMeshVisual;
 }
+
+std::list<Annotation> MeshWidget::getAnnotations() {
+    return annotationlist;
+}
+
+bool MeshWidget::setAnnotations(std::list<Annotation> annos) {
+    annotationlist=annos;
+    return true;
+}
+
+bool MeshWidget::addAnnotation(Annotation anno) {
+    annotationlist.push_back(anno);
+    return true;
+}
+
+bool MeshWidget::removeAnnotation(QString annoid) {
+    int counter=0;
+    for(const Annotation& anno:annotationlist){
+        if(anno.annotationid==annoid.toStdString()){
+            break;
+        }
+        counter+=1;
+    }
+    //annotationlist.remove(counter);
+    return true;
+}
+
 
 //! Returns the pixel size in world coordinates.
 //! For perspective projection the back-plane is used.
@@ -495,6 +523,18 @@ bool MeshWidget::setParamFloatMeshWidget( MeshWidgetParams::eParamFlt rParamID )
 	}
 	bool retVal = setParamFloatMeshWidget( rParamID, newValue );
 	return retVal;
+}
+
+std::list<Annotation> MeshWidget::getAnnotationsByCoordinate(double x, double y, double z){
+    std::list<Annotation> result=std::list<Annotation>();
+    cout << "Annotation List Size: " << std::to_string(annotationlist.size()) << endl;
+    for(Annotation anno:annotationlist){
+        if(anno.pointInAnnotationBBOX3D(x,y,z)){
+            result.push_back(anno);
+            break;
+        }
+    }
+    return result;
 }
 
 //! Set integer values controlling the display of Primitives, etc.
@@ -6736,7 +6776,7 @@ void MeshWidget::mousePressEvent( QMouseEvent *rEvent ) {
 	if( ( mouseButtonsPressed & ( Qt::LeftButton | Qt::MiddleButton | Qt::RightButton ) ) &&
 	    ( currMouseMode == MOUSE_MODE_SELECT )
 	  ) {
-        if( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO  || MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION ) {
+        if( currSelectionMode == MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO || currSelectionMode == MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO) {
 			std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR: Wrong selection mode (SELECTION_MODE_POLYLINE)!" << std::endl;
 			return;
 		}
@@ -7354,6 +7394,8 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
 			return( true );
 			break;
         case MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION:
+            thevertex = mMeshVisual->selectPrimitiveAt( Primitive::IS_VERTEX, xPixel, yPixel, false );
+            break;
         case MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO:
             // Nothing to do.
             return( true );
@@ -7387,7 +7429,16 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
 			std::cerr << "[MeshGL::" << __FUNCTION__ << "] invalid selection mode: " << selectionMode << "!" << std::endl;
 			retVal = false;
 	}
-
+    if(selectionMode==MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION){
+        std::list annos=getAnnotationsByCoordinate(thevertex->getX(),thevertex->getY(),thevertex->getZ());
+        cout << "Selected with mode Mark annotation and got the list of annotations back " << std::to_string(annos.size()) << endl;
+        cout << "Selected with mode Mark annoation.... starting Annotation Dialog now!" << endl;
+        if(annos.size()>0) {
+            QGMAnnotationDialog(QJsonObject(), annos.front(), nullptr).exec();
+        }else{
+            cout << "No annotations were matched with the given coordinates: " << std::to_string(thevertex->getX()) << " " << std::to_string(thevertex->getY()) << " " << std::to_string(thevertex->getZ()) << endl;
+        }
+    }
 	if( !retVal ) {
 		std::cerr << "[MeshWidget::" << __FUNCTION__ << "] ERROR. Unknown!" << std::endl;
 	}

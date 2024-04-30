@@ -95,7 +95,9 @@ set(GUI_UI_FILES
 	forms/DialogFindTextures.ui
 		forms/dialogWebView.ui
         forms/QGMDialogMatrix.ui
-        src/QGMDialogWebView.h src/QGMDialogWebView.cpp src/QGMAnnotationDialog.h src/QGMAnnotationDialog.cpp src/QGMAnnotationTemplateDialog.cpp src/QGMAnnotationTemplateDialog.h src/CompleterDelegate.cpp src/CompleterDelegate.h src/CompleterSemWebDelegate.cpp src/CompleterSemWebDelegate.h src/FileDownloader.cpp src/FileDownloader.h)
+        src/QGMDialogWebView.h src/QGMDialogWebView.cpp src/QGMAnnotationDialog.h src/QGMAnnotationDialog.cpp src/QGMAnnotationTemplateDialog.cpp src/QGMAnnotationTemplateDialog.h src/CompleterDelegate.cpp src/CompleterDelegate.h src/CompleterSemWebDelegate.cpp src/CompleterSemWebDelegate.h src/FileDownloader.cpp src/FileDownloader.h
+        src/annotation.h
+		src/annotation.cpp)
 
 #NOTE: instead of adding translations via resources, the ts-files can also be build by
 #      qt5_create_translation and then be added

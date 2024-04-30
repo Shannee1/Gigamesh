@@ -31,6 +31,7 @@
 #include "QGMMacros.h"
 
 #include "meshwidget.h"
+#include "annotation.h"
 #include "qgmdocksidebar.h"
 #include "qgmdockinfo.h"
 #include "qgmdockview.h"
@@ -324,6 +325,7 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	QObject::connect( actionVisitWebSite,          &QAction::triggered, this, &QGMMainWindow::visitWebSite          );
 	QObject::connect( actionAbout,                 &QAction::triggered, this, &QGMMainWindow::aboutBox              );
     QObject::connect( actionAnnotateRendering,      &QAction::triggered, this, &QGMMainWindow::openAnnotationWindow  );
+    QObject::connect( actionExport_Annotations,      &QAction::triggered, this, &QGMMainWindow::exportAnnotations);
     QObject::connect(actionLoad_Annotations_From_File, &QAction::triggered, this, &QGMMainWindow::loadAnnotationsFromFile);
     QObject::connect(actionEdit_Annotation_Templates, &QAction::triggered, this, &QGMMainWindow::createAnnotationTemplateWindow);
     QObject::connect(actionGet_Label_Info, &QAction::triggered, this, &QGMMainWindow::createAnnotationWindowFromTemplate);
@@ -538,7 +540,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 	mGroupSelPrimitive = new QActionGroup( this );
 	actionSelMVertsGUIPinPoint->setActionGroup( mGroupSelPrimitive );
 	actionSelMVertsGUILasso->setActionGroup(    mGroupSelPrimitive );
-    //actionMarkAnnotation->setActionGroup(    mGroupSelPrimitive );
+    actionMarkAnnotation->setActionGroup(    mGroupSelPrimitive );
     actionDeSelMVertsGUILasso->setActionGroup(    mGroupSelPrimitive );
 	actionSelMFacesGUIPinPoint->setActionGroup( mGroupSelPrimitive );
     actionGet_Label_Info->setActionGroup(    mGroupSelPrimitive );
@@ -553,7 +555,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 
 	actionSelMVertsGUIPinPoint->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
-    //actionMarkAnnotation->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
+    actionMarkAnnotation->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
     actionGet_Label_Info->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
     actionDeSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
 	actionSelMFacesGUIPinPoint->setProperty( "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE );
@@ -567,7 +569,7 @@ void QGMMainWindow::initMeshWidgetSignals() {
 
 	actionSelMVertsGUIPinPoint->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTICES  );
 	actionSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_VERTICES_LASSO  );
-    //actionMarkAnnotation->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION  );
+    actionMarkAnnotation->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION  );
     actionGet_Label_Info->setProperty(    "gmMeshWidgetParamInt", MeshWidgetParams::SELECTION_MODE_LABEL_INFO );
     actionDeSelMVertsGUILasso->setProperty(    "gmMeshWidgetParamValue", MeshWidgetParams::DESELECTION_MODE_VERTICES_LASSO  );
 	actionSelMFacesGUIPinPoint->setProperty( "gmMeshWidgetParamValue", MeshWidgetParams::SELECTION_MODE_MULTI_FACES  );
@@ -1979,36 +1981,68 @@ void QGMMainWindow::openAnnotationWindow() {
     annotationWindow.exec();
 }
 
+void QGMMainWindow::exportAnnotations(){
+    std::string format="MeshIDSelector";
+    QJsonArray result=QJsonArray();
+    for(Annotation curanno:mMeshWidget->getAnnotations()){
+        QJsonObject curannojson = curanno.getAnnotation(format);
+        result.append(curannojson);
+    }
+    QByteArray ba = QJsonDocument(result).toJson();
+    QFileDialog::saveFileContent(ba,"annoexport.json");
+}
+
 void QGMMainWindow::loadAnnotationsFromFile() {
     QString filename = QFileDialog::getOpenFileName(
             this,
             tr("Open Document"),
             QDir::currentPath(),
             tr("Linked Data Files (*.ttl *.json);;All files (*.*)"));
+    int side=0;
     if (!filename.isNull())
     {
+        if(filename.contains("front")){
+            side=3;
+        }else if(filename.contains("back")){
+            side=6;
+        }else if(filename.contains("bottom")){
+            side=5;
+        }else if(filename.contains("top")){
+            side=1;
+        }else if(filename.contains("left")){
+            side=2;
+        }else if(filename.contains("right")){
+            side=4;
+        }
         QFile jsonfile;
         jsonfile.setFileName(filename);
         qDebug()<<filename;
         jsonfile.open(QIODevice::ReadOnly);
         QByteArray data = jsonfile.readAll();
-        qDebug()<<QJsonDocument::fromJson(data);
+        //qDebug()<<QJsonDocument::fromJson(data);
         QJsonDocument annoDoc;
         annoDoc=QJsonDocument::fromJson(data);
         QJsonObject mainObject=annoDoc.object();
         QStringList thekeys=mainObject.keys();
-        mMeshWidget->getMesh()->labelVerticesNone();
-        for( int i=1; i<2; ++i ) {
-            QJsonObject curanno = mainObject.find(thekeys.at(i))->toObject();
-            QString anno3d = curanno.find("target")->toObject().find("selector")->toObject().find("value")->toString();
-            anno3d=anno3d.replace("POLYGON Z((","").replace("))","");
-            qDebug()<<anno3d;
-            double res[6];
-            mMeshWidget->getMesh()->wktStringToBBOX(anno3d.toStdString(),res);
-            std::string resstr="BBOX: "+std::to_string(res[0])+" "+std::to_string(res[1])+" "+std::to_string(res[2])+" "+std::to_string(res[3])+" "+std::to_string(res[4])+" "+std::to_string(res[5]);
-            sShowInfoMessage(QString::fromStdString(resstr));
-            mMeshWidget->getMesh()->selectVerticesInBBOX(res[0],res[3],res[1],res[4],res[2],res[5],2.0);
+        list<Annotation> annotationlist;
+        if(!mMeshWidget->getMesh()->annotationsLoaded){
+            mMeshWidget->getMesh()->labelVerticesNone();
+            mMeshWidget->getMesh()->labelVerticesBackground();
         }
+        for( int i=1; i<mainObject.size(); ++i ) {//mainObject.size();
+            QJsonObject curannojson = mainObject.find(thekeys.at(i))->toObject();
+            QString annotype=curannojson.find("target")->toObject().find("selector")->toObject().find("type")->toString();
+            Annotation curanno=Annotation(curannojson,thekeys.at(i),mMeshWidget->getMesh());
+            if(annotype=="WKTSelector" || annotype=="WktSelector"){
+                mMeshWidget->getMesh()->labelVerticesInBBOX(curanno.minX,curanno.maxX,curanno.minY,curanno.maxY,curanno.minZ,curanno.maxZ,2.0,false);
+            }else if(annotype=="SvgSelector" || annotype=="SVGSelector"){
+                mMeshWidget->getMesh()->labelVerticesInBBOX(curanno.minX,curanno.maxX,curanno.minY,curanno.maxY,side,2.0,false);
+            }
+            annotationlist.push_back(curanno);
+            mMeshWidget->addAnnotation(curanno);
+        }
+        mMeshWidget->getMesh()->annotationsLoaded=true;
+        cout << annotationlist.size() << endl;
     }
 }
 
@@ -2043,7 +2077,7 @@ void QGMMainWindow::updateMeshShowFlag( MeshGLParams::eParamFlag rShowFlagNr, bo
 
 void QGMMainWindow::createAnnotationWindowFromTemplate(){
     QFile jsonfile;
-    jsonfile.setFileName("/home/timo/git/GigaMesh/build/annotemplates.json");
+    jsonfile.setFileName("C:/Users/timo.homburg/git/GigaMesh/cmake-build-debug/annotemplates.json");
     jsonfile.open(QIODevice::ReadOnly);
     QByteArray data = jsonfile.readAll();
     qDebug()<<QJsonDocument::fromJson(data);
@@ -2051,19 +2085,20 @@ void QGMMainWindow::createAnnotationWindowFromTemplate(){
     annoDoc=QJsonDocument::fromJson(data);
     QJsonObject mainObject=annoDoc.object();
     const QJsonArray &annotemplate = annoDoc.array();
-    QFile jsonfile2;
-    jsonfile2.setFileName("/home/timo/git/GigaMesh/build/anno3d.json");
+    /*QFile jsonfile2;
+    jsonfile2.setFileName("anno3d.json");
     jsonfile2.open(QIODevice::ReadOnly);
     QByteArray data2 = jsonfile2.readAll();
     qDebug()<<QJsonDocument::fromJson(data2);
     QJsonDocument annoDataDoc;
     annoDataDoc=QJsonDocument::fromJson(data2);
     const QJsonObject &annoData = annoDataDoc.object();
-    QGMAnnotationDialog(annotemplate.at(0).toObject(), annoData, nullptr).exec();
+    Annotation annodata=Annotation(annoData,)
+    QGMAnnotationDialog(annotemplate.at(0).toObject(), annoData, nullptr).exec();*/
 }
 
 void QGMMainWindow::createAnnotationTemplateWindow(){
-    QGMAnnotationTemplateDialog("/home/timo/git/GigaMesh/build/annotemplates.json",this).exec();
+    QGMAnnotationTemplateDialog("C:/Users/timo.homburg/git/GigaMesh/cmake-build-debug/annotemplates.json",this).exec();
 }
 
 //! Sets menu items according to the flags of MeshGLParams::mParamInt

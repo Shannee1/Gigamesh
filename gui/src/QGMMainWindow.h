@@ -70,10 +70,13 @@ class QNetworkReply;
 class QGMMainWindow : public QMainWindow, public Ui::MainWindow {
     Q_OBJECT
 
+
+
 public:
 	// Constructor and Destructor:
     QGMMainWindow( QWidget *parent = nullptr, Qt::WindowFlags flags = {} );
 	~QGMMainWindow();
+    enum exportFormats{WKTSelector,WKTPolygonSelector, SVGSelector, MeshIDSelector,MeshLabelSelector,MeshVertexSelector};
 private:
 	void initMeshWidgetSignals(); // to be called ONLY from the constructor.
 	void initMeshSignals(); // to be called ONLY from the constructor.
@@ -97,6 +100,7 @@ public slots:
 	void load(const QString& rFileName );
 	bool loadLast();
     void loadAnnotationsFromFile();
+    void exportAnnotations();
 	bool fileOpen( QAction* rFileAction );
 	void menuImportFunctionValues();
     void menuImportLabels();
@@ -169,6 +173,7 @@ private:
 	QString mCurrentLanguage;
 	QTranslator mTranslator;
 	QTranslator mTranslatorQt;
+
 
 private slots:
 	void openExternalProgramsDialog();

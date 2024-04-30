@@ -96,9 +96,7 @@ const auto NUM_THREADS = std::thread::hardware_concurrency() * 2;
 		double  mAreaProc; //!< Processed area.
 	};
 
-    struct annotationDataStruct {
-
-    };
+    //list<Annotation> annotationlist;
 
 	void* estMultiFaceConnection( faceDataStruct* rFaceData ) {
 		const int   threadID = rFaceData->mThreadID;
@@ -6844,11 +6842,27 @@ std::set<Vertex*> Mesh::getVerticesInBBOX( double minX, double maxX, double minY
     return result;
 }
 
+std::set<Vertex*> Mesh::getVerticesIn2DBBOX(double minX, double maxX, double minY, double maxY){
+    std::set<Vertex*> result;
+    for( auto const& currVertex: mVertices ) {
+        double x=currVertex->getX();
+        double y=currVertex->getY();
+        double z=currVertex->getZ();
+        if(x>minX && x<minX && y>minY && y<maxY){
+            result.insert(currVertex);
+        }
+    }
+    return result;
+}
+
 double* Mesh::wktStringToBBOX(std::string wktString,double* res) {
     const vector<string> &splitted = split(wktString, ',');
+    cout << splitted[0] << "\n";
     double minX=DBL_MAX,minY=DBL_MAX,minZ=DBL_MAX,maxX=DBL_MIN,maxY=DBL_MIN,maxZ=DBL_MIN;
     for (const auto& coord : splitted) {
         const vector<string> &coordsplit = split(coord, ' ');
+        cout << coordsplit[0] << "\n";
+        try{
         double curcoord=stod(coordsplit[0]);
         if(curcoord>maxX) {
             maxX=curcoord;
@@ -6870,6 +6884,10 @@ double* Mesh::wktStringToBBOX(std::string wktString,double* res) {
         if(curcoord<minZ) {
             minZ=curcoord;
         }
+        }catch (exception& e)
+        {
+        cout << e.what() << '\n';
+        }
     }
     //qDebug()<<minX<<" "<<minY<<" "<<minZ<<" "<<maxX<<" "<<maxY<<" "<<maxZ;
     res[0]=minX;
@@ -6881,18 +6899,134 @@ double* Mesh::wktStringToBBOX(std::string wktString,double* res) {
     return res;
 }
 
-void Mesh::labelVerticesInBBOX( double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue){
+double* Mesh::svgStringTo2DBBOX(std::string svgString,double imgheight,double imgwidth,double* res) {
+    const vector<string> &splitted = split(svgString, ' ');
+    cout << splitted[0] << "\n";
+    if(imgwidth==0.0 && imgheight==0.0){
+        imgheight=832.0;
+        imgwidth=827.0;
+    }
+    double minX=DBL_MAX,minY=DBL_MAX,maxX=DBL_MIN,maxY=DBL_MIN;
+    for (const auto& coord : splitted) {
+        try{
+            const vector<string> &coordsplit = split(coord, ',');
+            double curcoord=stod(coordsplit[0]);
+            curcoord=rescale(curcoord,0,imgwidth,this->mMinX,this->mMaxX);
+            if(curcoord>maxX) {
+                maxX=curcoord;
+            }
+            if(curcoord<minX) {
+                minX=curcoord;
+            }
+            curcoord=stod(coordsplit[1]);
+            curcoord=rescale(curcoord,0,imgheight,this->mMinY,this->mMaxY);
+            if(curcoord>maxY) {
+                maxY=curcoord;
+            }
+            if(curcoord<minY) {
+            minY=curcoord;
+            }
+        }catch (exception& e)
+        {
+            cout << e.what() << '\n';
+        }
+    }
+    res[0]=minX;
+    res[1]=minY;
+    res[2]=maxX;
+    res[3]=maxY;
+    return res;
+}
+
+
+
+
+void Mesh::labelVerticesInBBOX( double minX, double maxX, double minY, double maxY,int side, double labelValue,bool onlyBorder){
     std::set<Vertex*> result;
+    double minZ=0.0;
+    double maxZ=mMaxZ;
+    double borderThickness=1.0;//0.125*(abs(maxX)-abs(minX));
+    if(side==6){
+        minZ=mMinZ;
+        maxZ=0.0;
+    }
     for( auto const& currVertex: mVertices ) {
         double x = currVertex->getX();
         double y = currVertex->getY();
         double z = currVertex->getZ();
-        if (x > minX && x < maxX && y > minY && y < maxY && z > minZ && z < maxZ) {
-            result.insert(currVertex);
+        if(onlyBorder){
+            if (z > minZ && z < maxZ){
+                if(x >= minX && x <= (minX+borderThickness) && y > minY && y < maxY){
+                    result.insert(currVertex);
+                    //cout<<"MinX Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
+                    //cout<<"MinX Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
+                }
+                else if(x <= maxX && x>=(maxX-borderThickness) && y > minY && y < maxY){
+                    result.insert(currVertex);
+                    //cout<<"MaxX Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
+                    //cout<<"MaxX Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
+                }
+                else if(y >= minY && y<=(minY+borderThickness) && x > minX && x < maxX){
+                    result.insert(currVertex);
+                    //cout<<"MinY Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
+                    //cout<<"MinY Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
+                }
+                else if(y <= maxY && y>=(maxY-borderThickness) && x > minX && x < maxX){
+                    result.insert(currVertex);
+                    //cout<<"MaxY Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
+                    //cout<<"MaxY Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
+                }
+            }
+        }else{
+            if (x > minX && x < maxX && y > minY && y < maxY && z > minZ && z < maxZ) {
+                result.insert(currVertex);
+            }
         }
     }
     cout << result.size() << "\n";
+    //labelVerticesNone();
     labelSelectedVertices(result,false);
+    }
+
+void Mesh::labelVerticesInBBOX( double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue,bool onlyBorder){
+    std::set<Vertex*> result;
+    double borderThickness=1.0;
+    for( auto const& currVertex: mVertices ) {
+        double x = currVertex->getX();
+        double y = currVertex->getY();
+        double z = currVertex->getZ();
+        if(onlyBorder){
+            if(z > minZ && z < maxZ){
+                if(x >= minX && x <= (minX+borderThickness) && y > minY && y < maxY){
+                    result.insert(currVertex);
+                    cout<<"MinX Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
+                    cout<<"MinX Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
+                }
+                else if(x <= maxX && x>=(maxX-borderThickness) && y > minY && y < maxY){
+                    result.insert(currVertex);
+                    cout<<"MaxX Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
+                    cout<<"MaxX Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
+                }
+                else if(y >= minY && y<=(minY+borderThickness) && x > minX && x < maxX){
+                    result.insert(currVertex);
+                    cout<<"MinY Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
+                    cout<<"MinY Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
+                }
+                else if(y <= maxY && y>=(maxY-borderThickness) && x > minX && x < maxX){
+                    result.insert(currVertex);
+                    cout<<"MaxY Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
+                    cout<<"MaxY Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
+                }
+            }
+        }else{
+            if (x > minX && x < maxX && y > minY && y < maxY && z > minZ && z < maxZ) {
+                result.insert(currVertex);
+            }
+        }
+    }
+    cout << result.size() << "\n";
+    //labelVerticesNone();
+    //labelSelectedVertices(result,false);
 }
 
 void Mesh::selectVerticesInBBOX( double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue){
@@ -6910,8 +7044,8 @@ void Mesh::selectVerticesInBBOX( double minX, double maxX, double minY, double m
         }
     }
     selectedMVertsChanged();
-    //labelVerticesNone();
-    //labelSelectedVertices(mSelectedMVerts,false);
+    labelVerticesNone();
+    labelSelectedVertices(mSelectedMVerts,true);
 }
 
 //! Labeling assings the same index to all connected Faces.
@@ -6948,7 +7082,6 @@ bool Mesh::labelVertices(
 			// Selection to seeds (similar to Mesh::labelSelectionToSeeds)
 			rVerticesSeeds.clear();
 			rVerticesSeeds.insert( rVerticesToLabel.begin(), rVerticesToLabel.end() );
-
 		}
 	}
 
@@ -6987,8 +7120,8 @@ bool Mesh::labelVertices(
 			continue;
 		}
 		if( currVertex->isLabled() ) {
-			cout << "[Mesh::" << __FUNCTION__ << "] Vertex is already labled." << endl;
-			cout << "l";
+			//cout << "[Mesh::" << __FUNCTION__ << "] Vertex is already labled." << endl;
+			//cout << "l";
 			continue;
 		}
 		//cout << "X";
@@ -6999,11 +7132,11 @@ bool Mesh::labelVertices(
 		while( frontVertices.size() > 0 ) {
 			for( itVertexFront=frontVertices.begin(); itVertexFront != frontVertices.end(); itVertexFront++ ) {
 				if( (*itVertexFront)->isLabelBackGround() ) {
-					cout << "[Mesh::labelVertices] (1) Stop at Vertex: " << (*itVertexFront)->getIndexOriginal() << endl;
+					//cout << "[Mesh::labelVertices] (1) Stop at Vertex: " << (*itVertexFront)->getIndexOriginal() << endl;
 					continue;
 				}
 				if( (*itVertexFront)->isLabled() ) {
-					cout << "[Mesh::labelVertices] (2) Stop at Vertex: " << (*itVertexFront)->getIndexOriginal() << endl;
+					//cout << "[Mesh::labelVertices] (2) Stop at Vertex: " << (*itVertexFront)->getIndexOriginal() << endl;
 					continue;
 				}
 				(*itVertexFront)->getNeighbourVertices( &frontVerticesNew );
@@ -7029,7 +7162,7 @@ bool Mesh::labelVertices(
 	// tell other methods (e.g. OpenGL) that stuff has changed
 	labelsChanged();
 	setLabel -= 1; // Correct for indexing begining at ONE.
-	cout << "[Mesh::" << __FUNCTION__ << "] " << verticesLabeled << " vertices labeld out of " << verticesToLabel << endl;
+	cout << "[Mesh::" << __FUNCTION__ << "] " << verticesLabeled << " vertices labeled out of " << verticesToLabel << endl;
 	cout << "[Mesh::" << __FUNCTION__ << "] " << setLabel << " Labels set." << endl;
 	cout << "[Mesh::" << __FUNCTION__ << "] took " << static_cast<float>( clock() - timeStart ) / CLOCKS_PER_SEC << " seconds."  << endl;
 	return setLabel;
