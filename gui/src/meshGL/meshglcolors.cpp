@@ -140,6 +140,54 @@ bool MeshGLColors::getColorSettings( eColorSettings rColorId, GLfloat* rVec4 ) {
 	return true;
 }
 
+GLfloat* MeshGLColors::getColorSettingsGLFloat(QColor color, GLfloat* rVec4) {
+#ifdef DEBUG_SHOW_ALL_METHOD_CALLS
+    cout << "[MeshGL::" << __FUNCTION__ << "]" << endl;
+#endif
+    rVec4[0] = static_cast<GLfloat>(color.red() * 255.0);
+    rVec4[1] = static_cast<GLfloat>(color.green() * 255.0);
+    rVec4[2] = static_cast<GLfloat>(color.blue() * 255.0);
+    rVec4[3] = static_cast<GLfloat>(color.alpha() * 255.0);
+    return rVec4;
+}
+
+QColor* MeshGLColors::getColorSettings( eColorSettings rColorId) {
+#ifdef DEBUG_SHOW_ALL_METHOD_CALLS
+    cout << "[MeshGL::" << __FUNCTION__ << "]" << endl;
+#endif
+    GLfloat* rVec4;
+    rVec4[0] = static_cast<GLfloat>(mColorSetting[rColorId][0])/255.0;
+    rVec4[1] = static_cast<GLfloat>(mColorSetting[rColorId][1])/255.0;
+    rVec4[2] = static_cast<GLfloat>(mColorSetting[rColorId][2])/255.0;
+    rVec4[3] = static_cast<GLfloat>(mColorSetting[rColorId][3])/255.0;
+    return new QColor(rVec4[0],rVec4[1],rVec4[2],rVec4[3]);
+}
+
+bool MeshGLColors::setColorSettings( eColorSettings rColorId, const QColor iVec4 ) {
+#ifdef DEBUG_SHOW_ALL_METHOD_CALLS
+    cout << "[MeshGL::" << __FUNCTION__ << "]" << endl;
+#endif
+    // Sanity check.
+    if( iVec4 == nullptr ) {
+        return( false );
+    }
+    mColorSetting[rColorId][0] = iVec4.red() * 255.0;
+    mColorSetting[rColorId][1] = iVec4.green() * 255.0;
+    mColorSetting[rColorId][2] = iVec4.blue() * 255.0;
+    mColorSetting[rColorId][3] = iVec4.alpha() * 255.0;
+
+    // Sort of a bugfix: backface colors have to be opaque. Otherwise the backfaces are shown in white.
+    if( rColorId == COLOR_MESH_BACKFACE ) {
+        if( mColorSetting[rColorId][3] != 1.0 ) {
+            std::cerr << "[MeshGLColors::" << __FUNCTION__ << "] ERROR: Transparency not supported for backfaces!" << std::endl;
+        }
+        mColorSetting[rColorId][3] = 255.0;
+    }
+
+    return( true );
+}
+
+
 //! Takes the color from a given float array[4].
 //! @returns false in case of an error.
 bool MeshGLColors::setColorSettings(

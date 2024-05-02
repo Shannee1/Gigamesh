@@ -5,18 +5,18 @@
 #include "GigaMesh/mesh/mesh.h"
 #include "meshQt.h"
 
-Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh) {
-    if(annojson.contains("body")){
-        if(annojson.find("body")->isObject()){
-            annotationbody=QJsonArray();
-            annotationbody.append(annojson.find("body")->toObject());
-        }else if(annojson.find("body")->isArray()){
-            annotationbody=annojson.find("body")->toArray();
-        }
-    }
+Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh,QString side) {
     annotationid=annoid.toStdString();
     themesh=mesh;
     annojson=annojsonn;
+    if(annojsonn.contains("body")){
+        if(annojsonn.find("body")->isObject()){
+            annotationbody=QJsonArray();
+            annotationbody.append(annojsonn.find("body")->toObject());
+        }else if(annojsonn.find("body")->isArray()){
+            annotationbody=annojsonn.find("body")->toArray();
+        }
+    }
     QJsonObject selectorObject=annojson.find("target")->toObject().find("selector")->toObject();
     QString annotype=selectorObject.find("type")->toString();
     QString annovalue = selectorObject.find("value")->toString();
@@ -42,7 +42,7 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh) {
         }
         //qDebug()<<annovalue;
         double res[4];
-        mesh->svgStringTo2DBBOX(annovalue.toStdString(),imgheight,imgwidth,res);
+        mesh->svgStringTo2DBBOX(annovalue.toStdString(),imgheight,imgwidth,side.toStdString(),res);
         minX=res[0];
         minY=res[1];
         maxX=res[2];

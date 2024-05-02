@@ -55,9 +55,11 @@ class MeshGLColors {
 			COLOR_NPR_HATCHLINE,      //!< Color of the NPR hatchlines
 			COLOR_SETTING_COUNT       //!< Number of colormaps for OpenGL display.
 		};
-
+        static float* getColorSettingsGLFloat(QColor color,GLfloat* rVec4);
 		bool getColorSettings( eColorSettings rColorId, GLfloat* rVec4 );
-		bool setColorSettings(eColorSettings rColorId, const GLfloat* iVec4 );
+        QColor* getColorSettings( eColorSettings rColorId);
+		bool setColorSettings(eColorSettings rColorId, const float* iVec4 );
+        bool setColorSettings(eColorSettings rColorId, const QColor iVec4 );
 	protected:
 		GLubyte mColorSetting[COLOR_SETTING_COUNT][4]; //!< Selected colors.
 };

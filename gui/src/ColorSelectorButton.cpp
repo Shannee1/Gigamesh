@@ -6,7 +6,8 @@
 
 #include <QColorDialog>
 
-ColorSelectorButton::ColorSelectorButton( QWidget* parent ): QPushButton(parent)
+ColorSelectorButton::ColorSelectorButton( QWidget* parent )
+        : QPushButton(parent)
 {
     connect( this, SIGNAL(clicked()), this, SLOT(changeColor()) );
 }
@@ -35,3 +36,4 @@ const QColor& ColorSelectorButton::getColor() const
 {
     return color;
 }
+

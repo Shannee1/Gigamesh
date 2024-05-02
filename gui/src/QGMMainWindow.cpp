@@ -1985,72 +1985,11 @@ void QGMMainWindow::openAnnotationWindow() {
 
 void QGMMainWindow::exportAnnotations(){
     QGMDialogExportAnnotations(mMeshWidget->getAnnotations(),this).exec();
-    /*std::string format="MeshIDSelector";
-    QJsonArray result=QJsonArray();
-    for(Annotation curanno:mMeshWidget->getAnnotations()){
-        QJsonObject curannojson = curanno.getAnnotation(format);
-        result.append(curannojson);
-    }
-    QByteArray ba = QJsonDocument(result).toJson();
-    QFileDialog::saveFileContent(ba,"annoexport.json");*/
 }
 
 void QGMMainWindow::loadAnnotationsFromFile() {
-    QGMDialogImportAnnotations(this->mMeshWidget,this).exec();
-    /*QString filename = QFileDialog::getOpenFileName(
-            this,
-            tr("Open Document"),
-            QDir::currentPath(),
-            tr("Linked Data Files (*.ttl *.json);;All files (*.*)"));
-    int side=0;
-    if (!filename.isNull())
-    {
-        if(filename.contains("front")){
-            side=3;
-        }else if(filename.contains("back")){
-            side=6;
-        }else if(filename.contains("bottom")){
-            side=5;
-        }else if(filename.contains("top")){
-            side=1;
-        }else if(filename.contains("left")){
-            side=2;
-        }else if(filename.contains("right")){
-            side=4;
-        }
-        QFile jsonfile;
-        jsonfile.setFileName(filename);
-        qDebug()<<filename;
-        jsonfile.open(QIODevice::ReadOnly);
-        QByteArray data = jsonfile.readAll();
-        //qDebug()<<QJsonDocument::fromJson(data);
-        QJsonDocument annoDoc;
-        annoDoc=QJsonDocument::fromJson(data);
-        QJsonObject mainObject=annoDoc.object();
-        QStringList thekeys=mainObject.keys();
-        list<Annotation> annotationlist;
-        if(!mMeshWidget->getMesh()->annotationsLoaded){
-            mMeshWidget->getMesh()->labelVerticesNone();
-            mMeshWidget->getMesh()->labelVerticesBackground();
-        }
-        for( int i=1; i<mainObject.size(); ++i ) {//mainObject.size();
-            QJsonObject curannojson = mainObject.find(thekeys.at(i))->toObject();
-            QString annotype=curannojson.find("target")->toObject().find("selector")->toObject().find("type")->toString();
-            Annotation curanno=Annotation(curannojson,thekeys.at(i),mMeshWidget->getMesh());
-            if(annotype=="WKTSelector" || annotype=="WktSelector"){
-                mMeshWidget->getMesh()->labelVerticesInBBOX(curanno.minX,curanno.maxX,curanno.minY,curanno.maxY,curanno.minZ,curanno.maxZ,2.0,false);
-            }else if(annotype=="SvgSelector" || annotype=="SVGSelector"){
-                mMeshWidget->getMesh()->labelVerticesInBBOX(curanno.minX,curanno.maxX,curanno.minY,curanno.maxY,side,2.0,false,0.5);
-            }
-            annotationlist.push_back(curanno);
-            mMeshWidget->addAnnotation(curanno);
-        }
-        mMeshWidget->getMesh()->annotationsLoaded=true;
-        cout << annotationlist.size() << endl;
-        jsonfile.close();*/
-   // }
+    QGMDialogImportAnnotations(mMeshWidget,this).exec();
 }
-
 
 
 // --- DYNAMIC MENU -----------------------------------------------------------------------

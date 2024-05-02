@@ -31,7 +31,9 @@ QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation ann
     auto tablabels=new QHash<QString,int>();
     auto * titlelabel=new QLabel(this);
     QString firstkey=QString::fromStdString(annodata.annotationid);
-    QJsonArray curanno=annodata.annotationbody;
+    curanno=annodata.annotationbody;
+    qDebug()<<curanno << endl;
+    std::cout << "Annotationbody Array Length: " << curanno.size() << endl;
     titlelabel->setText("Edit Annotation "+firstkey);
     gridLayout->addWidget(titlelabel,0,0,1,2);
     tabw=new QTabWidget(this);
@@ -86,16 +88,18 @@ QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation ann
     auto * cancelbutton=new QPushButton(this);
     cancelbutton->setText("Cancel");
     gridLayout->addWidget(cancelbutton,linecounter,0);
-    connect(okbutton,SIGNAL(clicked),
-            this,SLOT(this->close));
-    connect(cancelbutton,SIGNAL(clicked),
-            this,SLOT(this->close));
+    connect(okbutton,SIGNAL(clicked()),
+            this,SLOT(applyChanges()));
+    connect(cancelbutton,SIGNAL(clicked()),
+            this,SLOT(close()));
     this->setLayout(gridLayout);
     setWindowIcon( QIcon( _GIGAMESH_LOGO_ ) );
     this->show();
 }
 
+void QGMAnnotationDialog::applyChanges(){
 
+}
 
 QStringList getTagsFromAnnotation(const QJsonArray& curanno){
     QStringList result;
@@ -119,8 +123,14 @@ QHash<QString,QString> getValuesFromAnnotation(const QJsonArray& curanno){
     return result;
 }
 
-void addTag(){
-
+void QGMAnnotationDialog::addTag(){
+    bool ok;
+    QString text=QInputDialog::getText(this,"Add Tag","Tag:",QLineEdit::Normal,QDir::home().dirName(),&ok);
+    if(ok && !text.isEmpty()){
+        auto *it = new QListWidgetItem(text);
+        it->setFlags(it->flags()| Qt::ItemIsEditable);
+        this->ledit->addItem(it);
+    }
 }
 
 void QGMAnnotationDialog::addCategoryIndependentFields(QWidget* curwidget,int linecounter,QGridLayout* gridLayout,QJsonArray curanno,QJsonArray tags){
@@ -132,7 +142,7 @@ void QGMAnnotationDialog::addCategoryIndependentFields(QWidget* curwidget,int li
     linecounter++;
     auto * label2 = new QLabel(curwidget);
     label2->setText("Tags:");
-    auto * ledit=new QListWidget(curwidget);
+    ledit=new QListWidget(curwidget);
     QStringList assignedTags=getTagsFromAnnotation(curanno);
     if(!assignedTags.isEmpty()){
         for(const QString& tag:assignedTags){
@@ -153,7 +163,7 @@ void QGMAnnotationDialog::addCategoryIndependentFields(QWidget* curwidget,int li
     }
     auto * addTag=new QPushButton(curwidget);
     addTag->setText("Add Tag");
-    connect(addTag, SIGNAL(clicked()), this, SLOT(addTag));
+    connect(addTag, SIGNAL(clicked()), this, SLOT(addTag()));
     gridLayout->addWidget(label2,linecounter,0);
     gridLayout->addWidget(ledit,linecounter,1);
     gridLayout->addWidget(addTag,linecounter,2);

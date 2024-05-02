@@ -14,7 +14,7 @@ class Annotation {
     public:
         enum exportFormats{WKTSelector,WKTPolygonSelector, SVGSelector, MeshIDSelector,MeshLabelSelector,MeshVertexSelector};
         enum annotationType{Character, Word, Line, Surface};
-        Annotation(QJsonObject annojson,QString annoid, MeshQt* mesh);
+        Annotation(QJsonObject annojson,QString annoid, MeshQt* mesh,QString side="noside");
         double minX;
         double maxX;
         double minY;

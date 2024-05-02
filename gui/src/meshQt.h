@@ -351,8 +351,11 @@ class MeshQt : public QObject, public MeshGLShader, public MeshQtCSVImportExport
 		// Shader
 	void showNPRSettings();
 	void showTransparencySettings();
+    virtual void labelVerticesInBBOX(double minX, double maxX, double minY, double maxY,int side, double labelValue,bool border, bool onlyBorder,QColor fillcolor, QColor bordercolor, double borderThickness);
+    virtual void labelVerticesInBBOX(double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue,bool border, bool onlyBorder,QColor fillcolor, QColor bordercolor, double borderThickness);
 
-	// Overloaded from MeshIO
+
+    // Overloaded from MeshIO
 	//============================
 	public slots:
         virtual bool writeFileUserInteract(const bool asLegacy = false) override;

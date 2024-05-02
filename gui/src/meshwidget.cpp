@@ -7432,10 +7432,10 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
     if(selectionMode==MeshWidgetParams::SELECTION_MODE_MARK_ANNOTATION){
         std::list annos=getAnnotationsByCoordinate(thevertex->getX(),thevertex->getY(),thevertex->getZ());
         cout << "Selected with mode Mark annotation and got the list of annotations back " << std::to_string(annos.size()) << endl;
-        cout << "Selected with mode Mark annoation.... starting Annotation Dialog now!" << endl;
+        cout << "Selected with mode Mark annotation.... starting Annotation Dialog now!" << endl;
         if(annos.size()>0) {
             Annotation curanno=annos.front();
-            //mMeshVisual->removeVerticesSelected();
+            mMeshVisual->deSelMVertsAll();
             mMeshVisual->selectVerticesInBBOX(curanno.minX,curanno.maxX,curanno.minY,curanno.maxY,curanno.minZ,curanno.maxZ,2.0,true,0.5,curanno.vertices);
             QGMAnnotationDialog(QJsonObject(), annos.front(), nullptr).exec();
         }else{

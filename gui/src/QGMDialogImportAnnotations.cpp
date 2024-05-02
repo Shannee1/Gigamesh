@@ -16,27 +16,27 @@ QGMDialogImportAnnotations::QGMDialogImportAnnotations(MeshWidget* mMeshWidget,Q
     auto* annostylecboxLabel=new QLabel();
     annostylecboxLabel->setText("Annotation Style:");
     gridLayout->addWidget(annostylecboxLabel,linecounter,0);
-    auto* annostylecbox=new QComboBox();
-    annostylecbox->addItem("Border Only");
+    this->annostylecbox=new QComboBox();
     annostylecbox->addItem("Border + Filling");
+    annostylecbox->addItem("Border Only");
     annostylecbox->addItem("Filling Only");
     gridLayout->addWidget(annostylecbox,linecounter,1);
     linecounter+=1;
     auto* annocolorLabel=new QLabel();
     annocolorLabel->setText("Annotation Color:");
     gridLayout->addWidget(annocolorLabel,linecounter,0);
-    auto* annocolorButton=new ColorSelectorButton(this);
+    annocolorButton=new ColorSelectorButton(this);
     annocolorButton->setColor(QColor().blue());
     gridLayout->addWidget(annocolorButton,linecounter,1);
     linecounter+=1;
     auto* annobordercolorLabel=new QLabel();
     annobordercolorLabel->setText("Annotation Border Color:");
     gridLayout->addWidget(annobordercolorLabel,linecounter,0);
-    auto* annobordercolorButton=new ColorSelectorButton(this);
+    annobordercolorButton=new ColorSelectorButton(this);
     annobordercolorButton->setColor(QColor().black());
     gridLayout->addWidget(annobordercolorButton,linecounter,1);
     linecounter+=1;
-    QLabel* borderThicknessLabel=new QLabel();
+    auto* borderThicknessLabel=new QLabel();
     borderThicknessLabel->setText("Annotation Border Thickness:");
     gridLayout->addWidget(borderThicknessLabel,linecounter,0);
     thicknessEdit=new QDoubleSpinBox();
@@ -74,19 +74,27 @@ void QGMDialogImportAnnotations::importAnnotations(){
     QString filename = this->filepath->text();
     this->close();
     int side=0;
+    QString sidestr="noside";
+    std::cout << filename.toStdString() << endl;
     if (!filename.isNull()) {
         if (filename.contains("front")) {
             side = 3;
+            sidestr="front";
         } else if (filename.contains("back")) {
             side = 6;
+            sidestr="back";
         } else if (filename.contains("bottom")) {
             side = 5;
+            sidestr="bottom";
         } else if (filename.contains("top")) {
             side = 1;
+            sidestr="top";
         } else if (filename.contains("left")) {
             side = 2;
+            sidestr="left";
         } else if (filename.contains("right")) {
             side = 4;
+            sidestr="right";
         }
         QFile jsonfile;
         jsonfile.setFileName(filename);
@@ -99,21 +107,38 @@ void QGMDialogImportAnnotations::importAnnotations(){
         QJsonObject mainObject = annoDoc.object();
         QStringList thekeys = mainObject.keys();
         std::list<Annotation> annotationlist;
+        std::cout << "Getting border parameters" << endl;
+        bool borderOnly=false;
+        bool border=true;
+        if(this->annostylecbox->currentText().contains("Border Only")){
+            borderOnly=true;
+        }else if(this->annostylecbox->currentText().contains("Filling Only")){
+            borderOnly=false;
+        }else if(this->annostylecbox->currentText().contains("Border + Filling")){
+            border=true;
+            borderOnly=false;
+        }
+        std::cout << "Accessing meshwidget" << endl;
         if (!meshwidget->getMesh()->annotationsLoaded) {
             meshwidget->getMesh()->labelVerticesNone();
             meshwidget->getMesh()->labelVerticesBackground();
-
-        for (int i = 1; i < mainObject.size(); ++i) {//mainObject.size();
+        }
+        QColor annocolor=annocolorButton->getColor();
+        QColor annobordercolor=annobordercolorButton->getColor();
+        std::cout << "Creating annos" << endl;
+        for (int i = 0; i < mainObject.size(); ++i) {//mainObject.size();
             QJsonObject curannojson = mainObject.find(thekeys.at(i))->toObject();
             QString annotype = curannojson.find("target")->toObject().find("selector")->toObject().find(
                     "type")->toString();
-            Annotation curanno = Annotation(curannojson, thekeys.at(i), meshwidget->getMesh());
+            std::cout << "Creating first anno" << endl;
+            Annotation curanno = Annotation(curannojson, thekeys.at(i), meshwidget->getMesh(),sidestr);
+            std::cout << "CurAnno created " << endl;
             if (annotype == "WKTSelector" || annotype == "WktSelector") {
                 meshwidget->getMesh()->labelVerticesInBBOX(curanno.minX, curanno.maxX, curanno.minY, curanno.maxY,
-                                                            curanno.minZ, curanno.maxZ, 2.0, false,thicknessEdit->value());
+                                                            curanno.minZ, curanno.maxZ, 2.0, border,borderOnly,annocolor,annobordercolor,thicknessEdit->value());
             } else if (annotype == "SvgSelector" || annotype == "SVGSelector") {
                 meshwidget->getMesh()->labelVerticesInBBOX(curanno.minX, curanno.maxX, curanno.minY, curanno.maxY,
-                                                            side, 2.0, false, thicknessEdit->value());
+                                                            side, 2.0, border, borderOnly,annocolor,annobordercolor,thicknessEdit->value());
             }
             annotationlist.push_back(curanno);
             meshwidget->addAnnotation(curanno);
