@@ -61,6 +61,13 @@ set(GUI_SOURCES src/main.cpp
 				src/normalSphereSelection/NormalSphereSelectionRenderWidget.cpp
 				src/normalSphereSelection/NormalSphereSelectionRenderWidget.h
                                 src/automaticalignmentpyinterface.cpp src/automaticalignmentpyinterface.h
+		src/QGMDialogWebView.h src/QGMDialogWebView.cpp src/QGMAnnotationDialog.h src/QGMAnnotationDialog.cpp src/QGMAnnotationTemplateDialog.cpp src/QGMAnnotationTemplateDialog.h src/CompleterDelegate.cpp src/CompleterDelegate.h src/CompleterSemWebDelegate.cpp src/CompleterSemWebDelegate.h src/FileDownloader.cpp src/FileDownloader.h
+		src/annotation.h
+		src/annotation.cpp
+		src/QGMDialogImportAnnotations.h
+		src/QGMDialogImportAnnotations.cpp
+		src/QGMDialogExportAnnotations.cpp
+		src/QGMDialogExportAnnotations.h
                                 #src/analyticsConfig.h
                                 )
 
@@ -87,6 +94,8 @@ set(GUI_UI_FILES
 	forms/dialogEnterText.ui
 	forms/qgmdockinfo.ui
 	forms/dialogConeParam.ui
+	forms/dialogImportAnnotations.ui
+    forms/dialogExportAnnotations.ui
 	forms/ExternalProgramsDialog.ui
 	forms/mainWin.ui
 	forms/dialogPlaneParam.ui
@@ -95,9 +104,9 @@ set(GUI_UI_FILES
 	forms/DialogFindTextures.ui
 		forms/dialogWebView.ui
         forms/QGMDialogMatrix.ui
-        src/QGMDialogWebView.h src/QGMDialogWebView.cpp src/QGMAnnotationDialog.h src/QGMAnnotationDialog.cpp src/QGMAnnotationTemplateDialog.cpp src/QGMAnnotationTemplateDialog.h src/CompleterDelegate.cpp src/CompleterDelegate.h src/CompleterSemWebDelegate.cpp src/CompleterSemWebDelegate.h src/FileDownloader.cpp src/FileDownloader.h
-        src/annotation.h
-		src/annotation.cpp)
+		src/ColorSelectorButton.cpp
+		src/ColorSelectorButton.h
+)
 
 #NOTE: instead of adding translations via resources, the ts-files can also be build by
 #      qt5_create_translation and then be added
@@ -136,7 +145,7 @@ target_include_directories(gigamesh PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 #needed, if ui-header files need references to custom classes (e.g. NormalSphereSelectionRenderWidget.h)
 target_include_directories(gigamesh PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(gigamesh PRIVATE Qt5::Gui Qt5::Widgets Qt5::Core Qt5::Network ${Qt5Widgets_LIBRARIES} ${Qt5OpenGL_LIBRARIES} ${Qt5Gui_LIBRARIES} ${Qt5Network_LIBRARIES} psalm OpenGL::GL gigameshCore triangle)
+target_link_libraries(gigamesh PRIVATE ${Qt5Widgets_LIBRARIES} ${Qt5OpenGL_LIBRARIES} ${Qt5Gui_LIBRARIES} ${Qt5Network_LIBRARIES} psalm OpenGL::GL gigameshCore triangle)
 
 #extras for static linking using the MXE mingw static build (set this via "export MINGW_CI_BUILD=True" on the command line)
 if(MINGW_CI_BUILD)

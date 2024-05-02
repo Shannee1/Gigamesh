@@ -86,14 +86,16 @@ QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation ann
     auto * cancelbutton=new QPushButton(this);
     cancelbutton->setText("Cancel");
     gridLayout->addWidget(cancelbutton,linecounter,0);
-    /*connect(okbutton,SIGNAL(clicked),
+    connect(okbutton,SIGNAL(clicked),
             this,SLOT(this->close));
     connect(cancelbutton,SIGNAL(clicked),
-            this,SLOT(this->close));*/
+            this,SLOT(this->close));
     this->setLayout(gridLayout);
     setWindowIcon( QIcon( _GIGAMESH_LOGO_ ) );
     this->show();
 }
+
+
 
 QStringList getTagsFromAnnotation(const QJsonArray& curanno){
     QStringList result;

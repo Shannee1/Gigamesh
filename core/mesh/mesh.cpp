@@ -6941,11 +6941,10 @@ double* Mesh::svgStringTo2DBBOX(std::string svgString,double imgheight,double im
 
 
 
-void Mesh::labelVerticesInBBOX( double minX, double maxX, double minY, double maxY,int side, double labelValue,bool onlyBorder){
+void Mesh::labelVerticesInBBOX( double minX, double maxX, double minY, double maxY,int side, double labelValue,bool onlyBorder,double borderThickness=0.5){
     std::set<Vertex*> result;
     double minZ=0.0;
     double maxZ=mMaxZ;
-    double borderThickness=1.0;//0.125*(abs(maxX)-abs(minX));
     if(side==6){
         minZ=mMinZ;
         maxZ=0.0;
@@ -6988,9 +6987,8 @@ void Mesh::labelVerticesInBBOX( double minX, double maxX, double minY, double ma
     labelSelectedVertices(result,false);
     }
 
-void Mesh::labelVerticesInBBOX( double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue,bool onlyBorder){
+void Mesh::labelVerticesInBBOX( double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue,bool onlyBorder,double borderThickness=0.5){
     std::set<Vertex*> result;
-    double borderThickness=1.0;
     for( auto const& currVertex: mVertices ) {
         double x = currVertex->getX();
         double y = currVertex->getY();
@@ -7025,27 +7023,74 @@ void Mesh::labelVerticesInBBOX( double minX, double maxX, double minY, double ma
         }
     }
     cout << result.size() << "\n";
-    //labelVerticesNone();
-    //labelSelectedVertices(result,false);
+    labelVerticesNone();
+    labelSelectedVertices(result,false);
 }
 
-void Mesh::selectVerticesInBBOX( double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue){
+void Mesh::selectVertices(set<Vertex*> vertices, double labelValue){
+    mSelectedMVerts=vertices;
+    selectedMVertsChanged();
+}
+
+void Mesh::selectVerticesInBBOX( double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue,bool onlyBorder, double borderThickness=0.8, std::set<Vertex*> vertices=std::set<Vertex*>()){
     set<uint64_t> result;
     int nummatches=0;
-    for( auto const& currVertex: mVertices ) {
-        double x = currVertex->getX();
-        double y = currVertex->getY();
-        double z = currVertex->getZ();
-        if (x > minX && x < maxX && y > minY && y < maxY && z > minZ && z < maxZ) {
-            cout << "[" << minX << "," << minY << "," << minZ << "," << maxX << "," << maxY << "," << maxZ << "]" << "\n";
-            cout << nummatches << " [" << x << "," << y << "," << z << "]" << "\n";
-            mSelectedMVerts.insert( currVertex );
-            nummatches++;
+    if(!vertices.empty()){
+        for( auto const& currVertex: vertices ) {
+            double x = currVertex->getX();
+            double y = currVertex->getY();
+            double z = currVertex->getZ();
+            if (onlyBorder){
+                if (z > minZ && z < maxZ){
+                    if (x >= minX && x <= (minX+borderThickness) && y > minY && y < maxY){
+                        mSelectedMVerts.insert(currVertex);
+                    }
+                    else if (x <= maxX && x>=(maxX-borderThickness) && y > minY && y < maxY){
+                        mSelectedMVerts.insert(currVertex);
+                    }
+                    else if (y >= minY && y<=(minY+borderThickness) && x > minX && x < maxX){
+                        mSelectedMVerts.insert(currVertex);
+                    }
+                    else if (y <= maxY && y>=(maxY-borderThickness) && x > minX && x < maxX){
+                        mSelectedMVerts.insert(currVertex);
+                    }
+                }
+            }else{
+                if (x > minX && x < maxX && y > minY && y < maxY && z > minZ && z < maxZ) {
+                    mSelectedMVerts.insert( currVertex );
+                    nummatches++;
+                }
+            }
+        }
+    }else{
+        for ( auto const& currVertex: mVertices) {
+            double x = currVertex->getX();
+            double y = currVertex->getY();
+            double z = currVertex->getZ();
+            if (onlyBorder){
+                if (z > minZ && z < maxZ){
+                    if (x >= minX && x <= (minX+borderThickness) && y > minY && y < maxY){
+                        mSelectedMVerts.insert(currVertex);
+                    }
+                    else if (x <= maxX && x>=(maxX-borderThickness) && y > minY && y < maxY){
+                        mSelectedMVerts.insert(currVertex);
+                    }
+                    else if (y >= minY && y<=(minY+borderThickness) && x > minX && x < maxX){
+                        mSelectedMVerts.insert(currVertex);
+                    }
+                    else if (y <= maxY && y>=(maxY-borderThickness) && x > minX && x < maxX){
+                        mSelectedMVerts.insert(currVertex);
+                    }
+                }
+            }else{
+                if (x > minX && x < maxX && y > minY && y < maxY && z > minZ && z < maxZ) {
+                    mSelectedMVerts.insert( currVertex );
+                    nummatches++;
+                }
+            }
         }
     }
     selectedMVertsChanged();
-    labelVerticesNone();
-    labelSelectedVertices(mSelectedMVerts,true);
 }
 
 //! Labeling assings the same index to all connected Faces.

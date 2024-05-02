@@ -97,27 +97,32 @@ std::string Annotation::toString(){
 
 
 QJsonObject Annotation::getAnnotation(std::string exports){
-    //QJsonObject result=QJsonObject();
-    //QString annoid=QString::fromStdString(annotationid);
-    //find(annoid)->toObject()
-    QJsonObject target=annojson.find("target")->toObject();
+    QJsonObject result=QJsonObject();
+    QString annoid=QString::fromStdString(annotationid);
+    QJsonObject annotation;
+    QJsonArray body;
+    QJsonObject target;
+    QJsonObject annoresult=result.find(annoid)->toObject();
+    if(annojson.find("body")->isArray()) {
+        body=annojson.find("body")->toArray();
+    }else{
+        QJsonArray thearray=QJsonArray();
+        thearray.append(annojson.find("body")->toObject());
+        body=thearray;
+    }
+    annotation.insert("body",body);
+    std::cout << "Export in format "<< exports << "\n";
+    QJsonObject selector;
     if(exports=="MeshIDSelector"){
-        target.insert("selector",QJsonObject());
-        QJsonObject selector=target.find("selector")->toObject();
-        selector.remove("type");
-        selector.insert("type","MeshIDSelector");
-        selector.remove("value");
+        std::cout << exports << "\n" ;
+        selector["type"]="MeshIDSelector";
         QJsonArray valuearray=selector.find("value")->toArray();
         for(Vertex* vert:vertices){
             valuearray.append(vert->getIndex());
         }
-        selector.insert("value",valuearray);
+        selector["value"]=valuearray;
     }else if(exports=="MeshVertexSelector"){
-        target.insert("selector",QJsonObject());
-        QJsonObject selector=target.find("selector")->toObject();
-        selector.remove("type");
-        selector.insert("type","MeshVertexSelector");
-        selector.remove("value");
+        selector["type"]="MeshVertexSelector";
         QJsonArray valuearray=selector.find("value")->toArray();
         for(Vertex* vert:vertices){
             QJsonArray xyzarray=QJsonArray();
@@ -126,20 +131,20 @@ QJsonObject Annotation::getAnnotation(std::string exports){
             xyzarray.append(vert->getZ());
             valuearray.append(xyzarray);
         }
-        selector.insert("value",valuearray);
+        selector["value"]=valuearray;
     }else if(exports=="WKTSelector"){
-        target.insert("selector",QJsonObject());
-        QJsonObject selector=target.find("selector")->toObject();
         selector.insert("type","SvgSelector");
         selector.insert("value",QString::fromStdString("POLYGON Z(("+std::to_string(minX)+" "+std::to_string(minY)+" "+std::to_string(minZ)+","+std::to_string(maxX)+" "+std::to_string(maxY)+" "+std::to_string(minZ)+","+std::to_string(minX)+" "+std::to_string(maxY)+" "+std::to_string(minZ)+","+std::to_string(minX)+" "+std::to_string(minY)+" "+std::to_string(maxZ)+","+std::to_string(maxX)+" "+std::to_string(minY)+" "+std::to_string(maxZ)+","+std::to_string(maxX)+" "+std::to_string(maxY)+" "+std::to_string(maxZ)+","+std::to_string(minX)+" "+std::to_string(minY)+" "+std::to_string(maxZ)+"))"));
 
     }else if(exports=="SVGSelector"){
-        target.insert("selector",QJsonObject());
-        QJsonObject selector=target.find("selector")->toObject();
         selector.insert("type","SvgSelector");
         selector.insert("value",QString::fromStdString("<svg><polygon points=\""+std::to_string(minX)+","+std::to_string(minY)+" "+std::to_string(minX)+","+std::to_string(maxY)+" "+std::to_string(maxX)+","+std::to_string(maxY)+" "+std::to_string(maxX)+","+std::to_string(minY)+"\"></polygon></svg>"));
+        target.insert("selector",selector);
     }
-    return annojson;
+    target.insert("selector",selector);
+    annotation.insert("target",target);
+    result.insert(annoid,annotation);
+    return result;
 }
 
 

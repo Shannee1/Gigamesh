@@ -40,6 +40,8 @@
 #include "QGMDialogWebView.h"
 #include "QGMAnnotationTemplateDialog.h"
 #include "QGMAnnotationDialog.h"
+#include "QGMDialogImportAnnotations.h"
+#include "QGMDialogExportAnnotations.h"
 
 #ifdef ANALYTICS
 #include "analyticsConfig.h"
@@ -1982,18 +1984,20 @@ void QGMMainWindow::openAnnotationWindow() {
 }
 
 void QGMMainWindow::exportAnnotations(){
-    std::string format="MeshIDSelector";
+    QGMDialogExportAnnotations(mMeshWidget->getAnnotations(),this).exec();
+    /*std::string format="MeshIDSelector";
     QJsonArray result=QJsonArray();
     for(Annotation curanno:mMeshWidget->getAnnotations()){
         QJsonObject curannojson = curanno.getAnnotation(format);
         result.append(curannojson);
     }
     QByteArray ba = QJsonDocument(result).toJson();
-    QFileDialog::saveFileContent(ba,"annoexport.json");
+    QFileDialog::saveFileContent(ba,"annoexport.json");*/
 }
 
 void QGMMainWindow::loadAnnotationsFromFile() {
-    QString filename = QFileDialog::getOpenFileName(
+    QGMDialogImportAnnotations(this->mMeshWidget,this).exec();
+    /*QString filename = QFileDialog::getOpenFileName(
             this,
             tr("Open Document"),
             QDir::currentPath(),
@@ -2036,14 +2040,15 @@ void QGMMainWindow::loadAnnotationsFromFile() {
             if(annotype=="WKTSelector" || annotype=="WktSelector"){
                 mMeshWidget->getMesh()->labelVerticesInBBOX(curanno.minX,curanno.maxX,curanno.minY,curanno.maxY,curanno.minZ,curanno.maxZ,2.0,false);
             }else if(annotype=="SvgSelector" || annotype=="SVGSelector"){
-                mMeshWidget->getMesh()->labelVerticesInBBOX(curanno.minX,curanno.maxX,curanno.minY,curanno.maxY,side,2.0,false);
+                mMeshWidget->getMesh()->labelVerticesInBBOX(curanno.minX,curanno.maxX,curanno.minY,curanno.maxY,side,2.0,false,0.5);
             }
             annotationlist.push_back(curanno);
             mMeshWidget->addAnnotation(curanno);
         }
         mMeshWidget->getMesh()->annotationsLoaded=true;
         cout << annotationlist.size() << endl;
-    }
+        jsonfile.close();*/
+   // }
 }
 
 

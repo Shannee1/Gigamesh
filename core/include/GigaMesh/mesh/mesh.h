@@ -461,8 +461,8 @@ class Mesh : public Primitive, public MeshIO, public MeshParams,
 				void labelVerticesBackground();
 		virtual int  labelFaces( int facesNrToRemove=0 );
 		virtual bool labelVerticesAll();
-        virtual void labelVerticesInBBOX(double minX, double maxX, double minY, double maxY,int side, double labelValue,bool onlyBorder);
-        virtual void labelVerticesInBBOX(double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue,bool onlyBorder);
+        virtual void labelVerticesInBBOX(double minX, double maxX, double minY, double maxY,int side, double labelValue,bool onlyBorder,double borderThickness);
+        virtual void labelVerticesInBBOX(double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue,bool onlyBorder,double borderThickness);
 		virtual bool labelVertices( const std::vector<Vertex*>& rVerticesToLabel, std::set<Vertex*>& rVerticesSeeds );
 		virtual bool labelVertices( const std::set<Vertex*>&    rVerticesToLabel, std::set<Vertex*>& rVerticesSeeds );
 		virtual void labelSelectionToSeeds();
@@ -799,9 +799,8 @@ class Mesh : public Primitive, public MeshIO, public MeshParams,
 		virtual bool getAxisFromCircleCenters();
 		virtual bool getAxisFromCircleCenters( Vector3D &rTop, Vector3D &rBottom );
                 bool getAxisFromEllipseFit();
-    void
-    selectVerticesInBBOX(double minX, double maxX, double minY, double maxY, double minZ, double maxZ,
-                         double labelValue);
+    void selectVerticesInBBOX(double minX, double maxX, double minY, double maxY, double minZ, double maxZ,double labelValue,bool onlyBorder,double borderThickness,std::set<Vertex*> vertices);
+    void selectVertices(std::set<Vertex*> vertices, double labelValue);
     double *wktStringToBBOX(std::string wktString,double* res);
     double* svgStringTo2DBBOX(std::string svgString,double imgheight,double imgwidth,double* res);
     std::set<Vertex*> getVerticesIn2DBBOX(double minX, double maxX, double minY, double maxY);

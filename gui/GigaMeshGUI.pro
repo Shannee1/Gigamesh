@@ -72,8 +72,8 @@ lessThan( QT_MINOR_VERSION, 2 ) {
 QT += widgets opengl gui svg
 # Add the Network-Manager
 QT += network
-QT += webenginewidgets
-QT += webenginecore
+#QT += webenginewidgets
+#QT += webenginecore
 
 # -------------------------------------------------------------------------------
 
@@ -340,6 +340,8 @@ FORMS += forms/qgmdockview.ui
 FORMS += forms/dialogAbout.ui
 FORMS += forms/dialogConeParam.ui
 FORMS += forms/dialogMSII.ui
+FORMS += forms/dialogImportAnnotations.ui
+FORMS += forms/dialogExportAnnotations.ui
 FORMS += forms/dialogCutOffValues.ui
 FORMS += forms/dialogEnterText.ui
 FORMS += forms/dialogPlaneParam.ui

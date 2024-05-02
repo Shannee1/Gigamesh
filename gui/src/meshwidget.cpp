@@ -7434,6 +7434,9 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
         cout << "Selected with mode Mark annotation and got the list of annotations back " << std::to_string(annos.size()) << endl;
         cout << "Selected with mode Mark annoation.... starting Annotation Dialog now!" << endl;
         if(annos.size()>0) {
+            Annotation curanno=annos.front();
+            //mMeshVisual->removeVerticesSelected();
+            mMeshVisual->selectVerticesInBBOX(curanno.minX,curanno.maxX,curanno.minY,curanno.maxY,curanno.minZ,curanno.maxZ,2.0,true,0.5,curanno.vertices);
             QGMAnnotationDialog(QJsonObject(), annos.front(), nullptr).exec();
         }else{
             cout << "No annotations were matched with the given coordinates: " << std::to_string(thevertex->getX()) << " " << std::to_string(thevertex->getY()) << " " << std::to_string(thevertex->getZ()) << endl;
