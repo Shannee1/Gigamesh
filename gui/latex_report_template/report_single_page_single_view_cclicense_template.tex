@@ -7,12 +7,7 @@
 	\usepackage{graphicx}      % For inclusions of images
 	\usepackage{caption}       % Figure caption without number
 	\usepackage{numprint}      % Number formatting
-        \usepackage[
-        type={CC},
-        modifier={__CC_PARAMETERS__},
-        version={__CC_VERSION__},
-        ]{doclicense}
-        \usepackage{hyperxmp}
+
 	\usepackage[pdftex,
 	            pdfauthor={__PDF_AUTHOR__},
 	            pdftitle={__OBJECT_ID__ rendered with GigaMesh},
@@ -21,7 +16,12 @@
 	            pdfproducer={GigaMesh Software Framework},
 	            pdfcreator={pdflatex}]{hyperref}
 	\hypersetup{frenchlinks=true}
-
+    \usepackage{hyperxmp}
+    \usepackage[
+        type={CC},
+        modifier={__CC_PARAMETERS__},
+        version={__CC_VERSION__},
+    ]{doclicense}
 	\def\figurescale{__SCALE_FACTOR__}
 
 	\usepackage{titleps}    % Header and footer
