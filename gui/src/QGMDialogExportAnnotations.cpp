@@ -42,13 +42,14 @@ QGMDialogExportAnnotations::QGMDialogExportAnnotations(std::list<Annotation> ann
 void QGMDialogExportAnnotations::exportAnnotations(){
     std::string format="WKTSelector";
     QString chosenformat=annostylecbox->currentText();
+    std::cout << "Chosen Format: " << chosenformat.toStdString() ;
     if(chosenformat.contains("WKTSelector")){
         format="WKTSelector";
     }else if(chosenformat.contains("SVGSelector")){
         format="SVGSelector";
-    }else if(chosenformat.contains("MeshIDSelector")){
+    }else if(chosenformat.contains("MeshID")){
         format="MeshIDSelector";
-    }else if(chosenformat.contains("MeshVertexSelector")){
+    }else if(chosenformat.contains("VertexList")){
         format="MeshVertexSelector";
     }
     QJsonArray result=QJsonArray();

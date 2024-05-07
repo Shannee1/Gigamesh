@@ -373,6 +373,7 @@ private:
 	// Mouse and keyboard interaction
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
 	QPoint  mLastPos;                 //!< Stores the last cursor position. Used to determine movement of the mouse for interaction.
+	Annotation mLastAnnotation=Annotation();       //!< Stores the last hovered/selected annotation. Used for comparison for tooltips
 	std::vector<QPoint> mSelectionPoly;    //!< Screen coordinates of the selection poylgon.
 
 	// performance evaluation (frames per second):

@@ -98,6 +98,7 @@ QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation ann
 }
 
 void QGMAnnotationDialog::applyChanges(){
+    std::cout << "Apply Changes" << endl;
 
 }
 

@@ -6855,6 +6855,27 @@ std::set<Vertex*> Mesh::getVerticesIn2DBBOX(double minX, double maxX, double min
     return result;
 }
 
+/*std::set<Face*> Mesh::getFacesIn2DBBOX(double minX, double maxX, double minY, double maxY){
+    std::set<Face*> result;
+    for( auto const& currVertex: mVertices ) {
+        double x=currVertex->getX();
+        double y=currVertex->getY();
+        double z=currVertex->getZ();
+        if(x>minX && x<maxX && y>minY && y<maxY){
+            currVertex->getgetFaces(result);
+        }
+    }
+    return result;
+}
+
+std::set<Face*> Mesh::getFacesForVertices(std::set<Vertex*> vertices){
+std::set<Face*> result;
+    for( auto const& currVertex: vertices ) {
+        currVertex->getFaces(result);
+    }
+    return result;
+}*/
+
 double* Mesh::wktStringToBBOX(std::string wktString,double* res) {
     const vector<string> &splitted = split(wktString, ',');
     cout << splitted[0] << "\n";
@@ -6951,6 +6972,7 @@ void Mesh::selectVertices(set<Vertex*> vertices, double labelValue){
     mSelectedMVerts=vertices;
     selectedMVertsChanged();
 }
+
 
 void Mesh::selectVerticesInBBOX( double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue,bool onlyBorder, double borderThickness=0.8, std::set<Vertex*> vertices=std::set<Vertex*>()){
     set<uint64_t> result;
@@ -12022,6 +12044,7 @@ bool Mesh::getFaceHasVertLabelNo(
 	std::cout << "[Mesh::" << __FUNCTION__ << "] in set: " << rSomeFaces.size() << std::endl;
 	return( true );
 }
+
 
 //! Adds all faces containing vertices with the given label numbers
 //! to the given set.

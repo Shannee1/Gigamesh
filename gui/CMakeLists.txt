@@ -106,6 +106,12 @@ set(GUI_UI_FILES
         forms/QGMDialogMatrix.ui
 		src/ColorSelectorButton.cpp
 		src/ColorSelectorButton.h
+		src/annotationtemplate.cpp
+		src/annotationtemplate.h
+		src/colortemplate.cpp
+		src/colortemplate.h
+		src/QGMColorTemplateDialog.cpp
+		src/QGMColorTemplateDialog.h
 )
 
 #NOTE: instead of adding translations via resources, the ts-files can also be build by

@@ -6843,7 +6843,28 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
 	GLfloat dy = GLfloat( rEvent->y()*scaleFactor - mLastPos.y() ) / 2.0;
 
 	mLastPos = rEvent->pos() * scaleFactor;
-
+    Vector3D clickPos;
+    mMeshVisual->getWorldPointOnMesh( rEvent->x(), rEvent->y(), &clickPos );
+    //QToolTip::showText(rEvent->globalPos(),QString::fromStdString("My cool tooltip! "+std::to_string(clickPos.getX())+" - "+std::to_string(clickPos.getY())+" - "+std::to_string(clickPos.getZ())+" - "+std::to_string(rEvent->x())+" - "+std::to_string(dx)+" - "+std::to_string(rEvent->y())+" "+std::to_string(dy)+" - "+std::to_string(mLastPos.x())));
+    if(this->annotationlist.size()>0){
+        bool finished=false;
+        if(!mLastAnnotation.isempty){
+            if(mLastAnnotation.pointInAnnotationBBOX3D(clickPos.getX(),clickPos.getY(),clickPos.getZ())){
+                QToolTip::showText(rEvent->globalPos(),QString::fromStdString(mLastAnnotation.toHTML()));
+                //this->getMesh()->selectVertices(mLastAnnotation.vertices,2.0);
+                finished=true;
+            }
+        }
+        if(!finished) {
+            for (Annotation anno: annotationlist) {
+                if (anno.pointInAnnotationBBOX3D(clickPos.getX(), clickPos.getY(), clickPos.getZ())) {
+                    QToolTip::showText(rEvent->globalPos(), QString::fromStdString(anno.toHTML()));
+                    //this->getMesh()->selectVertices(anno.vertices, 2.0);
+                    mLastAnnotation = anno;
+                }
+            }
+        }
+    }
 	eMouseModes currMouseMode;
 	getParamIntegerMeshWidget( MOUSE_MODE, reinterpret_cast<int*>(&currMouseMode) );
 

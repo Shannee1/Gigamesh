@@ -4,9 +4,16 @@
 #include "annotation.h"
 #include "GigaMesh/mesh/mesh.h"
 #include "meshQt.h"
+#include "../../core/mesh/MeshIO/PlyWriter.h"
+
+
+Annotation::Annotation(){
+    isempty=true;
+}
 
 Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh,QString side) {
     annotationid=annoid.toStdString();
+    isempty=false;
     themesh=mesh;
     annojson=annojsonn;
     if(annojsonn.contains("body")){
@@ -52,6 +59,11 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh,QString
 
 }
 
+/*bool Annotation::exportAnnotation(std::string format){
+    PlyWriter plywriter();
+    plywriter.writeFile("", vertices, vertices, nulptr);
+}*/
+
 bool Annotation::determineZBBOXFromVertices(){
     double minZz=DBL_MAX;
     double maxZz=DBL_MIN;
@@ -93,6 +105,15 @@ bool Annotation::pointInAnnotationBBOX2D(double x, double y){
 
 std::string Annotation::toString(){
     return QJsonDocument(annotationbody).toJson(QJsonDocument::Compact).toStdString();
+}
+
+std::string Annotation::toHTML(){
+    std::string result="<html><b>Annotation "+annotationid+"</b><ul>";
+    for(QJsonValue elem:annotationbody){
+        result+="<li>"+elem.toObject().find("purpose").value().toString().toStdString()+": "+elem.toObject().find("value").value().toString().toStdString()+"</li>";
+    }
+    result+="</ul>";
+    return result;
 }
 
 

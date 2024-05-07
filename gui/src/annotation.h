@@ -14,6 +14,7 @@ class Annotation {
     public:
         enum exportFormats{WKTSelector,WKTPolygonSelector, SVGSelector, MeshIDSelector,MeshLabelSelector,MeshVertexSelector};
         enum annotationType{Character, Word, Line, Surface};
+        Annotation();
         Annotation(QJsonObject annojson,QString annoid, MeshQt* mesh,QString side="noside");
         double minX;
         double maxX;
@@ -25,6 +26,7 @@ class Annotation {
         std::set<Vertex*> vertices;
         std::string annotationid;
         MeshQt* themesh;
+        bool isempty;
 
         bool determineZBBOXFromVertices();
 
@@ -39,6 +41,8 @@ class Annotation {
         void setAnnotationBody(QJsonObject newbody);
 
         QJsonObject getAnnotation(std::string exportFormats);
+
+        std::string toHTML();
 
         std::string toString();
 
