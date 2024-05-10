@@ -74,6 +74,7 @@ MeshWidget::MeshWidget( const QGLFormat &format, QWidget *parent )
 #endif
 	// now we can use the keyboard to navigate:
 	setFocusPolicy( Qt::StrongFocus );
+    setContextMenuPolicy(Qt::CustomContextMenu);
 	setAutoFillBackground( false );
 	setAutoBufferSwap( false ); // to preven flickering in ::paintEvent when QPainter.end is called!
 	// Store pointer to the main window.
@@ -172,6 +173,8 @@ MeshWidget::MeshWidget( const QGLFormat &format, QWidget *parent )
 	QObject::connect( this, &MeshWidget::sGuideIDSelection, mMainWindow, &QGMMainWindow::sGuideIDSelection );
 	QObject::connect( this, &MeshWidget::sGuideIDCommon,    mMainWindow, &QGMMainWindow::sGuideIDCommon    );
 	// ----------------------------------------------------------------------------------------------------------------
+
+    QObject::connect(this,SIGNAL(customContextMenuRequested(const QPoint &)),this,SLOT(showContextMenu(const QPoint &)));
 
     //set the latex placeholder descriptions (PDF Export)
     setLatexPlaceholderDefinition();
@@ -6828,6 +6831,44 @@ void MeshWidget::mouseReleaseEvent(QMouseEvent *rEvent)
 	setParamFlagMeshWidget(MeshWidgetParams::SHOW_MESH_REDUCED, false);
 }
 
+void MeshWidget::showContextMenu(const QPoint &pos) {
+    if(this->annotationlist.size()>0){
+        QMenu menu("Context Menu",this);
+        QAction* exportMesh=new QAction("Export annotation as mesh",this);
+        QAction* exportImage=new QAction("Export annotation as image",this);
+        QAction* exportJSON=new QAction("Export annotation as JSON",this);
+        connect(exportMesh, &QAction::triggered, this, &MeshWidget::exportAnnotationAsMesh);
+        connect(exportJSON, &QAction::triggered, this, &MeshWidget::exportAnnotationAsJSON);
+        menu.addAction(exportMesh);
+        menu.addAction(exportImage);
+        menu.addAction(exportJSON);
+        menu.exec(this->mapToGlobal(pos));
+    }
+}
+
+bool MeshWidget::exportAnnotationAsMesh(){
+    QString fileName = QFileDialog::getSaveFileName(this, "Save File", "/home/", "Text Files (*.ply);;All Files (*.*)");
+    if (!fileName.isEmpty()) {
+        Mesh* exportMesh=mLastAnnotation.getAnnotationMesh(this->getMesh());
+        exportMesh->writeFile(fileName.toStdString());
+    }
+    return true;
+}
+
+bool MeshWidget::exportAnnotationAsJSON(){
+    QString fileName = QFileDialog::getSaveFileName(this, "Save File", "/home/", "Text Files (*.ply);;All Files (*.*)");
+    if (!fileName.isEmpty()) {
+        QJsonObject annojson=mLastAnnotation.getAnnotation("WKTSelector");
+        QJsonDocument doc(annojson);
+        QFile jsonFile(fileName);
+        jsonFile.open(QFile::WriteOnly);
+        jsonFile.write(doc.toJson());
+    }
+    return true;
+}
+
+
+
 //! Handles the event when the mouse is moved.
 //! See also MeshWidgetParams::MOUSE_MODE
 //! This should do most of the rotation on screen ...
@@ -6846,21 +6887,25 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
     Vector3D clickPos;
     mMeshVisual->getWorldPointOnMesh( rEvent->x(), rEvent->y(), &clickPos );
     //QToolTip::showText(rEvent->globalPos(),QString::fromStdString("My cool tooltip! "+std::to_string(clickPos.getX())+" - "+std::to_string(clickPos.getY())+" - "+std::to_string(clickPos.getZ())+" - "+std::to_string(rEvent->x())+" - "+std::to_string(dx)+" - "+std::to_string(rEvent->y())+" "+std::to_string(dy)+" - "+std::to_string(mLastPos.x())));
+    double ylength=this->getMesh()->getMaxY()-this->getMesh()->getMinY();
     if(this->annotationlist.size()>0){
         bool finished=false;
         if(!mLastAnnotation.isempty){
-            if(mLastAnnotation.pointInAnnotationBBOX3D(clickPos.getX(),clickPos.getY(),clickPos.getZ())){
-                QToolTip::showText(rEvent->globalPos(),QString::fromStdString(mLastAnnotation.toHTML()));
+            if(mLastAnnotation.pointInAnnotationBBOX3D(clickPos.getX(),ylength-clickPos.getY(),clickPos.getZ())){
+                QToolTip::showText(rEvent->globalPos(),QString::fromStdString(std::to_string(clickPos.getX())+" "+std::to_string(clickPos.getY())+" "+std::to_string(clickPos.getZ())+"<br/>"+mLastAnnotation.toHTML()));
                 //this->getMesh()->selectVertices(mLastAnnotation.vertices,2.0);
                 finished=true;
             }
         }
         if(!finished) {
+
             for (Annotation anno: annotationlist) {
-                if (anno.pointInAnnotationBBOX3D(clickPos.getX(), clickPos.getY(), clickPos.getZ())) {
-                    QToolTip::showText(rEvent->globalPos(), QString::fromStdString(anno.toHTML()));
-                    //this->getMesh()->selectVertices(anno.vertices, 2.0);
+                if (anno.pointInAnnotationBBOX3D(clickPos.getX(), ylength-clickPos.getY(), clickPos.getZ())) {
+                    QToolTip::showText(rEvent->globalPos(), QString::fromStdString(std::to_string(clickPos.getX())+" "+std::to_string(clickPos.getY())+" "+std::to_string(clickPos.getZ())+"<br/>"+anno.toHTML()));
+                    std::cout << "BBOX Vertices: " << std::to_string(anno.bboxVertices.size()) << "All Vertices: " << std::to_string(anno.vertices.size()) << endl;
+                    this->getMesh()->selectVertices(anno.bboxVertices, 2.0);
                     mLastAnnotation = anno;
+                    break;
                 }
             }
         }

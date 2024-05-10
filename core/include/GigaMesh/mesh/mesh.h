@@ -801,7 +801,7 @@ class Mesh : public Primitive, public MeshIO, public MeshParams,
     void selectVertices(std::set<Vertex*> vertices, double labelValue);
     double *wktStringToBBOX(std::string wktString,double* res);
     double* svgStringTo2DBBOX(std::string svgString,double imgheight,double imgwidth,std::string side,double* res);
-    std::set<Vertex*> getVerticesIn2DBBOX(double minX, double maxX, double minY, double maxY);
+    std::set<Vertex*> getVerticesIn2DBBOX(double minX, double maxX, double minY, double maxY,std::set<Vertex*> bboxVertices);
 		// Binary Space Partitioning -- Octree
 	protected:
         Octree*   mOctree     = nullptr;          //! Octree handling the Vertices stored in mParentVertices and the mParentFaces.

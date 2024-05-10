@@ -97,6 +97,8 @@ public:
 
 public slots: // ... overloaded from MeshWidgetParams:s
     bool setAnnotations(std::list<Annotation> annos);
+    bool exportAnnotationAsMesh();
+    bool exportAnnotationAsJSON();
     bool addAnnotation(Annotation anno);
     bool removeAnnotation(QString annoid);
     std::list<Annotation> getAnnotationsByCoordinate(double x,double y, double z);
@@ -252,6 +254,7 @@ private:
 
 public slots:
 	void selectColorBackground();
+    void showContextMenu(const QPoint &pos);
 
 	// View menu
 	bool orthoSetDPI();

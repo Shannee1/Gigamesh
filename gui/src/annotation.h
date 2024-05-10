@@ -24,17 +24,19 @@ class Annotation {
         double maxZ;
         QJsonObject annojson;
         std::set<Vertex*> vertices;
+        std::set<Vertex*> bboxVertices;
+        Mesh* getAnnotationMesh(Mesh* themesh);
         std::string annotationid;
         MeshQt* themesh;
         bool isempty;
 
-        bool determineZBBOXFromVertices();
+        bool determineZBBOXFromVertices(std::string side);
 
         bool pointInAnnotationBBOX3D(double x, double y, double z);
 
         bool pointInAnnotationBBOX2D(double x, double y);
 
-        bool bboxToVertexIds(MeshQt* meshToTest, bool twodimensional);
+        bool bboxToVertexIds(MeshQt* meshToTest, bool twodimensional,std::string side);
 
         QJsonObject getAnnotationBody();
 

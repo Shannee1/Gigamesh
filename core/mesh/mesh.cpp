@@ -6842,14 +6842,18 @@ std::set<Vertex*> Mesh::getVerticesInBBOX(double minX, double maxX, double minY,
     return result;
 }
 
-std::set<Vertex*> Mesh::getVerticesIn2DBBOX(double minX, double maxX, double minY, double maxY){
+std::set<Vertex*> Mesh::getVerticesIn2DBBOX(double minX, double maxX, double minY, double maxY,std::set<Vertex*> bboxVertices){
     std::set<Vertex*> result;
     for( auto const& currVertex: mVertices ) {
         double x=currVertex->getX();
         double y=currVertex->getY();
         double z=currVertex->getZ();
-        if(x>minX && x<maxX && y>minY && y<maxY){
+        if(x>=minX && x<=maxX && y>=minY && y<=maxY){
             result.insert(currVertex);
+            if(x==minX || y==minY || x==maxX || y==maxY){
+                cout << "Adding point to BBOX Vertices: " << std::to_string(x) << " " << std::to_string(y) << " " << std::to_string(z) << endl;
+                bboxVertices.insert(currVertex);
+            }
         }
     }
     return result;
@@ -6928,6 +6932,7 @@ double* Mesh::svgStringTo2DBBOX(std::string svgString,double imgheight,double im
         imgwidth=827.0;
     }
     double minX=DBL_MAX,minY=DBL_MAX,maxX=DBL_MIN,maxY=DBL_MIN;
+    double ylength=this->mMaxY-this->mMinY;
     for (const auto& coord : splitted) {
         try{
             const vector<string> &coordsplit = split(coord, ',');
@@ -6940,11 +6945,11 @@ double* Mesh::svgStringTo2DBBOX(std::string svgString,double imgheight,double im
                 minX=curcoord;
             }
             curcoord=stod(coordsplit[1]);
+            curcoord=rescale(curcoord,0,imgheight,this->mMinY,this->mMaxY);
             if(side=="front"){
                 std::cout << "Old: " << std::to_string(curcoord) << "New: " << std::to_string((curcoord*-1)) << endl;
-                curcoord=abs(imgheight)-curcoord;
+                curcoord=ylength-curcoord;
             }
-            curcoord=rescale(curcoord,0,imgheight,this->mMinY,this->mMaxY);
             if(curcoord>maxY) {
                 maxY=curcoord;
             }

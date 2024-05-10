@@ -16,6 +16,7 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh,QString
     isempty=false;
     themesh=mesh;
     annojson=annojsonn;
+    this->bboxVertices=std::set<Vertex*>();
     if(annojsonn.contains("body")){
         if(annojsonn.find("body")->isObject()){
             annotationbody=QJsonArray();
@@ -38,7 +39,7 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh,QString
         maxX=res[3];
         maxY=res[4];
         maxZ=res[5];
-        bboxToVertexIds(mesh,false);
+        bboxToVertexIds(mesh,false,"");
     }else if(annotype=="SvgSelector" || annotype=="SVGSelector"){
         annovalue=annovalue.replace("<svg><polygon","").replace("points=\"","").replace("\"></polygon></svg>","").trimmed();
         double imgheight=0.0;
@@ -54,7 +55,7 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh,QString
         minY=res[1];
         maxX=res[2];
         maxY=res[3];
-        bboxToVertexIds(mesh,true);
+        bboxToVertexIds(mesh,true,side.toStdString());
     }
 
 }
@@ -64,7 +65,7 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh,QString
     plywriter.writeFile("", vertices, vertices, nulptr);
 }*/
 
-bool Annotation::determineZBBOXFromVertices(){
+bool Annotation::determineZBBOXFromVertices(std::string side){
     double minZz=DBL_MAX;
     double maxZz=DBL_MIN;
     for(Vertex* vert:vertices){
@@ -75,15 +76,26 @@ bool Annotation::determineZBBOXFromVertices(){
             maxZz=vert->getZ();
         }
     }
+    if(side=="front" && minZz<0){
+        minZz=0;
+    }else if(side=="back" && maxZz>0){
+        maxZz=0;
+    }
     this->minZ=minZz;
     this->maxZ=maxZz;
     return true;
 }
 
-bool Annotation::bboxToVertexIds(MeshQt* meshToTest,bool twodimensional){
+Mesh* Annotation::getAnnotationMesh(Mesh* themesh){
+    auto* someFaces=new std::set<Face*>();
+    themesh->getFaceContainsVert(this->vertices,*someFaces);
+    return new Mesh(someFaces);
+}
+
+bool Annotation::bboxToVertexIds(MeshQt* meshToTest,bool twodimensional,std::string side){
     if(twodimensional){
-        this->vertices=meshToTest->getVerticesIn2DBBOX(minX,maxX,minY,maxY);
-        determineZBBOXFromVertices();
+        this->vertices=meshToTest->getVerticesIn2DBBOX(minX,maxX,minY,maxY,this->bboxVertices);
+        determineZBBOXFromVertices(side);
     }else{
         this->vertices=meshToTest->getVerticesInBBOX(minX,maxX,minY,maxY,minZ,maxZ);
     }
@@ -108,7 +120,8 @@ std::string Annotation::toString(){
 }
 
 std::string Annotation::toHTML(){
-    std::string result="<html><b>Annotation "+annotationid+"</b><ul>";
+    std::string result="<b>Annotation "+annotationid+"</b>";
+    //result+="["+std::to_string(minX)+","+std::to_string(maxX)+","+std::to_string(minY)+","+std::to_string(maxY)+","+std::to_string(minZ)+","+std::to_string(maxZ)+"]<br/>";                                                       "<ul>";
     for(QJsonValue elem:annotationbody){
         result+="<li>"+elem.toObject().find("purpose").value().toString().toStdString()+": "+elem.toObject().find("value").value().toString().toStdString()+"</li>";
     }
@@ -154,7 +167,7 @@ QJsonObject Annotation::getAnnotation(std::string exports){
         }
         selector["value"]=valuearray;
     }else if(exports=="WKTSelector"){
-        selector.insert("type","SvgSelector");
+        selector.insert("type","WKTSelector");
         selector.insert("value",QString::fromStdString("POLYGON Z(("+std::to_string(minX)+" "+std::to_string(minY)+" "+std::to_string(minZ)+","+std::to_string(maxX)+" "+std::to_string(maxY)+" "+std::to_string(minZ)+","+std::to_string(minX)+" "+std::to_string(maxY)+" "+std::to_string(minZ)+","+std::to_string(minX)+" "+std::to_string(minY)+" "+std::to_string(maxZ)+","+std::to_string(maxX)+" "+std::to_string(minY)+" "+std::to_string(maxZ)+","+std::to_string(maxX)+" "+std::to_string(maxY)+" "+std::to_string(maxZ)+","+std::to_string(minX)+" "+std::to_string(minY)+" "+std::to_string(maxZ)+"))"));
 
     }else if(exports=="SVGSelector"){
