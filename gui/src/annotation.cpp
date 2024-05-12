@@ -60,21 +60,24 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh,QString
 
 }
 
-/*bool Annotation::exportAnnotation(std::string format){
-    PlyWriter plywriter();
-    plywriter.writeFile("", vertices, vertices, nulptr);
-}*/
-
 bool Annotation::determineZBBOXFromVertices(std::string side){
     double minZz=DBL_MAX;
     double maxZz=DBL_MIN;
-    for(Vertex* vert:vertices){
-        if(vert->getZ()<minZz){
-            minZz=vert->getZ();
+    for (auto it = vertices.begin(); it != vertices.end();){
+        if(side=="front" && (*it)->getZ()<0){
+            it=vertices.erase(it);
+            continue;
+        }else if(side=="back" && (*it)->getZ()>0){
+            it=vertices.erase(it);
+            continue;
         }
-        if(vert->getZ()>maxZz){
-            maxZz=vert->getZ();
+        if((*it)->getZ()<minZz){
+            minZz=(*it)->getZ();
         }
+        if((*it)->getZ()>maxZz){
+            maxZz=(*it)->getZ();
+        }
+        ++it;
     }
     if(side=="front" && minZz<0){
         minZz=0;

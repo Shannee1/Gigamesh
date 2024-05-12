@@ -24,6 +24,9 @@ QGMDialogExportAnnotations::QGMDialogExportAnnotations(std::list<Annotation> ann
     annostylecbox->addItem("MeshID Selector (Web Annotation Data Model)");
     gridLayout->addWidget(annostylecbox,linecounter,1);
     linecounter+=1;
+    auto* onlyBorderCheckBox=new QCheckBox("Only Border");
+    gridLayout->addWidget(onlyBorderCheckBox,linecounter,1);
+    linecounter+=1;
     auto * okbutton=new QPushButton(this);
     okbutton->setText("Ok");
     gridLayout->addWidget(okbutton,linecounter,1);

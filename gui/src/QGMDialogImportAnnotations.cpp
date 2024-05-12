@@ -13,6 +13,12 @@ QGMDialogImportAnnotations::QGMDialogImportAnnotations(MeshWidget* mMeshWidget,Q
     int linecounter=0;
     this->setWindowTitle("Import Annotations");
     auto * gridLayout = new QGridLayout(this);
+    auto* annoctemplatecboxLabel=new QLabel();
+    annoctemplatecboxLabel->setText("Color Template:");
+    gridLayout->addWidget(annoctemplatecboxLabel,linecounter,0);
+    this->annostyletemplatecbox=new QComboBox();
+    gridLayout->addWidget(annostyletemplatecbox,linecounter,1);
+    linecounter+=1;
     auto* annostylecboxLabel=new QLabel();
     annostylecboxLabel->setText("Annotation Style:");
     gridLayout->addWidget(annostylecboxLabel,linecounter,0);

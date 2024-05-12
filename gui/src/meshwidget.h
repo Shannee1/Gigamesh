@@ -99,6 +99,7 @@ public slots: // ... overloaded from MeshWidgetParams:s
     bool setAnnotations(std::list<Annotation> annos);
     bool exportAnnotationAsMesh();
     bool exportAnnotationAsJSON();
+    bool openEditAnnotationDialog();
     bool addAnnotation(Annotation anno);
     bool removeAnnotation(QString annoid);
     std::list<Annotation> getAnnotationsByCoordinate(double x,double y, double z);

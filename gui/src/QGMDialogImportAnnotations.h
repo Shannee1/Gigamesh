@@ -25,6 +25,7 @@ public:
     MeshWidget* meshwidget;
     QDoubleSpinBox* thicknessEdit;
     QComboBox* annostylecbox;
+    QComboBox* annostyletemplatecbox;
 public slots:
     void chooseFile();
     void importAnnotations();

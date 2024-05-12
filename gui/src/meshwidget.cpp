@@ -6834,11 +6834,14 @@ void MeshWidget::mouseReleaseEvent(QMouseEvent *rEvent)
 void MeshWidget::showContextMenu(const QPoint &pos) {
     if(this->annotationlist.size()>0){
         QMenu menu("Context Menu",this);
-        QAction* exportMesh=new QAction("Export annotation as mesh",this);
-        QAction* exportImage=new QAction("Export annotation as image",this);
-        QAction* exportJSON=new QAction("Export annotation as JSON",this);
+        auto* editAnnotation=new QAction("Edit annotation",this);
+        auto* exportMesh=new QAction("Export annotation as mesh",this);
+        auto* exportImage=new QAction("Export annotation as image",this);
+        auto* exportJSON=new QAction("Export annotation as JSON",this);
+        connect(editAnnotation, &QAction::triggered, this, &MeshWidget::openEditAnnotationDialog);
         connect(exportMesh, &QAction::triggered, this, &MeshWidget::exportAnnotationAsMesh);
         connect(exportJSON, &QAction::triggered, this, &MeshWidget::exportAnnotationAsJSON);
+        menu.addAction(editAnnotation);
         menu.addAction(exportMesh);
         menu.addAction(exportImage);
         menu.addAction(exportJSON);
@@ -6846,11 +6849,25 @@ void MeshWidget::showContextMenu(const QPoint &pos) {
     }
 }
 
+bool MeshWidget::openEditAnnotationDialog(){
+    QGMAnnotationDialog(QJsonObject(), mLastAnnotation, nullptr).exec();
+    return true;
+}
+
 bool MeshWidget::exportAnnotationAsMesh(){
     QString fileName = QFileDialog::getSaveFileName(this, "Save File", "/home/", "Text Files (*.ply);;All Files (*.*)");
     if (!fileName.isEmpty()) {
+        auto selbackup=new std::set<Vertex*>();
+        this->getMesh()->getSelectedVerts(selbackup);
+        if(!selbackup->empty()) {
+            this->getMesh()->deSelMVertsAll();
+            this->getMesh()->selectedMVertsChanged();
+        }
         Mesh* exportMesh=mLastAnnotation.getAnnotationMesh(this->getMesh());
         exportMesh->writeFile(fileName.toStdString());
+        if(!selbackup->empty()) {
+            this->getMesh()->selectVertices(*selbackup, 2.0);
+        }
     }
     return true;
 }
@@ -6892,18 +6909,17 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
         bool finished=false;
         if(!mLastAnnotation.isempty){
             if(mLastAnnotation.pointInAnnotationBBOX3D(clickPos.getX(),ylength-clickPos.getY(),clickPos.getZ())){
-                QToolTip::showText(rEvent->globalPos(),QString::fromStdString(std::to_string(clickPos.getX())+" "+std::to_string(clickPos.getY())+" "+std::to_string(clickPos.getZ())+"<br/>"+mLastAnnotation.toHTML()));
+                QToolTip::showText(rEvent->globalPos(),QString::fromStdString(mLastAnnotation.toHTML()));
                 //this->getMesh()->selectVertices(mLastAnnotation.vertices,2.0);
                 finished=true;
             }
         }
         if(!finished) {
-
             for (Annotation anno: annotationlist) {
                 if (anno.pointInAnnotationBBOX3D(clickPos.getX(), ylength-clickPos.getY(), clickPos.getZ())) {
-                    QToolTip::showText(rEvent->globalPos(), QString::fromStdString(std::to_string(clickPos.getX())+" "+std::to_string(clickPos.getY())+" "+std::to_string(clickPos.getZ())+"<br/>"+anno.toHTML()));
+                    QToolTip::showText(rEvent->globalPos(), QString::fromStdString(anno.toHTML()));
                     std::cout << "BBOX Vertices: " << std::to_string(anno.bboxVertices.size()) << "All Vertices: " << std::to_string(anno.vertices.size()) << endl;
-                    this->getMesh()->selectVertices(anno.bboxVertices, 2.0);
+                    this->getMesh()->selectVertices(anno.vertices, 2.0);
                     mLastAnnotation = anno;
                     break;
                 }

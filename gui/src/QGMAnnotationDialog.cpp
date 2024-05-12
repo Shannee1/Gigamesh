@@ -185,6 +185,11 @@ void QGMAnnotationDialog::addCategoryIndependentFields(QWidget* curwidget,int li
     gridLayout->addWidget(addSemTag,linecounter,2);
 }
 
+template<typename Base, typename T>
+inline bool instanceof(const T *ptr) {
+    return dynamic_cast<const Base*>(ptr) != nullptr;
+}
+
 QJsonObject QGMAnnotationDialog::saveAnnotationJSON(){
     QJsonObject result=QJsonObject();
     result.insert("body",QJsonArray());
@@ -192,13 +197,32 @@ QJsonObject QGMAnnotationDialog::saveAnnotationJSON(){
     auto *curlayout = dynamic_cast<QGridLayout *>(this->tabw->currentWidget()->layout());
     for(int i=0;i<curlayout->rowCount();i++){
         QLabel lab= (const QLabel) curlayout->itemAtPosition(i, 0)->widget();
-        QLineEdit edit= (const QLineEdit) curlayout->itemAtPosition(i, 1)->widget();
-        body.append(QJsonObject());
-        body.at(i).toObject().insert("type","TextualBody");
-        body.at(i).toObject().insert("purpose",lab.text().replace(":",""));
-        body.at(i).toObject().insert("value",edit.text());
-        body.at(i).toObject().insert("source",lab.text().replace(":",""));
+        if(instanceof<QLineEdit>(curlayout->itemAtPosition(i, 1)->widget())){
+            QLineEdit edit= (const QLineEdit) curlayout->itemAtPosition(i, 1)->widget();
+            body.append(QJsonObject());
+            body.last().toObject().insert("type","TextualBody");
+            body.last().toObject().insert("purpose",lab.text().replace(":",""));
+            body.last().toObject().insert("value",edit.text());
+            body.last().toObject().insert("source",lab.text().replace(":",""));
+        }else if(instanceof<QComboBox>(curlayout->itemAtPosition(i, 1)->widget())){
+            QComboBox edit= (const QComboBox) curlayout->itemAtPosition(i, 1)->widget();
+            body.append(QJsonObject());
+            body.last().toObject().insert("type","TextualBody");
+            body.last().toObject().insert("purpose",lab.text().replace(":",""));
+            body.last().toObject().insert("value",edit.currentText());
+            body.last().toObject().insert("source",lab.text().replace(":",""));
+        }else if(instanceof<QListWidget>(curlayout->itemAtPosition(i, 1)->widget())){
+            QListWidget edit= (const QListWidget) curlayout->itemAtPosition(i, 1)->widget();
+            for(int j;j<edit.count();j++){
+                body.append(QJsonObject());
+                body.last().toObject().insert("type","TextualBody");
+                body.last().toObject().insert("purpose",lab.text().replace(":",""));
+                body.last().toObject().insert("value", edit.item(j)->text());
+                body.last().toObject().insert("source",lab.text().replace(":",""));
+            }
+        }
     }
+    this->curanno=body;
     return result;
 }
 
