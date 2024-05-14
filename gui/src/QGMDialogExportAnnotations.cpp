@@ -9,9 +9,10 @@
 #include <QJsonDocument>
 
 
-QGMDialogExportAnnotations::QGMDialogExportAnnotations(std::list<Annotation> annotations,QWidget *parent){
+QGMDialogExportAnnotations::QGMDialogExportAnnotations(std::list<Annotation> annotations,Mesh* themesh,QWidget *parent){
     this->annotations=annotations;
     int linecounter=0;
+    this->themesh=themesh;
     this->setWindowTitle("Export Annotations");
     auto * gridLayout = new QGridLayout(this);
     auto* annostylecboxLabel=new QLabel();
@@ -22,6 +23,8 @@ QGMDialogExportAnnotations::QGMDialogExportAnnotations(std::list<Annotation> ann
     annostylecbox->addItem("SVGSelector (Web Annotation Data Model)");
     annostylecbox->addItem("VertexList Selector (Web Annotation Data Model)");
     annostylecbox->addItem("MeshID Selector (Web Annotation Data Model)");
+    annostylecbox->addItem("PLY embedded in JSON (Web Annotation Data Model)");
+    annostylecbox->addItem("Individual PLY Files");
     gridLayout->addWidget(annostylecbox,linecounter,1);
     linecounter+=1;
     auto* onlyBorderCheckBox=new QCheckBox("Only Border");
@@ -54,10 +57,14 @@ void QGMDialogExportAnnotations::exportAnnotations(){
         format="MeshIDSelector";
     }else if(chosenformat.contains("VertexList")){
         format="MeshVertexSelector";
+    }else if(chosenformat.contains("Individual PLY Files")){
+        format="PLYFiles";
+    }else if(chosenformat.contains("PLY embedded in JSON")){
+        format="PLYSelector";
     }
     QJsonArray result=QJsonArray();
     for(Annotation curanno:this->annotations){
-        QJsonObject curannojson = curanno.getAnnotation(format);
+        QJsonObject curannojson = curanno.getAnnotation(format,this->themesh,"");
         result.append(curannojson);
     }
     QByteArray ba = QJsonDocument(result).toJson();

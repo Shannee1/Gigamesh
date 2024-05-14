@@ -50,11 +50,14 @@
 #include "MeshIO/TxtReader.h"
 #include "MeshIO/RegularGridTxtReader.h"
 
+#include "MeshIO/ColladaWriter.h"
 #include "MeshIO/PlyWriter.h"
 #include "MeshIO/ObjWriter.h"
 #include "MeshIO/VRMLWriter.h"
 #include "MeshIO/TxtWriter.h"
 #include "MeshIO/gltfWriter.h"
+#include "MeshIO/X3DWriter.h"
+#include "MeshIO/XYZWriter.h"
 
 
 #include "util/triangulation.h"
@@ -409,7 +412,7 @@ bool MeshIO::writeFilePrimProps(
                 std::vector<sFaceProperties>& rFaceProps
 ) {
 	string fileExtension = rFileName.extension().string();
-
+    std::cout << "WRITE FILE: " << rFileName;
 	if(fileExtension.empty())
 	{
 		LOG::error() << "[MeshIO::" << __FUNCTION__ << "] No extension/type for file '" << rFileName << "' specified!\n";
@@ -437,21 +440,20 @@ bool MeshIO::writeFilePrimProps(
 	bool fileWriteOk = false;
 	if( fileExtension == "obj" ) {
 		writer = std::make_unique<ObjWriter>();
-	}
-	else if( fileExtension == "wrl" ) {
+	}else if( fileExtension == "wrl" ) {
 		writer = std::make_unique<VRMLWriter>();
-	}
-	else if( fileExtension == "txt" ) {
+	}else if( fileExtension == "txt" ) {
 		writer = std::make_unique<TxtWriter>();
-	}
-	else if( fileExtension == "xyz" ) {
-		writer = std::make_unique<TxtWriter>();
-	}
-	else if( fileExtension == "ply" ) {
+	}else if( fileExtension == "xyz" ) {
+        writer = std::make_unique<XYZWriter>();
+    }else if( fileExtension == "ply" ) {
 		writer = std::make_unique<PlyWriter>();
-	}
-    else if( fileExtension == "gltf" ) {
+	}else if( fileExtension == "gltf" ) {
         writer = std::make_unique<GltfWriter>();
+    }else if( fileExtension == "x3d" ) {
+        writer = std::make_unique<X3DWriter>();
+    }else if( fileExtension == "dae" ) {
+        writer = std::make_unique<ColladaWriter>();
     }
 
 

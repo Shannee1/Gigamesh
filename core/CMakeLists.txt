@@ -103,7 +103,13 @@ set(PUBLIC_HEADERS_CORE ${CMAKE_CURRENT_SOURCE_DIR}/include/GigaMesh/printbuildi
 						${CMAKE_CURRENT_SOURCE_DIR}/include/GigaMesh/mesh/compfeaturevecs.h
                                                 ${CMAKE_CURRENT_SOURCE_DIR}/include/GigaMesh/mesh/octree.h
                                                 ${CMAKE_CURRENT_SOURCE_DIR}/include/GigaMesh/mesh/octnode.h
-						)
+		mesh/MeshIO/X3DWriter.cpp
+		mesh/MeshIO/X3DWriter.h
+		mesh/MeshIO/XYZWriter.cpp
+		mesh/MeshIO/XYZWriter.h
+		mesh/MeshIO/ColladaWriter.cpp
+		mesh/MeshIO/ColladaWriter.h
+)
 
 add_library(gigameshCore STATIC ${SOURCES_CORE} ${HEADERS_CORE} ${PUBLIC_HEADERS_CORE})
 

@@ -12,7 +12,7 @@
 
 class Annotation {
     public:
-        enum exportFormats{WKTSelector,WKTPolygonSelector, SVGSelector, MeshIDSelector,MeshLabelSelector,MeshVertexSelector};
+        enum exportFormats{WKTSelector,WKTPolygonSelector, SVGSelector, PLYSelector,PLYFiles, MeshIDSelector,MeshLabelSelector,MeshVertexSelector};
         enum annotationType{Character, Word, Line, Surface};
         Annotation();
         Annotation(QJsonObject annojson,QString annoid, MeshQt* mesh,QString side="noside");
@@ -42,7 +42,7 @@ class Annotation {
 
         void setAnnotationBody(QJsonObject newbody);
 
-        QJsonObject getAnnotation(std::string exportFormats);
+        QJsonObject getAnnotation(std::string exportFormats,Mesh* themesh,QString outpath);
 
         std::string toHTML();
 

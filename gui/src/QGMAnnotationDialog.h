@@ -22,17 +22,20 @@ class QGMAnnotationDialog : public QDialog {
 
     QListWidget* ledit;
 
+    QList<QString> inputmap;
+
 public:
     //QGMAnnotationDialog(QJsonObject templatejson,QWidget *parent = nullptr);
     QGMAnnotationDialog(QJsonObject templatejson, Annotation annodata,QWidget *parent = nullptr);
     void createInputFieldByType(const QString& inputtype,int linecounter,const QString& key,QGridLayout* gridLayout,QWidget* curwidget,const QJsonObject& data,bool hasdata,QJsonArray curanno);
     void addCategoryIndependentFields(QWidget* curwidget,int linecounter,QGridLayout* gridLayout,QJsonArray curanno,QJsonArray tags);
-    void applyChanges();
-    void addTag();
+
+
     signals:
 
 public slots:
-
+    void applyChanges();
+    void addTag();
     // QWidget interface
 protected:
 

@@ -133,7 +133,7 @@ std::string Annotation::toHTML(){
 }
 
 
-QJsonObject Annotation::getAnnotation(std::string exports){
+QJsonObject Annotation::getAnnotation(std::string exports,Mesh* themesh,QString outpath){
     QJsonObject result=QJsonObject();
     QString annoid=QString::fromStdString(annotationid);
     QJsonObject annotation;
@@ -150,7 +150,10 @@ QJsonObject Annotation::getAnnotation(std::string exports){
     annotation.insert("body",body);
     std::cout << "Export in format "<< exports << "\n";
     QJsonObject selector;
-    if(exports=="MeshIDSelector"){
+    if(exports=="PLYFiles"){
+        Mesh* resmesh=this->getAnnotationMesh(themesh);
+        resmesh->writeFile(outpath.toStdString()+this->annotationid+".ply");
+    }else if(exports=="MeshIDSelector"){
         std::cout << exports << "\n" ;
         selector["type"]="MeshIDSelector";
         QJsonArray valuearray=selector.find("value")->toArray();
@@ -173,6 +176,9 @@ QJsonObject Annotation::getAnnotation(std::string exports){
         selector.insert("type","WKTSelector");
         selector.insert("value",QString::fromStdString("POLYGON Z(("+std::to_string(minX)+" "+std::to_string(minY)+" "+std::to_string(minZ)+","+std::to_string(maxX)+" "+std::to_string(maxY)+" "+std::to_string(minZ)+","+std::to_string(minX)+" "+std::to_string(maxY)+" "+std::to_string(minZ)+","+std::to_string(minX)+" "+std::to_string(minY)+" "+std::to_string(maxZ)+","+std::to_string(maxX)+" "+std::to_string(minY)+" "+std::to_string(maxZ)+","+std::to_string(maxX)+" "+std::to_string(maxY)+" "+std::to_string(maxZ)+","+std::to_string(minX)+" "+std::to_string(minY)+" "+std::to_string(maxZ)+"))"));
 
+    }else if(exports=="PLYSelector"){
+        selector.insert("type","PLYSelector");
+        //selector.insert("value",this->getAnnotationMesh(themesh).));
     }else if(exports=="SVGSelector"){
         selector.insert("type","SvgSelector");
         selector.insert("value",QString::fromStdString("<svg><polygon points=\""+std::to_string(minX)+","+std::to_string(minY)+" "+std::to_string(minX)+","+std::to_string(maxY)+" "+std::to_string(maxX)+","+std::to_string(maxY)+" "+std::to_string(maxX)+","+std::to_string(minY)+"\"></polygon></svg>"));

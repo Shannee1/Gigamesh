@@ -99,7 +99,8 @@ QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation ann
 
 void QGMAnnotationDialog::applyChanges(){
     std::cout << "Apply Changes" << endl;
-
+    this->saveAnnotationJSON();
+    this->close();
 }
 
 QStringList getTagsFromAnnotation(const QJsonArray& curanno){
@@ -194,34 +195,40 @@ QJsonObject QGMAnnotationDialog::saveAnnotationJSON(){
     QJsonObject result=QJsonObject();
     result.insert("body",QJsonArray());
     QJsonArray body=result.value("body").toArray();
+    std::cout << "SAVE ANNOTATION: START " << "\n";
     auto *curlayout = dynamic_cast<QGridLayout *>(this->tabw->currentWidget()->layout());
     for(int i=0;i<curlayout->rowCount();i++){
+        std::cout << "ROWCOUNT: " << std::to_string(i) << "\n";
         QLabel lab= (const QLabel) curlayout->itemAtPosition(i, 0)->widget();
-        if(instanceof<QLineEdit>(curlayout->itemAtPosition(i, 1)->widget())){
+        std::cout << "ROW: " << lab.text().toStdString() << "\n";
+        std::cout << "ROW: " << std::to_string(curlayout->itemAtPosition(i, 1)->widget()->height()) << "\n";
+        if(this->inputmap.at(i)=="QLineEdit"){
             QLineEdit edit= (const QLineEdit) curlayout->itemAtPosition(i, 1)->widget();
             body.append(QJsonObject());
             body.last().toObject().insert("type","TextualBody");
             body.last().toObject().insert("purpose",lab.text().replace(":",""));
             body.last().toObject().insert("value",edit.text());
             body.last().toObject().insert("source",lab.text().replace(":",""));
-        }else if(instanceof<QComboBox>(curlayout->itemAtPosition(i, 1)->widget())){
+        }else if(this->inputmap.at(i)=="QComboBox"){
+            std::cout << "A QComboBox "<< "\n";
             QComboBox edit= (const QComboBox) curlayout->itemAtPosition(i, 1)->widget();
             body.append(QJsonObject());
             body.last().toObject().insert("type","TextualBody");
             body.last().toObject().insert("purpose",lab.text().replace(":",""));
             body.last().toObject().insert("value",edit.currentText());
             body.last().toObject().insert("source",lab.text().replace(":",""));
-        }else if(instanceof<QListWidget>(curlayout->itemAtPosition(i, 1)->widget())){
+        }/*else if(instanceof<QListWidget>(curlayout->itemAtPosition(i, 1)->widget())){
             QListWidget edit= (const QListWidget) curlayout->itemAtPosition(i, 1)->widget();
-            for(int j;j<edit.count();j++){
+            for(int j=0;j<edit.count();j++){
                 body.append(QJsonObject());
                 body.last().toObject().insert("type","TextualBody");
                 body.last().toObject().insert("purpose",lab.text().replace(":",""));
                 body.last().toObject().insert("value", edit.item(j)->text());
                 body.last().toObject().insert("source",lab.text().replace(":",""));
             }
-        }
+        }*/
     }
+    std::cout << "SAVE ANNOTATION: "<<std::to_string(body.count()) << endl;
     this->curanno=body;
     return result;
 }
@@ -235,6 +242,7 @@ void QGMAnnotationDialog::createInputFieldByType(const QString& inputtype,int li
         auto * label = new QLabel(curwidget);
         label->setText(key+":");
         QRegExpValidator regValidator( numberregex, 0 );
+        this->inputmap.append("QLineEdit");
         auto * edit =new QLineEdit(curwidget);
         if(valmap.contains(key)){
             edit->setText(valmap.value(key));
@@ -250,6 +258,7 @@ void QGMAnnotationDialog::createInputFieldByType(const QString& inputtype,int li
         auto * label = new QLabel(curwidget);
         label->setText(key+":");
         auto * cbox=new QComboBox(curwidget);
+        this->inputmap.append("QComboBox");
         int selectedindex=-1;
         QString selectedval=*new QString("");
         if(valmap.contains(key)){
@@ -273,6 +282,7 @@ void QGMAnnotationDialog::createInputFieldByType(const QString& inputtype,int li
     }else if(inputtype=="paleocodage"){
         auto * label = new QLabel(curwidget);
         label->setText(key+":");
+        this->inputmap.append("QLineEdit");
         QRegExpValidator regValidator( numberregex, 0 );
         auto * edit =new QLineEdit(curwidget);
         if(valmap.contains(key)){
