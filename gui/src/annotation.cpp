@@ -95,7 +95,7 @@ Mesh* Annotation::getAnnotationMesh(Mesh* themesh){
     return new Mesh(someFaces);
 }
 
-bool Annotation::bboxToVertexIds(MeshQt* meshToTest,bool twodimensional,std::string side){
+bool Annotation::bboxToVertexIds(MeshQt* meshToTest,bool twodimensional,const std::string side){
     if(twodimensional){
         this->vertices=meshToTest->getVerticesIn2DBBOX(minX,maxX,minY,maxY,this->bboxVertices);
         determineZBBOXFromVertices(side);

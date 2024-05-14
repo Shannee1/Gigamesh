@@ -6842,7 +6842,7 @@ std::set<Vertex*> Mesh::getVerticesInBBOX(double minX, double maxX, double minY,
     return result;
 }
 
-std::set<Vertex*> Mesh::getVerticesIn2DBBOX(double minX, double maxX, double minY, double maxY,std::set<Vertex*> bboxVertices){
+std::set<Vertex*> Mesh::getVerticesIn2DBBOX(double minX, double maxX, double minY, double maxY,std::set<Vertex*>& bboxVertices){
     std::set<Vertex*> result;
     double borderThickness=0.5;
     for( auto const& currVertex: mVertices ) {

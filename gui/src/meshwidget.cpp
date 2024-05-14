@@ -6905,7 +6905,7 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
     mMeshVisual->getWorldPointOnMesh( rEvent->x(), rEvent->y(), &clickPos );
     //QToolTip::showText(rEvent->globalPos(),QString::fromStdString("My cool tooltip! "+std::to_string(clickPos.getX())+" - "+std::to_string(clickPos.getY())+" - "+std::to_string(clickPos.getZ())+" - "+std::to_string(rEvent->x())+" - "+std::to_string(dx)+" - "+std::to_string(rEvent->y())+" "+std::to_string(dy)+" - "+std::to_string(mLastPos.x())));
     double ylength=this->getMesh()->getMaxY()-this->getMesh()->getMinY();
-    if(this->annotationlist.size()>0){
+    if(!annotationlist.empty()){
         bool finished=false;
         if(!mLastAnnotation.isempty){
             if(mLastAnnotation.pointInAnnotationBBOX3D(clickPos.getX(),ylength-clickPos.getY(),clickPos.getZ())){
@@ -6919,7 +6919,7 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
                 if (anno.pointInAnnotationBBOX3D(clickPos.getX(), ylength-clickPos.getY(), clickPos.getZ())) {
                     QToolTip::showText(rEvent->globalPos(), QString::fromStdString(anno.toHTML()));
                     std::cout << "BBOX Vertices: " << std::to_string(anno.bboxVertices.size()) << "All Vertices: " << std::to_string(anno.vertices.size()) << endl;
-                    this->getMesh()->selectVertices(anno.vertices, 2.0);
+                    this->getMesh()->selectVertices(anno.bboxVertices, 2.0);
                     mLastAnnotation = anno;
                     break;
                 }
