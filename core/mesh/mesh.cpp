@@ -6844,17 +6844,27 @@ std::set<Vertex*> Mesh::getVerticesInBBOX(double minX, double maxX, double minY,
 
 std::set<Vertex*> Mesh::getVerticesIn2DBBOX(double minX, double maxX, double minY, double maxY,std::set<Vertex*> bboxVertices){
     std::set<Vertex*> result;
+    double borderThickness=0.5;
     for( auto const& currVertex: mVertices ) {
         double x=currVertex->getX();
         double y=currVertex->getY();
         double z=currVertex->getZ();
         if(x>=minX && x<=maxX && y>=minY && y<=maxY){
             result.insert(currVertex);
-            if(x==minX || y==minY || x==maxX || y==maxY){
-                cout << "Adding point to BBOX Vertices: " << std::to_string(x) << " " << std::to_string(y) << " " << std::to_string(z) << endl;
+            if (x >= minX && x <= (minX+borderThickness) && y > minY && y < maxY){
+                bboxVertices.insert(currVertex);
+            }
+            else if (x <= maxX && x>=(maxX-borderThickness) && y > minY && y < maxY){
+                bboxVertices.insert(currVertex);
+            }
+            else if (y >= minY && y<=(minY+borderThickness) && x > minX && x < maxX){
+                bboxVertices.insert(currVertex);
+            }
+            else if (y <= maxY && y>=(maxY-borderThickness) && x > minX && x < maxX){
                 bboxVertices.insert(currVertex);
             }
         }
+        //cout << "BBOX Vertices found: " << std::to_string(bboxVertices.size()) << "\n";
     }
     return result;
 }

@@ -42,7 +42,7 @@ class Annotation {
 
         void setAnnotationBody(QJsonObject newbody);
 
-        QJsonObject getAnnotation(std::string exportFormats,Mesh* themesh,QString outpath);
+        QJsonObject getAnnotation(std::string exportFormats,Mesh* themesh,QString outpath,bool borderOnly);
 
         std::string toHTML();
 

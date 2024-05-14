@@ -133,7 +133,7 @@ std::string Annotation::toHTML(){
 }
 
 
-QJsonObject Annotation::getAnnotation(std::string exports,Mesh* themesh,QString outpath){
+QJsonObject Annotation::getAnnotation(std::string exports,Mesh* themesh,QString outpath,bool borderOnly){
     QJsonObject result=QJsonObject();
     QString annoid=QString::fromStdString(annotationid);
     QJsonObject annotation;
@@ -152,25 +152,42 @@ QJsonObject Annotation::getAnnotation(std::string exports,Mesh* themesh,QString 
     QJsonObject selector;
     if(exports=="PLYFiles"){
         Mesh* resmesh=this->getAnnotationMesh(themesh);
-        resmesh->writeFile(outpath.toStdString()+this->annotationid+".ply");
+        resmesh->writeFile(themesh->getBaseName().string()+"_anno_"+this->annotationid+".ply");
     }else if(exports=="MeshIDSelector"){
         std::cout << exports << "\n" ;
         selector["type"]="MeshIDSelector";
         QJsonArray valuearray=selector.find("value")->toArray();
-        for(Vertex* vert:vertices){
-            valuearray.append(vert->getIndex());
+        if(borderOnly){
+            for(Vertex* vert:bboxVertices){
+                valuearray.append(vert->getIndex());
+            }
+        }else{
+            for(Vertex* vert:vertices){
+                valuearray.append(vert->getIndex());
+            }
         }
         selector["value"]=valuearray;
     }else if(exports=="MeshVertexSelector"){
         selector["type"]="MeshVertexSelector";
         QJsonArray valuearray=selector.find("value")->toArray();
-        for(Vertex* vert:vertices){
-            QJsonArray xyzarray=QJsonArray();
-            xyzarray.append(vert->getX());
-            xyzarray.append(vert->getY());
-            xyzarray.append(vert->getZ());
-            valuearray.append(xyzarray);
+        if(borderOnly){
+            for(Vertex* vert:bboxVertices){
+                QJsonArray xyzarray=QJsonArray();
+                xyzarray.append(vert->getX());
+                xyzarray.append(vert->getY());
+                xyzarray.append(vert->getZ());
+                valuearray.append(xyzarray);
+            }
+        }else{
+            for(Vertex* vert:vertices){
+                QJsonArray xyzarray=QJsonArray();
+                xyzarray.append(vert->getX());
+                xyzarray.append(vert->getY());
+                xyzarray.append(vert->getZ());
+                valuearray.append(xyzarray);
+            }
         }
+
         selector["value"]=valuearray;
     }else if(exports=="WKTSelector"){
         selector.insert("type","WKTSelector");

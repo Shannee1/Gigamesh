@@ -19,6 +19,7 @@ Q_OBJECT
     std::list<Annotation> annotations;
     QComboBox* annostylecbox;
     Mesh* themesh;
+    QCheckBox* onlyBorderCheckBox;
 public:
     QGMDialogExportAnnotations(std::list<Annotation> annotations,Mesh* themesh,QWidget *parent = 0);
 public slots:

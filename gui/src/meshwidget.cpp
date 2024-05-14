@@ -6875,7 +6875,7 @@ bool MeshWidget::exportAnnotationAsMesh(){
 bool MeshWidget::exportAnnotationAsJSON(){
     QString fileName = QFileDialog::getSaveFileName(this, "Save File", "/home/", "Text Files (*.ply);;All Files (*.*)");
     if (!fileName.isEmpty()) {
-        QJsonObject annojson=mLastAnnotation.getAnnotation("WKTSelector",this->getMesh(),fileName);
+        QJsonObject annojson=mLastAnnotation.getAnnotation("WKTSelector",this->getMesh(),fileName,false);
         QJsonDocument doc(annojson);
         QFile jsonFile(fileName);
         jsonFile.open(QFile::WriteOnly);
