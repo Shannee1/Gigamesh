@@ -213,6 +213,7 @@
     <addaction name="actionEdit_Annotation_Templates"/>
     <addaction name="separator"/>
     <addaction name="actionLabelKMeansVertPos"/>
+    <addaction name="actionColor_Annotations"/>
    </widget>
    <widget class="QMenu" name="menuFunctions">
     <property name="title">
@@ -4853,6 +4854,11 @@ The latter will be shown, when the processing has finished.</string>
   <action name="actionExport_Annotations">
    <property name="text">
     <string>Export Annotations</string>
+   </property>
+  </action>
+  <action name="actionColor_Annotations">
+   <property name="text">
+    <string>Color Annotations</string>
    </property>
   </action>
  </widget>

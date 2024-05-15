@@ -3794,9 +3794,9 @@ void MeshQt::labelVerticesInBBOX( double minX, double maxX, double minY, double 
         minZ=mMinZ;
         maxZ=0.0;
     }
-    if(!border){
-        this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_BACKGROUND,annocolor);
-    }
+    //if(!border){
+        this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_SOLID,annocolor);
+    //}
     for( auto const& currVertex: mVertices ) {
         double x = currVertex->getX();
         double y = currVertex->getY();
@@ -3804,7 +3804,7 @@ void MeshQt::labelVerticesInBBOX( double minX, double maxX, double minY, double 
         if(border){
             if (z > minZ && z < maxZ){
                 if(x >= minX && x <= (minX+borderThickness) && y > minY && y < maxY){
-                    this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_BACKGROUND,bordercolor);
+                    this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_BORDER,bordercolor);
                     result.insert(currVertex);
                     //cout<<"MinX Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
                     //cout<<"MinX Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
@@ -3829,7 +3829,7 @@ void MeshQt::labelVerticesInBBOX( double minX, double maxX, double minY, double 
                 }
                 if(!onlyBorder){
                     if (x > minX && x < maxX && y > minY && y < maxY && z > minZ && z < maxZ) {
-                        this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_BACKGROUND,annocolor);
+                        this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_SOLID,annocolor);
                         result.insert(currVertex);
                     }
                 }

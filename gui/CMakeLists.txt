@@ -112,6 +112,8 @@ set(GUI_UI_FILES
 		src/colortemplate.h
 		src/QGMColorTemplateDialog.cpp
 		src/QGMColorTemplateDialog.h
+		src/QGMColorAnnotationDialog.cpp
+		src/QGMColorAnnotationDialog.h
 )
 
 #NOTE: instead of adding translations via resources, the ts-files can also be build by

@@ -100,6 +100,8 @@ public slots: // ... overloaded from MeshWidgetParams:s
     bool exportAnnotationAsMesh();
     bool exportAnnotationAsJSON();
     bool openEditAnnotationDialog();
+    void colorAnnotationsByAttribute(const QString& attribute);
+    std::set<std::string> getCommonAnnotationFieldNames();
     bool addAnnotation(Annotation anno);
     bool removeAnnotation(QString annoid);
     std::list<Annotation> getAnnotationsByCoordinate(double x,double y, double z);

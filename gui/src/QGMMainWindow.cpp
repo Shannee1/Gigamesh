@@ -40,6 +40,7 @@
 #include "QGMDialogWebView.h"
 #include "QGMAnnotationTemplateDialog.h"
 #include "QGMAnnotationDialog.h"
+#include "QGMColorAnnotationDialog.h"
 #include "QGMDialogImportAnnotations.h"
 #include "QGMDialogExportAnnotations.h"
 
@@ -329,6 +330,7 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
     QObject::connect( actionAnnotateRendering,      &QAction::triggered, this, &QGMMainWindow::openAnnotationWindow  );
     QObject::connect( actionExport_Annotations,      &QAction::triggered, this, &QGMMainWindow::exportAnnotations);
     QObject::connect(actionLoad_Annotations_From_File, &QAction::triggered, this, &QGMMainWindow::loadAnnotationsFromFile);
+    QObject::connect(actionColor_Annotations, &QAction::triggered, this, &QGMMainWindow::colorAnnotations);
     QObject::connect(actionEdit_Annotation_Templates, &QAction::triggered, this, &QGMMainWindow::createAnnotationTemplateWindow);
     QObject::connect(actionGet_Label_Info, &QAction::triggered, this, &QGMMainWindow::createAnnotationWindowFromTemplate);
 
@@ -1990,6 +1992,11 @@ void QGMMainWindow::exportAnnotations(){
 void QGMMainWindow::loadAnnotationsFromFile() {
     QGMDialogImportAnnotations(mMeshWidget,this).exec();
 }
+
+void QGMMainWindow::colorAnnotations() {
+    QGMColorAnnotationDialog(mMeshWidget).exec();
+}
+
 
 
 // --- DYNAMIC MENU -----------------------------------------------------------------------

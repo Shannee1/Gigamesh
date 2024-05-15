@@ -38,9 +38,11 @@ class Annotation {
 
         bool bboxToVertexIds(MeshQt* meshToTest, bool twodimensional,std::string side);
 
-        QJsonObject getAnnotationBody();
+        QJsonArray getAnnotationBody();
 
         void setAnnotationBody(QJsonObject newbody);
+
+        void setLabelIDs(double labelid);
 
         QJsonObject getAnnotation(std::string exportFormats,Mesh* themesh,QString outpath,bool borderOnly);
 
@@ -50,9 +52,13 @@ class Annotation {
 
         QJsonArray  annotationbody;
 
+        std::set<std::string> fieldnames;
+
     private:
 
         std::string annotationtarget;
+
+
 
 
 

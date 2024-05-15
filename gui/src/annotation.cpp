@@ -25,6 +25,9 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh,QString
             annotationbody=annojsonn.find("body")->toArray();
         }
     }
+    for(QJsonValue elem:annotationbody){
+        fieldnames.insert(elem.toObject().find("purpose").value().toString().toStdString());
+    }
     QJsonObject selectorObject=annojson.find("target")->toObject().find("selector")->toObject();
     QString annotype=selectorObject.find("type")->toString();
     QString annovalue = selectorObject.find("value")->toString();
@@ -105,6 +108,14 @@ bool Annotation::bboxToVertexIds(MeshQt* meshToTest,bool twodimensional,const st
     return true;
 }
 
+void Annotation::setLabelIDs(double labelid){
+    for(auto* vert:this->vertices){
+        vert->setLabel(labelid);
+    }
+    this->themesh->labelSelectedVertices(this->vertices,false);
+    //this->themesh->labelVertices(this->vertices, seeds);
+}
+
 bool Annotation::pointInAnnotationBBOX3D(double x, double y, double z){
     if(x>minX && x<maxX && y>minY && y<maxY && z>minZ && z<maxZ){
         return true;
@@ -120,6 +131,10 @@ bool Annotation::pointInAnnotationBBOX2D(double x, double y){
 
 std::string Annotation::toString(){
     return QJsonDocument(annotationbody).toJson(QJsonDocument::Compact).toStdString();
+}
+
+QJsonArray Annotation::getAnnotationBody(){
+    return this->annotationbody;
 }
 
 std::string Annotation::toHTML(){

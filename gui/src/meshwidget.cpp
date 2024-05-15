@@ -6885,6 +6885,46 @@ bool MeshWidget::exportAnnotationAsJSON(){
 }
 
 
+std::set<std::string> MeshWidget::getCommonAnnotationFieldNames(){
+    std::set<std::string> result;
+    if(this->annotationlist.empty()){
+        return result;
+    }
+    for(const Annotation& anno:this->annotationlist){
+        for(const std::string& field:anno.fieldnames){
+            result.insert(field);
+        }
+    }
+    return result;
+}
+
+void MeshWidget::colorAnnotationsByAttribute(const QString& attribute){
+    if(this->annotationlist.empty()){
+        return;
+    }
+    this->getMesh()->labelVerticesNone();
+    std::map<std::string,double> seenatts;
+    double labelidcounter=1.0;
+    for(Annotation anno:this->annotationlist){
+        QJsonArray annobody=anno.getAnnotationBody();
+        for(int i=0;i<annobody.count();i++){
+            if(annobody.at(i).toObject().contains(attribute)){
+                if(annobody.at(i).toObject().find(attribute)->toObject().contains("value")){
+                    std::string thevalue=annobody.at(i).toObject().find(attribute)->toObject().find("value")->toString().toStdString();
+                    if(seenatts.find(thevalue)==seenatts.end()){
+                        anno.setLabelIDs(seenatts[thevalue]);
+                    }else{
+                        seenatts[thevalue]=labelidcounter++;
+                        anno.setLabelIDs(labelidcounter-1);
+                    }
+                }
+            }
+        }
+    }
+    //this->getMesh()->changedVertFuncVal();
+    this->getMesh()->labelsChanged();
+    this->getMesh()->changedMesh();
+}
 
 //! Handles the event when the mouse is moved.
 //! See also MeshWidgetParams::MOUSE_MODE

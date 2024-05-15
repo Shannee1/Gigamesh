@@ -100,6 +100,7 @@ public slots:
 	void load(const QString& rFileName );
 	bool loadLast();
     void loadAnnotationsFromFile();
+    void colorAnnotations();
     void exportAnnotations();
 	bool fileOpen( QAction* rFileAction );
 	void menuImportFunctionValues();
