@@ -40,7 +40,9 @@ class Annotation {
 
         QJsonArray getAnnotationBody();
 
-        void setAnnotationBody(QJsonObject newbody);
+        void setAnnotationBody(QJsonArray newbody);
+
+        void getRelativePositions(std::list<Annotation*> otherannotations);
 
         void setLabelIDs(double labelid);
 
@@ -50,19 +52,20 @@ class Annotation {
 
         std::string toString();
 
-        QJsonArray  annotationbody;
+        QJsonArray annotationbody;
 
         std::set<std::string> fieldnames;
 
+        Annotation* leftOf;
+        Annotation* rightOf;
+        Annotation* above;
+        Annotation* below;
+
     private:
 
+
+
         std::string annotationtarget;
-
-
-
-
-
-
 
 };
 

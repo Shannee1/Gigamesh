@@ -7267,6 +7267,7 @@ bool Mesh::labelVerticesEqualFV() {
 	return true;
 }
 
+
 //! Labels vertices having the same color.
 //! Nan-values become background label.
 bool Mesh::labelVerticesEqualRGB() {

@@ -45,7 +45,8 @@ public:
 		FLAG_09 = 1U<<9,
 		FLAG_10 = 1U<<10,
 		FLAG_11 = 1U<<11,
-		FLAG_12 = 1U<<12
+		FLAG_12 = 1U<<12,
+        FLAG_13 = 1U<<13
 	};
 
 	// Single flags

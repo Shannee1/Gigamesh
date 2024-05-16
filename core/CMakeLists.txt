@@ -109,6 +109,12 @@ set(PUBLIC_HEADERS_CORE ${CMAKE_CURRENT_SOURCE_DIR}/include/GigaMesh/printbuildi
 		mesh/MeshIO/XYZWriter.h
 		mesh/MeshIO/ColladaWriter.cpp
 		mesh/MeshIO/ColladaWriter.h
+		mesh/MeshIO/JSONWriter.cpp
+		mesh/MeshIO/JSONWriter.h
+		mesh/MeshIO/OFFWriter.cpp
+		mesh/MeshIO/OFFWriter.h
+		mesh/MeshIO/STLWriter.cpp
+		mesh/MeshIO/STLWriter.h
 )
 
 add_library(gigameshCore STATIC ${SOURCES_CORE} ${HEADERS_CORE} ${PUBLIC_HEADERS_CORE})

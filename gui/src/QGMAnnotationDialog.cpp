@@ -15,7 +15,7 @@
 #include <QDialog>
 
 
-QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation annodata,QWidget *parent) : QDialog( parent) {
+QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation* annodata,QWidget *parent) : QDialog( parent) {
     if(annotemplate.empty()){
         QFile jsonfile;
         jsonfile.setFileName("C:/Users/timo.homburg/git/GigaMesh/cmake-build-debug/annotemplates.json");
@@ -30,8 +30,8 @@ QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation ann
     int linecounter=0;
     auto tablabels=new QHash<QString,int>();
     auto * titlelabel=new QLabel(this);
-    QString firstkey=QString::fromStdString(annodata.annotationid);
-    curanno=annodata.annotationbody;
+    QString firstkey=QString::fromStdString(annodata->annotationid);
+    curanno=annodata->annotationbody;
     qDebug()<<curanno << endl;
     std::cout << "Annotationbody Array Length: " << curanno.size() << endl;
     titlelabel->setText("Edit Annotation "+firstkey);

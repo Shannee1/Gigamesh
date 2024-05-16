@@ -2,6 +2,8 @@
 // Created by timo.homburg on 29.04.2024.
 //
 #include "annotation.h"
+
+#include <utility>
 #include "GigaMesh/mesh/mesh.h"
 #include "meshQt.h"
 #include "../../core/mesh/MeshIO/PlyWriter.h"
@@ -64,14 +66,32 @@ Annotation::Annotation(QJsonObject annojsonn,QString annoid,MeshQt* mesh,QString
 }
 
 bool Annotation::determineZBBOXFromVertices(std::string side){
-    double minZz=DBL_MAX;
-    double maxZz=DBL_MIN;
+    auto minZz=DBL_MAX;
+    auto maxZz=DBL_MIN;
     for (auto it = vertices.begin(); it != vertices.end();){
         if(side=="front" && (*it)->getZ()<0){
             it=vertices.erase(it);
             continue;
-        }else if(side=="back" && (*it)->getZ()>0){
+        }
+        if(side=="back" && (*it)->getZ()>0){
             it=vertices.erase(it);
+            continue;
+        }
+        if((*it)->getZ()<minZz){
+            minZz=(*it)->getZ();
+        }
+        if((*it)->getZ()>maxZz){
+            maxZz=(*it)->getZ();
+        }
+        ++it;
+    }
+    for(auto it= bboxVertices.begin();it!=bboxVertices.end();){
+        if(side=="front" && (*it)->getZ()<0){
+            it=bboxVertices.erase(it);
+            continue;
+        }
+        if(side=="back" && (*it)->getZ()>0){
+            it=bboxVertices.erase(it);
             continue;
         }
         if((*it)->getZ()<minZz){
@@ -108,11 +128,59 @@ bool Annotation::bboxToVertexIds(MeshQt* meshToTest,bool twodimensional,const st
     return true;
 }
 
+void Annotation::setAnnotationBody(QJsonArray newbody){
+    this->annotationbody=std::move(newbody);
+}
+
+void Annotation::getRelativePositions(std::list<Annotation*> otherannotations){
+    std::cout << "GET RELATIVE POSITIONS!!!!! " << endl;
+    auto leftOfMaxX=DBL_MIN, rightOfMinX=DBL_MAX,aboveMinY=DBL_MAX, belowMaxY=DBL_MIN;
+    below=new Annotation();
+    above=new Annotation();
+    leftOf=new Annotation();
+    rightOf=new Annotation();
+    for(Annotation* oanno:otherannotations){
+        if(this->maxX<oanno->minX){
+            if(oanno->minX>leftOfMaxX){
+                std::cout << "FOUND NEW LEFT OF!!!!!! " << std::to_string(leftOfMaxX) << " "<< this->minX << " " << this->maxX << "\n";
+                if(leftOf->isempty || (!leftOf->isempty && oanno->minX<leftOf->minX && (this->minY<oanno->minY<this->maxY || this->minY<oanno->maxY<this->maxY))){
+                    leftOfMaxX=oanno->minX;
+                    leftOf=oanno;
+                    std::cout << "FOUND NEW LEFT OF!!!!!!22222 " << std::to_string(leftOfMaxX) << " "<< this->minX << " " << this->maxX << "\n";
+                }
+            }
+        }
+        if(this->minX<oanno->maxX){
+            if(oanno->maxX>rightOfMinX){
+                std::cout << "FOUND NEW RIGHT OF!!!!!!\n";
+                rightOfMinX=oanno->maxX;
+                rightOf=oanno;
+            }
+        }
+        if(this->maxY<oanno->minY){
+            if(oanno->minY<aboveMinY){
+                std::cout << "FOUND NEW ABOVE OF!!!!!!\n";
+                aboveMinY=oanno->minY;
+                above=oanno;
+            }
+        }
+        if(this->maxY<oanno->minY){
+            if(oanno->minY>belowMaxY){
+                std::cout << "FOUND NEW BELOW OF!!!!!!\n";
+                belowMaxY=oanno->minY;
+                below=oanno;
+            }
+        }
+    }
+}
+
 void Annotation::setLabelIDs(double labelid){
     for(auto* vert:this->vertices){
         vert->setLabel(labelid);
     }
-    this->themesh->labelSelectedVertices(this->vertices,false);
+    //this->themesh->labelSelectedVertices(this->vertices,false);
+    //this->themesh->labelsChanged();
+
     //this->themesh->labelVertices(this->vertices, seeds);
 }
 

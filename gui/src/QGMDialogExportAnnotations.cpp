@@ -9,7 +9,7 @@
 #include <QJsonDocument>
 
 
-QGMDialogExportAnnotations::QGMDialogExportAnnotations(std::list<Annotation> annotations,Mesh* themesh,QWidget *parent){
+QGMDialogExportAnnotations::QGMDialogExportAnnotations(std::list<Annotation*> annotations,Mesh* themesh,QWidget *parent){
     this->annotations=annotations;
     int linecounter=0;
     this->themesh=themesh;
@@ -76,8 +76,8 @@ void QGMDialogExportAnnotations::exportAnnotations(){
         format="PLYSelector";
     }
     QJsonArray result=QJsonArray();
-    for(Annotation curanno:this->annotations){
-        QJsonObject curannojson = curanno.getAnnotation(format,this->themesh,outpath,this->onlyBorderCheckBox->isChecked());
+    for(Annotation* curanno:this->annotations){
+        QJsonObject curannojson = curanno->getAnnotation(format,this->themesh,outpath,this->onlyBorderCheckBox->isChecked());
         result.append(curannojson);
     }
     if(!chosenformat.contains("Individual PLY Files")) {

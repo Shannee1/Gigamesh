@@ -112,7 +112,7 @@ void QGMDialogImportAnnotations::importAnnotations(){
         annoDoc = QJsonDocument::fromJson(data);
         QJsonObject mainObject = annoDoc.object();
         QStringList thekeys = mainObject.keys();
-        std::list<Annotation> annotationlist;
+        std::list<Annotation*> annotationlist;
         std::cout << "Getting border parameters" << endl;
         bool borderOnly=false;
         bool border=true;
@@ -137,18 +137,19 @@ void QGMDialogImportAnnotations::importAnnotations(){
             QString annotype = curannojson.find("target")->toObject().find("selector")->toObject().find(
                     "type")->toString();
             std::cout << "Creating first anno" << endl;
-            Annotation curanno = Annotation(curannojson, thekeys.at(i), meshwidget->getMesh(),sidestr);
+            Annotation* curanno = new Annotation(curannojson, thekeys.at(i), meshwidget->getMesh(), sidestr);
             std::cout << "CurAnno created " << endl;
             if (annotype == "WKTSelector" || annotype == "WktSelector") {
-                meshwidget->getMesh()->labelVerticesInBBOX(curanno.minX, curanno.maxX, curanno.minY, curanno.maxY,
-                                                            curanno.minZ, curanno.maxZ, 2.0, border,borderOnly,annocolor,annobordercolor,thicknessEdit->value());
+                meshwidget->getMesh()->labelVerticesInBBOX(curanno->minX, curanno->maxX, curanno->minY, curanno->maxY,
+                                                            curanno->minZ, curanno->maxZ, 2.0, border,borderOnly,annocolor,annobordercolor,thicknessEdit->value());
             } else if (annotype == "SvgSelector" || annotype == "SVGSelector") {
-                meshwidget->getMesh()->labelVerticesInBBOX(curanno.minX, curanno.maxX, curanno.minY, curanno.maxY,
+                meshwidget->getMesh()->labelVerticesInBBOX(curanno->minX, curanno->maxX, curanno->minY, curanno->maxY,
                                                             side, 2.0, border, borderOnly,annocolor,annobordercolor,thicknessEdit->value());
             }
             annotationlist.push_back(curanno);
             meshwidget->addAnnotation(curanno);
         }
+        meshwidget->calculateRelativeAnnotationPositions();
         meshwidget->getMesh()->annotationsLoaded = true;
         std::cout << annotationlist.size() << endl;
         jsonfile.close();

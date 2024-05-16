@@ -79,7 +79,7 @@ MeshWidget::MeshWidget( const QGLFormat &format, QWidget *parent )
 	setAutoBufferSwap( false ); // to preven flickering in ::paintEvent when QPainter.end is called!
 	// Store pointer to the main window.
 	mMainWindow = static_cast<QGMMainWindow*>(parent);
-    annotationlist=list<Annotation>();
+    annotationlist=list<Annotation*>();
 	//needed for selection
 	setMouseTracking(true);
 
@@ -270,24 +270,24 @@ MeshQt* MeshWidget::getMesh(){
     return mMeshVisual;
 }
 
-std::list<Annotation> MeshWidget::getAnnotations() {
+std::list<Annotation*> MeshWidget::getAnnotations() {
     return annotationlist;
 }
 
-bool MeshWidget::setAnnotations(std::list<Annotation> annos) {
+bool MeshWidget::setAnnotations(std::list<Annotation*> annos) {
     annotationlist=annos;
     return true;
 }
 
-bool MeshWidget::addAnnotation(Annotation anno) {
+bool MeshWidget::addAnnotation(Annotation* anno) {
     annotationlist.push_back(anno);
     return true;
 }
 
 bool MeshWidget::removeAnnotation(QString annoid) {
     int counter=0;
-    for(const Annotation& anno:annotationlist){
-        if(anno.annotationid==annoid.toStdString()){
+    for(const Annotation* anno:annotationlist){
+        if(anno->annotationid==annoid.toStdString()){
             break;
         }
         counter+=1;
@@ -528,11 +528,11 @@ bool MeshWidget::setParamFloatMeshWidget( MeshWidgetParams::eParamFlt rParamID )
 	return retVal;
 }
 
-std::list<Annotation> MeshWidget::getAnnotationsByCoordinate(double x, double y, double z){
-    std::list<Annotation> result=std::list<Annotation>();
+std::list<Annotation*> MeshWidget::getAnnotationsByCoordinate(double x, double y, double z){
+    std::list<Annotation*> result=std::list<Annotation*>();
     cout << "Annotation List Size: " << std::to_string(annotationlist.size()) << endl;
-    for(Annotation anno:annotationlist){
-        if(anno.pointInAnnotationBBOX3D(x,y,z)){
+    for(Annotation* anno:annotationlist){
+        if(anno->pointInAnnotationBBOX3D(x,y,z)){
             result.push_back(anno);
             break;
         }
@@ -6863,7 +6863,7 @@ bool MeshWidget::exportAnnotationAsMesh(){
             this->getMesh()->deSelMVertsAll();
             this->getMesh()->selectedMVertsChanged();
         }
-        Mesh* exportMesh=mLastAnnotation.getAnnotationMesh(this->getMesh());
+        Mesh* exportMesh=mLastAnnotation->getAnnotationMesh(this->getMesh());
         exportMesh->writeFile(fileName.toStdString());
         if(!selbackup->empty()) {
             this->getMesh()->selectVertices(*selbackup, 2.0);
@@ -6875,7 +6875,7 @@ bool MeshWidget::exportAnnotationAsMesh(){
 bool MeshWidget::exportAnnotationAsJSON(){
     QString fileName = QFileDialog::getSaveFileName(this, "Save File", "/home/", "Text Files (*.ply);;All Files (*.*)");
     if (!fileName.isEmpty()) {
-        QJsonObject annojson=mLastAnnotation.getAnnotation("WKTSelector",this->getMesh(),fileName,false);
+        QJsonObject annojson=mLastAnnotation->getAnnotation("WKTSelector",this->getMesh(),fileName,false);
         QJsonDocument doc(annojson);
         QFile jsonFile(fileName);
         jsonFile.open(QFile::WriteOnly);
@@ -6890,12 +6890,19 @@ std::set<std::string> MeshWidget::getCommonAnnotationFieldNames(){
     if(this->annotationlist.empty()){
         return result;
     }
-    for(const Annotation& anno:this->annotationlist){
-        for(const std::string& field:anno.fieldnames){
+    for(const Annotation* anno:this->annotationlist){
+        for(const std::string& field:anno->fieldnames){
             result.insert(field);
         }
     }
     return result;
+}
+
+
+void MeshWidget::calculateRelativeAnnotationPositions(){
+    for(Annotation* ann:this->annotationlist){
+        ann->getRelativePositions(this->annotationlist);
+    }
 }
 
 void MeshWidget::colorAnnotationsByAttribute(const QString& attribute){
@@ -6904,26 +6911,27 @@ void MeshWidget::colorAnnotationsByAttribute(const QString& attribute){
     }
     this->getMesh()->labelVerticesNone();
     std::map<std::string,double> seenatts;
-    double labelidcounter=1.0;
-    for(Annotation anno:this->annotationlist){
-        QJsonArray annobody=anno.getAnnotationBody();
+    double labelidcounter=2.0;
+    for(Annotation* anno:this->annotationlist){
+        QJsonArray annobody=anno->getAnnotationBody();
         for(int i=0;i<annobody.count();i++){
             if(annobody.at(i).toObject().contains(attribute)){
                 if(annobody.at(i).toObject().find(attribute)->toObject().contains("value")){
                     std::string thevalue=annobody.at(i).toObject().find(attribute)->toObject().find("value")->toString().toStdString();
-                    if(seenatts.find(thevalue)==seenatts.end()){
-                        anno.setLabelIDs(seenatts[thevalue]);
+                    if(seenatts.find(thevalue)!=seenatts.end()){
+                        anno->setLabelIDs(seenatts[thevalue]);
                     }else{
                         seenatts[thevalue]=labelidcounter++;
-                        anno.setLabelIDs(labelidcounter-1);
+                        anno->setLabelIDs(labelidcounter-1);
                     }
                 }
             }
         }
     }
+    this->getMesh()->labelVerticesEqualFV();
     //this->getMesh()->changedVertFuncVal();
-    this->getMesh()->labelsChanged();
-    this->getMesh()->changedMesh();
+    //this->getMesh()->labelsChanged();
+    //this->getMesh()->changedMesh();
 }
 
 //! Handles the event when the mouse is moved.
@@ -6947,19 +6955,27 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
     double ylength=this->getMesh()->getMaxY()-this->getMesh()->getMinY();
     if(!annotationlist.empty()){
         bool finished=false;
-        if(!mLastAnnotation.isempty){
-            if(mLastAnnotation.pointInAnnotationBBOX3D(clickPos.getX(),ylength-clickPos.getY(),clickPos.getZ())){
-                QToolTip::showText(rEvent->globalPos(),QString::fromStdString(mLastAnnotation.toHTML()));
-                //this->getMesh()->selectVertices(mLastAnnotation.vertices,2.0);
+        if(!mLastAnnotation->isempty){
+            if(mLastAnnotation->pointInAnnotationBBOX3D(clickPos.getX(),ylength-clickPos.getY(),clickPos.getZ())){
+                if(mLastAnnotation->leftOf!=nullptr && !mLastAnnotation->leftOf->isempty){
+                    QToolTip::showText(rEvent->globalPos(),QString::fromStdString(mLastAnnotation->leftOf->annotationid)+" "+QString::fromStdString(mLastAnnotation->toHTML()));
+                }else{
+                    QToolTip::showText(rEvent->globalPos(),"No Left Of "+QString::fromStdString(mLastAnnotation->toHTML()));
+
+                }
                 finished=true;
             }
         }
         if(!finished) {
-            for (Annotation anno: annotationlist) {
-                if (anno.pointInAnnotationBBOX3D(clickPos.getX(), ylength-clickPos.getY(), clickPos.getZ())) {
-                    QToolTip::showText(rEvent->globalPos(), QString::fromStdString(anno.toHTML()));
-                    std::cout << "BBOX Vertices: " << std::to_string(anno.bboxVertices.size()) << "All Vertices: " << std::to_string(anno.vertices.size()) << endl;
-                    this->getMesh()->selectVertices(anno.bboxVertices, 2.0);
+            for (Annotation* anno: annotationlist) {
+                if (anno->pointInAnnotationBBOX3D(clickPos.getX(), ylength-clickPos.getY(), clickPos.getZ())) {
+                    if(anno->leftOf!=nullptr && !anno->leftOf->isempty){
+                        QToolTip::showText(rEvent->globalPos(),QString::fromStdString(anno->leftOf->annotationid)+" "+QString::fromStdString(anno->toHTML()));
+                    }else{
+                        QToolTip::showText(rEvent->globalPos(), "No Left Of "+QString::fromStdString(anno->toHTML()));
+                    }
+                    std::cout << "BBOX Vertices: " << std::to_string(anno->bboxVertices.size()) << "All Vertices: " << std::to_string(anno->vertices.size()) << endl;
+                    this->getMesh()->selectVertices(anno->bboxVertices, 2.0);
                     mLastAnnotation = anno;
                     break;
                 }
@@ -7556,9 +7572,9 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
         cout << "Selected with mode Mark annotation and got the list of annotations back " << std::to_string(annos.size()) << endl;
         cout << "Selected with mode Mark annotation.... starting Annotation Dialog now!" << endl;
         if(annos.size()>0) {
-            Annotation curanno=annos.front();
+            Annotation* curanno=annos.front();
             mMeshVisual->deSelMVertsAll();
-            mMeshVisual->selectVerticesInBBOX(curanno.minX,curanno.maxX,curanno.minY,curanno.maxY,curanno.minZ,curanno.maxZ,2.0,true,0.5,curanno.vertices);
+            mMeshVisual->selectVerticesInBBOX(curanno->minX,curanno->maxX,curanno->minY,curanno->maxY,curanno->minZ,curanno->maxZ,2.0,true,0.5,curanno->vertices);
             QGMAnnotationDialog(QJsonObject(), annos.front(), nullptr).exec();
         }else{
             cout << "No annotations were matched with the given coordinates: " << std::to_string(thevertex->getX()) << " " << std::to_string(thevertex->getY()) << " " << std::to_string(thevertex->getZ()) << endl;

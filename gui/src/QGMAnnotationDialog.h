@@ -26,7 +26,7 @@ class QGMAnnotationDialog : public QDialog {
 
 public:
     //QGMAnnotationDialog(QJsonObject templatejson,QWidget *parent = nullptr);
-    QGMAnnotationDialog(QJsonObject templatejson, Annotation annodata,QWidget *parent = nullptr);
+    QGMAnnotationDialog(QJsonObject templatejson, Annotation* annodata,QWidget *parent = nullptr);
     void createInputFieldByType(const QString& inputtype,int linecounter,const QString& key,QGridLayout* gridLayout,QWidget* curwidget,const QJsonObject& data,bool hasdata,QJsonArray curanno);
     void addCategoryIndependentFields(QWidget* curwidget,int linecounter,QGridLayout* gridLayout,QJsonArray curanno,QJsonArray tags);
 

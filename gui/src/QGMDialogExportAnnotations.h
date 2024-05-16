@@ -16,12 +16,12 @@
 
 class QGMDialogExportAnnotations : public QDialog {
 Q_OBJECT
-    std::list<Annotation> annotations;
+    std::list<Annotation*> annotations;
     QComboBox* annostylecbox;
     Mesh* themesh;
     QCheckBox* onlyBorderCheckBox;
 public:
-    QGMDialogExportAnnotations(std::list<Annotation> annotations,Mesh* themesh,QWidget *parent = 0);
+    QGMDialogExportAnnotations(std::list<Annotation*> annotations,Mesh* themesh,QWidget *parent = 0);
 public slots:
     void exportAnnotations();
 

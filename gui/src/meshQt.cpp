@@ -3848,7 +3848,7 @@ void MeshQt::labelVerticesInBBOX( double minX, double maxX, double minY, double 
 void MeshQt::labelVerticesInBBOX( double minX, double maxX, double minY, double maxY, double minZ, double maxZ, double labelValue,bool border, bool onlyBorder,QColor annocolor,QColor bordercolor,double borderThickness=0.5){
     std::set<Vertex*> result;
     if(!border){
-        this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_BACKGROUND,annocolor);
+        this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_SOLID,annocolor);
     }
     for( auto const& currVertex: mVertices ) {
         double x = currVertex->getX();
@@ -3859,29 +3859,34 @@ void MeshQt::labelVerticesInBBOX( double minX, double maxX, double minY, double 
                 if(!onlyBorder){
                     if (x > minX && x < maxX && y > minY && y < maxY && z > minZ && z < maxZ) {
                         this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_BACKGROUND,annocolor);
+                        glPaint();
                         result.insert(currVertex);
                     }
                 }
                 if(x >= minX && x <= (minX+borderThickness) && y > minY && y < maxY){
                     this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_BACKGROUND,bordercolor);
+                    glPaint();
                     result.insert(currVertex);
                     //cout<<"MinX Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
                     //cout<<"MinX Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
                 }
                 else if(x <= maxX && x>=(maxX-borderThickness) && y > minY && y < maxY){
                     this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_BACKGROUND,bordercolor);
+                    glPaint();
                     result.insert(currVertex);
                     //cout<<"MaxX Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
                     //cout<<"MaxX Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
                 }
                 else if(y >= minY && y<=(minY+borderThickness) && x > minX && x < maxX){
                     this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_BACKGROUND,bordercolor);
+                    glPaint();
                     result.insert(currVertex);
                     //cout<<"MinY Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
                     //cout<<"MinY Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
                 }
                 else if(y <= maxY && y>=(maxY-borderThickness) && x > minX && x < maxX){
                     this->mRenderColors->setColorSettings(MeshGLColors::COLOR_LABEL_BACKGROUND,bordercolor);
+                    glPaint();
                     result.insert(currVertex);
                     //cout<<"MaxY Add: "<<std::to_string(x)<<" "+std::to_string(y)<<" "+std::to_string(z)<<"\n";
                     //cout<<"MaxY Add Comp: "<<std::to_string(minX)<<" "+std::to_string(maxX)<<" "+std::to_string(minY)<<" "<<std::to_string(maxY)<<"\n";
