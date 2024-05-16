@@ -21,7 +21,7 @@ bool OFFWriter::writeFile(const std::filesystem::path &rFilename, const std::vec
     filestr << std::to_string(rVertexProps.size()) << " " << std::to_string(rFaceProps.size()) << " 0\n";
     for( const auto& vertexProp : rVertexProps) {
         filestr << "3 " << vertexProp.mCoordX << " "
-                << vertexProp.mCoordY << " " << vertexProp.mCoordZ << " " << vertexProp.mColorRed << " " << vertexProp.mColorGrn << " " << vertexProp.mColorBle << "\n";
+                << vertexProp.mCoordY << " " << vertexProp.mCoordZ << " " << std::to_string(vertexProp.mColorRed) << " " << std::to_string(vertexProp.mColorGrn) << " " << std::to_string(vertexProp.mColorBle) << "\n";
     }
     for( const auto& faceProp : rFaceProps) {
         // VRML index for vertices start with ZERO!!!:
