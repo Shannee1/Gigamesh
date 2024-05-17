@@ -134,37 +134,37 @@ void Annotation::setAnnotationBody(QJsonArray newbody){
 
 void Annotation::getRelativePositions(std::list<Annotation*> otherannotations){
     std::cout << "GET RELATIVE POSITIONS!!!!! " << endl;
-    auto leftOfMaxX=DBL_MIN, rightOfMinX=DBL_MAX,aboveMinY=DBL_MAX, belowMaxY=DBL_MIN;
+    auto leftOfMaxX=DBL_MAX, rightOfMinX=DBL_MAX,aboveMinY=DBL_MAX, belowMaxY=DBL_MIN;
     below=new Annotation();
     above=new Annotation();
     leftOf=new Annotation();
     rightOf=new Annotation();
     for(Annotation* oanno:otherannotations){
-        if(this->maxX<oanno->minX){
-            if(oanno->minX>leftOfMaxX){
+        if(this->maxX<oanno->minX && !(oanno->maxY < this->minY || oanno->minY > this->maxY)){
+            if(oanno->minX<leftOfMaxX){
                 std::cout << "FOUND NEW LEFT OF!!!!!! " << std::to_string(leftOfMaxX) << " "<< this->minX << " " << this->maxX << "\n";
-                if(leftOf->isempty || (!leftOf->isempty && oanno->minX<leftOf->minX && (this->minY<oanno->minY<this->maxY || this->minY<oanno->maxY<this->maxY))){
+                if(leftOf->isempty || (!leftOf->isempty && oanno->minX<leftOf->minX)){
                     leftOfMaxX=oanno->minX;
                     leftOf=oanno;
                     std::cout << "FOUND NEW LEFT OF!!!!!!22222 " << std::to_string(leftOfMaxX) << " "<< this->minX << " " << this->maxX << "\n";
                 }
             }
         }
-        if(this->minX<oanno->maxX){
+        if(this->minX<oanno->maxX && !(oanno->maxX < this->minX || oanno->minX > this->maxX)){
             if(oanno->maxX>rightOfMinX){
                 std::cout << "FOUND NEW RIGHT OF!!!!!!\n";
                 rightOfMinX=oanno->maxX;
                 rightOf=oanno;
             }
         }
-        if(this->maxY<oanno->minY){
+        if(this->maxY<oanno->minY && !(oanno->maxX < this->minX || oanno->minX > this->maxX)){
             if(oanno->minY<aboveMinY){
                 std::cout << "FOUND NEW ABOVE OF!!!!!!\n";
                 aboveMinY=oanno->minY;
                 above=oanno;
             }
         }
-        if(this->maxY<oanno->minY){
+        if(this->maxY<oanno->minY && !(oanno->maxX < this->minX || oanno->minX > this->maxX)){
             if(oanno->minY>belowMaxY){
                 std::cout << "FOUND NEW BELOW OF!!!!!!\n";
                 belowMaxY=oanno->minY;
@@ -174,7 +174,7 @@ void Annotation::getRelativePositions(std::list<Annotation*> otherannotations){
     }
 }
 
-void Annotation::setLabelIDs(double labelid){
+void Annotation::setLabelIDs(uint64_t labelid){
     for(auto* vert:this->vertices){
         vert->setLabel(labelid);
     }

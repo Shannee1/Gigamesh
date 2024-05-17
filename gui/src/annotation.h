@@ -44,7 +44,7 @@ class Annotation {
 
         void getRelativePositions(std::list<Annotation*> otherannotations);
 
-        void setLabelIDs(double labelid);
+        void setLabelIDs(uint64_t labelid);
 
         QJsonObject getAnnotation(std::string exportFormats,Mesh* themesh,QString outpath,bool borderOnly);
 

@@ -17,15 +17,23 @@ bool STLWriter::writeFile(const std::filesystem::path &rFilename, const std::vec
         return false;
     }
     filestr << "solid "<< rFilename << "\n";
+    int counter=0;
     for( const auto& faceProp : rFaceProps) {
-        filestr << "facet normal " << "\n";
-        filestr << "\touter loop\n";
-        //filestr << "\t\tvertex " << faceProp.vertexIndices[0].
-        // VRML index for vertices start with ZERO!!!:
-        //filestr << "\t\t\t" << faceProp.vertexIndices[0] << " "
-        //        << faceProp.vertexIndices[1] << " " << faceProp.vertexIndices[2] << " -1\n";
-        filestr << "\tendloop\n";
-        filestr << "endfacet\n";
+        if(counter<rVertexProps.size()) {
+            filestr << "facet normal " << "\n";
+            filestr << "\touter loop\n";
+            filestr << "\t\tvertex " << rVertexProps.at(counter).mCoordX << " " << rVertexProps.at(counter).mCoordY
+                    << " " << rVertexProps.at(counter).mCoordZ << "\n";
+            counter++;
+            filestr << "\t\tvertex " << rVertexProps.at(counter).mCoordX << " " << rVertexProps.at(counter).mCoordY
+                    << " " << rVertexProps.at(counter).mCoordZ << "\n";
+            counter++;
+            filestr << "\t\tvertex " << rVertexProps.at(counter).mCoordX << " " << rVertexProps.at(counter).mCoordY
+                    << " " << rVertexProps.at(counter).mCoordZ << "\n";
+            counter++;
+            filestr << "\tendloop\n";
+            filestr << "endfacet\n";
+        }
     }
     filestr << "endsolid "<< rFilename << "\n";
     filestr.close();

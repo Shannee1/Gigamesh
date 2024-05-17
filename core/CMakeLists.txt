@@ -115,6 +115,8 @@ set(PUBLIC_HEADERS_CORE ${CMAKE_CURRENT_SOURCE_DIR}/include/GigaMesh/printbuildi
 		mesh/MeshIO/OFFWriter.h
 		mesh/MeshIO/STLWriter.cpp
 		mesh/MeshIO/STLWriter.h
+		mesh/MeshIO/ThreeJSONWriter.cpp
+		mesh/MeshIO/ThreeJSONWriter.h
 )
 
 add_library(gigameshCore STATIC ${SOURCES_CORE} ${HEADERS_CORE} ${PUBLIC_HEADERS_CORE})

@@ -6910,14 +6910,15 @@ void MeshWidget::colorAnnotationsByAttribute(const QString& attribute){
         return;
     }
     this->getMesh()->labelVerticesNone();
-    std::map<std::string,double> seenatts;
-    double labelidcounter=2.0;
+    std::map<std::string,u_long> seenatts;
+    uint64_t labelidcounter=2;
     for(Annotation* anno:this->annotationlist){
         QJsonArray annobody=anno->getAnnotationBody();
         for(int i=0;i<annobody.count();i++){
-            if(annobody.at(i).toObject().contains(attribute)){
-                if(annobody.at(i).toObject().find(attribute)->toObject().contains("value")){
-                    std::string thevalue=annobody.at(i).toObject().find(attribute)->toObject().find("value")->toString().toStdString();
+            QJsonDocument doc(annobody.at(i).toObject());
+            if(annobody.at(i).toObject().contains("purpose") && annobody.at(i).toObject().find("purpose")->toString()==attribute){
+                if(annobody.at(i).toObject().contains("value")){
+                    std::string thevalue=annobody.at(i).toObject().find("value")->toString().toStdString();
                     if(seenatts.find(thevalue)!=seenatts.end()){
                         anno->setLabelIDs(seenatts[thevalue]);
                     }else{
@@ -6928,9 +6929,9 @@ void MeshWidget::colorAnnotationsByAttribute(const QString& attribute){
             }
         }
     }
-    this->getMesh()->labelVerticesEqualFV();
+    //this->getMesh()->labelVerticesEqualFV();
     //this->getMesh()->changedVertFuncVal();
-    //this->getMesh()->labelsChanged();
+    this->getMesh()->labelsChanged();
     //this->getMesh()->changedMesh();
 }
 
@@ -6958,7 +6959,7 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
         if(!mLastAnnotation->isempty){
             if(mLastAnnotation->pointInAnnotationBBOX3D(clickPos.getX(),ylength-clickPos.getY(),clickPos.getZ())){
                 if(mLastAnnotation->leftOf!=nullptr && !mLastAnnotation->leftOf->isempty){
-                    QToolTip::showText(rEvent->globalPos(),QString::fromStdString(mLastAnnotation->leftOf->annotationid)+" "+QString::fromStdString(mLastAnnotation->toHTML()));
+                    QToolTip::showText(rEvent->globalPos(),QString::fromStdString(mLastAnnotation->leftOf->toHTML())+" "+QString::fromStdString(mLastAnnotation->toHTML()));
                 }else{
                     QToolTip::showText(rEvent->globalPos(),"No Left Of "+QString::fromStdString(mLastAnnotation->toHTML()));
 
@@ -6970,7 +6971,7 @@ void MeshWidget::mouseMoveEvent( QMouseEvent* rEvent ) {
             for (Annotation* anno: annotationlist) {
                 if (anno->pointInAnnotationBBOX3D(clickPos.getX(), ylength-clickPos.getY(), clickPos.getZ())) {
                     if(anno->leftOf!=nullptr && !anno->leftOf->isempty){
-                        QToolTip::showText(rEvent->globalPos(),QString::fromStdString(anno->leftOf->annotationid)+" "+QString::fromStdString(anno->toHTML()));
+                        QToolTip::showText(rEvent->globalPos(),QString::fromStdString(anno->leftOf->toHTML())+" "+QString::fromStdString(anno->toHTML()));
                     }else{
                         QToolTip::showText(rEvent->globalPos(), "No Left Of "+QString::fromStdString(anno->toHTML()));
                     }
