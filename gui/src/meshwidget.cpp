@@ -5534,6 +5534,7 @@ bool MeshWidget::createAnnotation(){
     std::set<Vertex*> *selverts;
     this->getMesh()->getSelectedVerts(selverts);
     auto* anno=new Annotation();
+    anno->isempty=false;
     anno->vertices=*selverts;
     anno->getBBOXFromVertices();
     anno->getBBOXVertices(0.5);
@@ -5544,13 +5545,14 @@ bool MeshWidget::createAnnotation(){
 }
 
 bool MeshWidget::deleteAnnotation(){
-    this->getMesh()->labelVerticesNone(mLastAnnotation->vertices);
     if(mLastAnnotation!=nullptr){
+        this->getMesh()->labelVerticesNone(mLastAnnotation->vertices);
         for(_List_iterator<Annotation *> itr = this->annotationlist.begin(); itr != this->annotationlist.end(); itr++){
             if((*itr)->annotationid==mLastAnnotation->annotationid){
                 this->annotationlist.erase(itr);
             }
         }
+        this->getMesh()->deSelMVertsAll();
     }
     return true;
 }

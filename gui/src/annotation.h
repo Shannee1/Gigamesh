@@ -48,6 +48,8 @@ class Annotation {
 
         bool getBBOXFromVertices();
 
+        bool convexHull();
+
         bool getBBOXVertices(double borderThickness);
 
         QJsonObject getAnnotation(std::string exportFormats,Mesh* themesh,QString outpath,bool borderOnly);
