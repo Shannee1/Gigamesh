@@ -2,8 +2,8 @@
 // Created by timo.homburg on 14.05.2024.
 //
 
-#ifndef GIGAMESH_QGMCOLORANNOTATIONDIALOG_H
-#define GIGAMESH_QGMCOLORANNOTATIONDIALOG_H
+#ifndef GIGAMESH_QGMDIALOGCOLORANNOTATION_H
+#define GIGAMESH_QGMDIALOGCOLORANNOTATION_H
 
 
 #include <QtGui>
@@ -11,10 +11,10 @@
 #include "QGMMacros.h"
 #include "meshwidget.h"
 
-class QGMColorAnnotationDialog : public QDialog {
+class QGMDialogColorAnnotation : public QDialog {
 Q_OBJECT
 public:
-    explicit QGMColorAnnotationDialog(MeshWidget* themesh);
+    explicit QGMDialogColorAnnotation(MeshWidget* themesh);
     QComboBox* attCBox;
     MeshWidget* themesh;
     public slots:
@@ -23,4 +23,4 @@ public:
 };
 
 
-#endif //GIGAMESH_QGMCOLORANNOTATIONDIALOG_H
+#endif //GIGAMESH_QGMDIALOGCOLORANNOTATION_H

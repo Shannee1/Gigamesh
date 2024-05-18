@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -205,15 +205,16 @@
     <addaction name="actionLabelFuncValMaxima"/>
     <addaction name="separator"/>
     <addaction name="actionLabelColorShift"/>
-    <addaction name="actionAnnotateRendering"/>
+    <addaction name="actionGet_Label_Info"/>
+    <addaction name="separator"/>
+    <addaction name="actionCreateAnnotation"/>
+    <addaction name="actionColor_Annotations"/>
     <addaction name="actionLoad_Annotations_From_File"/>
     <addaction name="actionExport_Annotations"/>
     <addaction name="actionMarkAnnotation"/>
-    <addaction name="actionGet_Label_Info"/>
     <addaction name="actionEdit_Annotation_Templates"/>
     <addaction name="separator"/>
     <addaction name="actionLabelKMeansVertPos"/>
-    <addaction name="actionColor_Annotations"/>
    </widget>
    <widget class="QMenu" name="menuFunctions">
     <property name="title">
@@ -4725,9 +4726,9 @@ The latter will be shown, when the processing has finished.</string>
     <string>Automatic Mesh Alignment</string>
    </property>
   </action>
-  <action name="actionAnnotateRendering">
+  <action name="actionCreateAnnotation">
    <property name="text">
-    <string>Annotate Rendering</string>
+    <string>Create Annotation from current selection</string>
    </property>
   </action>
   <action name="actionLoad_Annotations_From_File">

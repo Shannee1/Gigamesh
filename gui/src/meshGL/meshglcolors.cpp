@@ -171,10 +171,12 @@ bool MeshGLColors::setColorSettings( eColorSettings rColorId, const QColor iVec4
     if( iVec4 == nullptr ) {
         return( false );
     }
-    mColorSetting[rColorId][0] = iVec4.red() * 255.0;
-    mColorSetting[rColorId][1] = iVec4.green() * 255.0;
-    mColorSetting[rColorId][2] = iVec4.blue() * 255.0;
-    mColorSetting[rColorId][3] = iVec4.alpha() * 255.0;
+
+    //std::cout << "Setting color for annotation: Color Id:" << rColorId << " Color: " << iVec4.red() << " " << iVec4.green() << " " << iVec4.blue() << " " << iVec4.alpha() << "\n";
+    mColorSetting[rColorId][0] = iVec4.red();
+    mColorSetting[rColorId][1] = iVec4.green() ;
+    mColorSetting[rColorId][2] = iVec4.blue() ;
+    mColorSetting[rColorId][3] = iVec4.alpha();
 
     // Sort of a bugfix: backface colors have to be opaque. Otherwise the backfaces are shown in white.
     if( rColorId == COLOR_MESH_BACKFACE ) {

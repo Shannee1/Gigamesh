@@ -2,7 +2,7 @@
 // Created by timo on 2/12/23.
 //
 
-#include "QGMAnnotationDialog.h"
+#include "QGMDialogAnnotation.h"
 #include "CompleterDelegate.h"
 #include "annotation.h"
 #include <iostream>
@@ -15,7 +15,7 @@
 #include <QDialog>
 
 
-QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation* annodata,QWidget *parent) : QDialog( parent) {
+QGMDialogAnnotation::QGMDialogAnnotation(QJsonObject annotemplate, Annotation* annodata, QWidget *parent) : QDialog(parent) {
     if(annotemplate.empty()){
         QFile jsonfile;
         jsonfile.setFileName("C:/Users/timo.homburg/git/GigaMesh/cmake-build-debug/annotemplates.json");
@@ -97,7 +97,7 @@ QGMAnnotationDialog::QGMAnnotationDialog(QJsonObject annotemplate,Annotation* an
     this->show();
 }
 
-void QGMAnnotationDialog::applyChanges(){
+void QGMDialogAnnotation::applyChanges(){
     std::cout << "Apply Changes" << endl;
     this->saveAnnotationJSON();
     this->close();
@@ -125,7 +125,7 @@ QHash<QString,QString> getValuesFromAnnotation(const QJsonArray& curanno){
     return result;
 }
 
-void QGMAnnotationDialog::addTag(){
+void QGMDialogAnnotation::addTag(){
     bool ok;
     QString text=QInputDialog::getText(this,"Add Tag","Tag:",QLineEdit::Normal,QDir::home().dirName(),&ok);
     if(ok && !text.isEmpty()){
@@ -135,7 +135,7 @@ void QGMAnnotationDialog::addTag(){
     }
 }
 
-void QGMAnnotationDialog::addCategoryIndependentFields(QWidget* curwidget,int linecounter,QGridLayout* gridLayout,QJsonArray curanno,QJsonArray tags){
+void QGMDialogAnnotation::addCategoryIndependentFields(QWidget* curwidget, int linecounter, QGridLayout* gridLayout, QJsonArray curanno, QJsonArray tags){
     auto * label = new QLabel(curwidget);
     label->setText("Comment");
     auto * pedit=new QPlainTextEdit(curwidget);
@@ -191,7 +191,7 @@ inline bool instanceof(const T *ptr) {
     return dynamic_cast<const Base*>(ptr) != nullptr;
 }
 
-QJsonObject QGMAnnotationDialog::saveAnnotationJSON(){
+QJsonObject QGMDialogAnnotation::saveAnnotationJSON(){
     QJsonObject result=QJsonObject();
     result.insert("body",QJsonArray());
     QJsonArray body=result.value("body").toArray();
@@ -233,7 +233,7 @@ QJsonObject QGMAnnotationDialog::saveAnnotationJSON(){
     return result;
 }
 
-void QGMAnnotationDialog::createInputFieldByType(const QString& inputtype,int linecounter,const QString& key,QGridLayout* gridLayout,QWidget* curwidget,const QJsonObject& data,bool hasdata,QJsonArray curanno){
+void QGMDialogAnnotation::createInputFieldByType(const QString& inputtype, int linecounter, const QString& key, QGridLayout* gridLayout, QWidget* curwidget, const QJsonObject& data, bool hasdata, QJsonArray curanno){
     QRegExp numberregex("\b[0-9]+\b");
     numberregex.setCaseSensitivity(Qt::CaseInsensitive);
     numberregex.setPatternSyntax(QRegExp::RegExp);

@@ -102,6 +102,8 @@ public slots: // ... overloaded from MeshWidgetParams:s
     bool exportAnnotationAsJSON();
     bool openEditAnnotationDialog();
     void colorAnnotationsByAttribute(const QString& attribute);
+    bool createAnnotation();
+    bool deleteAnnotation();
     std::set<std::string> getCommonAnnotationFieldNames();
     bool addAnnotation(Annotation* anno);
     bool removeAnnotation(QString annoid);
@@ -421,6 +423,7 @@ private:
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
 	bool initializeTextureMap( eTextureMaps rTextureMap, const QString& rFileName );
 	bool initializeTextureMap( eTextureMaps rTextureMap, QImage* rImage );
+    bool createAnnotationLegend(QString attribute, std::map<std::string,uint64_t> mappings);
 	void initializeShader(const QString& rFileName, QOpenGLShaderProgram** rShaderProgram );
 	bool paintBackgroundShader( QOpenGLShaderProgram** rShaderProgram );
 	bool paintRasterImage( eTextureMaps rTexMap, int rPixelX, int rPixelY, int rPixelWidth, int rPixelHeight );

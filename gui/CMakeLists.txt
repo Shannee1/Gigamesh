@@ -61,7 +61,7 @@ set(GUI_SOURCES src/main.cpp
 				src/normalSphereSelection/NormalSphereSelectionRenderWidget.cpp
 				src/normalSphereSelection/NormalSphereSelectionRenderWidget.h
                                 src/automaticalignmentpyinterface.cpp src/automaticalignmentpyinterface.h
-		src/QGMDialogWebView.h src/QGMDialogWebView.cpp src/QGMAnnotationDialog.h src/QGMAnnotationDialog.cpp src/QGMAnnotationTemplateDialog.cpp src/QGMAnnotationTemplateDialog.h src/CompleterDelegate.cpp src/CompleterDelegate.h src/CompleterSemWebDelegate.cpp src/CompleterSemWebDelegate.h src/FileDownloader.cpp src/FileDownloader.h
+		src/QGMDialogWebView.h src/QGMDialogWebView.cpp src/QGMDialogAnnotation.h src/QGMDialogAnnotation.cpp src/QGMDialogAnnotationTemplate.cpp src/QGMDialogAnnotationTemplate.h src/CompleterDelegate.cpp src/CompleterDelegate.h src/CompleterSemWebDelegate.cpp src/CompleterSemWebDelegate.h src/FileDownloader.cpp src/FileDownloader.h
 		src/annotation.h
 		src/annotation.cpp
 		src/QGMDialogImportAnnotations.h
@@ -110,10 +110,10 @@ set(GUI_UI_FILES
 		src/annotationtemplate.h
 		src/colortemplate.cpp
 		src/colortemplate.h
-		src/QGMColorTemplateDialog.cpp
-		src/QGMColorTemplateDialog.h
-		src/QGMColorAnnotationDialog.cpp
-		src/QGMColorAnnotationDialog.h
+		src/QGMDialogColorTemplate.cpp
+		src/QGMDialogColorTemplate.h
+        src/QGMDialogColorAnnotation.cpp
+        src/QGMDialogColorAnnotation.h
 )
 
 #NOTE: instead of adding translations via resources, the ts-files can also be build by

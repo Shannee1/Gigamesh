@@ -38,9 +38,9 @@
 #include "ExternalProgramsDialog.h"
 #include "dialogGridCenterSelect.h"
 #include "QGMDialogWebView.h"
-#include "QGMAnnotationTemplateDialog.h"
-#include "QGMAnnotationDialog.h"
-#include "QGMColorAnnotationDialog.h"
+#include "QGMDialogAnnotationTemplate.h"
+#include "QGMDialogAnnotation.h"
+#include "QGMDialogColorAnnotation.h"
 #include "QGMDialogImportAnnotations.h"
 #include "QGMDialogExportAnnotations.h"
 
@@ -327,7 +327,7 @@ QGMMainWindow::QGMMainWindow( QWidget *parent, Qt::WindowFlags flags )
 	QObject::connect( actionVisitVideoTutorials,   &QAction::triggered, this, &QGMMainWindow::visitVideoTutorials   );
 	QObject::connect( actionVisitWebSite,          &QAction::triggered, this, &QGMMainWindow::visitWebSite          );
 	QObject::connect( actionAbout,                 &QAction::triggered, this, &QGMMainWindow::aboutBox              );
-    QObject::connect( actionAnnotateRendering,      &QAction::triggered, this, &QGMMainWindow::openAnnotationWindow  );
+    QObject::connect( actionCreateAnnotation,      &QAction::triggered, this, &QGMMainWindow::createAnnotation  );
     QObject::connect( actionExport_Annotations,      &QAction::triggered, this, &QGMMainWindow::exportAnnotations);
     QObject::connect(actionLoad_Annotations_From_File, &QAction::triggered, this, &QGMMainWindow::loadAnnotationsFromFile);
     QObject::connect(actionColor_Annotations, &QAction::triggered, this, &QGMMainWindow::colorAnnotations);
@@ -1993,8 +1993,16 @@ void QGMMainWindow::loadAnnotationsFromFile() {
     QGMDialogImportAnnotations(mMeshWidget,this).exec();
 }
 
+void QGMMainWindow::createAnnotation() {
+    this->mMeshWidget->createAnnotation();
+}
+
+void QGMMainWindow::deleteAnnotation() {
+    this->mMeshWidget->deleteAnnotation();
+}
+
 void QGMMainWindow::colorAnnotations() {
-    QGMColorAnnotationDialog(mMeshWidget).exec();
+    QGMDialogColorAnnotation(mMeshWidget).exec();
 }
 
 
@@ -2045,11 +2053,11 @@ void QGMMainWindow::createAnnotationWindowFromTemplate(){
     annoDataDoc=QJsonDocument::fromJson(data2);
     const QJsonObject &annoData = annoDataDoc.object();
     Annotation annodata=Annotation(annoData,)
-    QGMAnnotationDialog(annotemplate.at(0).toObject(), annoData, nullptr).exec();*/
+    QGMDialogAnnotation(annotemplate.at(0).toObject(), annoData, nullptr).exec();*/
 }
 
 void QGMMainWindow::createAnnotationTemplateWindow(){
-    QGMAnnotationTemplateDialog("C:/Users/timo.homburg/git/GigaMesh/cmake-build-debug/annotemplates.json",this).exec();
+    QGMDialogAnnotationTemplate("C:/Users/timo.homburg/git/GigaMesh/cmake-build-debug/annotemplates.json", this).exec();
 }
 
 //! Sets menu items according to the flags of MeshGLParams::mParamInt

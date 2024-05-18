@@ -43,7 +43,7 @@
 #include "normalSphereSelection/NormalSphereSelectionDialog.h"
 
 #include "DialogFindTextures.h"
-#include "QGMAnnotationDialog.h"
+#include "QGMDialogAnnotation.h"
 
 //#include <iostream>
 //#include <typeinfo> // see: http://www.cplusplus.com/reference/std/typeinfo/type_info/
@@ -5530,6 +5530,31 @@ bool MeshWidget::screenshotTiledPNG(
 	return( true );
 }
 
+bool MeshWidget::createAnnotation(){
+    std::set<Vertex*> *selverts;
+    this->getMesh()->getSelectedVerts(selverts);
+    auto* anno=new Annotation();
+    anno->vertices=*selverts;
+    anno->getBBOXFromVertices();
+    anno->getBBOXVertices(0.5);
+    this->annotationlist.push_back(anno);
+    std::set<Vertex*> seeds;
+    this->getMesh()->labelVertices(anno->vertices,seeds);
+    return true;
+}
+
+bool MeshWidget::deleteAnnotation(){
+    this->getMesh()->labelVerticesNone(mLastAnnotation->vertices);
+    if(mLastAnnotation!=nullptr){
+        for(_List_iterator<Annotation *> itr = this->annotationlist.begin(); itr != this->annotationlist.end(); itr++){
+            if((*itr)->annotationid==mLastAnnotation->annotationid){
+                this->annotationlist.erase(itr);
+            }
+        }
+    }
+    return true;
+}
+
 //! Exports a ruler matching the screenshot resolution.
 bool MeshWidget::screenshotRuler(const QString& fileName ) {
 #ifdef DEBUG_SHOW_ALL_METHOD_CALLS
@@ -6303,6 +6328,40 @@ bool MeshWidget::paintBackgroundShader( QOpenGLShaderProgram** rShaderProgram ) 
 	return true;
 }
 
+
+bool MeshWidget::createAnnotationLegend(QString attribute, std::map<std::string,uint64_t> mappings){
+    int width = 1024;
+    int height = 768;
+    int offset = 25;
+    int w = 400;
+    int h = 200;
+
+    QString thetext="Coloring for attribute "+attribute+"\n";
+    /*for(std::string mapp:mappings){
+        thetext+=""
+    }
+
+    QImage image(QSize(width,height),QImage::Format_RGB32);
+    QPainter painter(&image);
+    painter.setBrush(QBrush(aColor));
+    painter.fillRect(QRectF(0,0,width,height),Qt::darkGreen);
+    qDebug() << (width-w-offset)/2 << "\t" << (height-h-offset)/2 << "\t" << w << "\t" << h;
+    QRect aRect = QRect( (width-w)/2, (height-h)/2, w, h );
+    QRect aRectOffset = QRect( (width-w+offset)/2, (height-h+offset)/2, w-(offset/2), h-(offset/2) );
+    painter.fillRect(QRect(aRect),Qt::white);
+    painter.setPen(QPen(Qt::black));
+    painter.setFont(QFont( "Courier", 20) );
+    painter.drawText(QRect(aRectOffset),text);
+    this->paintRasterImage()
+    QDir aDir = QDir(path);
+    if ( aDir.mkpath(path) )
+        return image.save(path + "/" + imageName);
+    else
+        return image.save(imageName);
+        */
+    return true;
+}
+
 //! Paint a raster image i.e. a logo.
 bool MeshWidget::paintRasterImage( eTextureMaps rTexMap, int rPixelX, int rPixelY, int rPixelWidth, int rPixelHeight ) {
 	PRINT_OPENGL_ERROR( "OLD ERROR" );
@@ -6835,13 +6894,16 @@ void MeshWidget::showContextMenu(const QPoint &pos) {
     if(this->annotationlist.size()>0){
         QMenu menu("Context Menu",this);
         auto* editAnnotation=new QAction("Edit annotation",this);
+        auto* deleteAnnotation=new QAction("Delete annotation",this);
         auto* exportMesh=new QAction("Export annotation as mesh",this);
         auto* exportImage=new QAction("Export annotation as image",this);
         auto* exportJSON=new QAction("Export annotation as JSON",this);
+        connect(deleteAnnotation, &QAction::triggered, this, &MeshWidget::deleteAnnotation);
         connect(editAnnotation, &QAction::triggered, this, &MeshWidget::openEditAnnotationDialog);
         connect(exportMesh, &QAction::triggered, this, &MeshWidget::exportAnnotationAsMesh);
         connect(exportJSON, &QAction::triggered, this, &MeshWidget::exportAnnotationAsJSON);
         menu.addAction(editAnnotation);
+        menu.addAction(deleteAnnotation);
         menu.addAction(exportMesh);
         menu.addAction(exportImage);
         menu.addAction(exportJSON);
@@ -6850,7 +6912,7 @@ void MeshWidget::showContextMenu(const QPoint &pos) {
 }
 
 bool MeshWidget::openEditAnnotationDialog(){
-    QGMAnnotationDialog(QJsonObject(), mLastAnnotation, nullptr).exec();
+    QGMDialogAnnotation(QJsonObject(), mLastAnnotation, nullptr).exec();
     return true;
 }
 
@@ -6910,18 +6972,18 @@ void MeshWidget::colorAnnotationsByAttribute(const QString& attribute){
         return;
     }
     this->getMesh()->labelVerticesNone();
-    std::map<std::string,u_long> seenatts;
+    std::map<std::string,uint64_t> seenatts;
     uint64_t labelidcounter=2;
     for(Annotation* anno:this->annotationlist){
         QJsonArray annobody=anno->getAnnotationBody();
         for(int i=0;i<annobody.count();i++){
-            QJsonDocument doc(annobody.at(i).toObject());
             if(annobody.at(i).toObject().contains("purpose") && annobody.at(i).toObject().find("purpose")->toString()==attribute){
                 if(annobody.at(i).toObject().contains("value")){
                     std::string thevalue=annobody.at(i).toObject().find("value")->toString().toStdString();
                     if(seenatts.find(thevalue)!=seenatts.end()){
                         anno->setLabelIDs(seenatts[thevalue]);
                     }else{
+                        if(labelidcounter)
                         seenatts[thevalue]=labelidcounter++;
                         anno->setLabelIDs(labelidcounter-1);
                     }
@@ -7576,7 +7638,7 @@ bool MeshWidget::userSelectAtMouseLeft( const QPoint& rPoint ) {
             Annotation* curanno=annos.front();
             mMeshVisual->deSelMVertsAll();
             mMeshVisual->selectVerticesInBBOX(curanno->minX,curanno->maxX,curanno->minY,curanno->maxY,curanno->minZ,curanno->maxZ,2.0,true,0.5,curanno->vertices);
-            QGMAnnotationDialog(QJsonObject(), annos.front(), nullptr).exec();
+            QGMDialogAnnotation(QJsonObject(), annos.front(), nullptr).exec();
         }else{
             cout << "No annotations were matched with the given coordinates: " << std::to_string(thevertex->getX()) << " " << std::to_string(thevertex->getY()) << " " << std::to_string(thevertex->getZ()) << endl;
         }

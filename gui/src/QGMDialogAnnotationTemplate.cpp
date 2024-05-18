@@ -5,10 +5,10 @@
 #include <QtGui>
 #include <QTableWidgetItem>
 
-#include "QGMAnnotationTemplateDialog.h"
+#include "QGMDialogAnnotationTemplate.h"
 
 
-QGMAnnotationTemplateDialog::QGMAnnotationTemplateDialog(QString templatepath,QWidget *parent){
+QGMDialogAnnotationTemplate::QGMDialogAnnotationTemplate(QString templatepath, QWidget *parent){
     QFile jsonfile;
     jsonfile.setFileName(templatepath);
     jsonfile.open(QIODevice::ReadOnly);
@@ -30,11 +30,11 @@ QGMAnnotationTemplateDialog::QGMAnnotationTemplateDialog(QString templatepath,QW
     this->show();
 }
 
-void QGMAnnotationTemplateDialog::addRow(){
+void QGMDialogAnnotationTemplate::addRow(){
     this->annotemplateWidget->insertRow ( this->annotemplateWidget->rowCount());
 }
 
-void QGMAnnotationTemplateDialog::reloadTable(){
+void QGMDialogAnnotationTemplate::reloadTable(){
     int currentIndex=this->templateCBox->currentIndex();
     QJsonObject curtemplate=this->templatejson.at(currentIndex).toObject();
     this->annotemplateWidget->setRowCount(0);
@@ -77,7 +77,7 @@ void QGMAnnotationTemplateDialog::reloadTable(){
     }
 }
 
-void QGMAnnotationTemplateDialog::saveAsJSON(QString templatename) {
+void QGMDialogAnnotationTemplate::saveAsJSON(QString templatename) {
     for (int i = 0; i < templatejson.count(); i++) {
         QJsonObject curobj = templatejson.at(i).toObject();
         if (curobj.contains("name") && curobj.value("name").toString() == templatename) {
@@ -103,7 +103,7 @@ void QGMAnnotationTemplateDialog::saveAsJSON(QString templatename) {
     }
 }
 
-QGMAnnotationTemplateDialog::QGMAnnotationTemplateDialog(QJsonArray templatejson,QWidget *parent){
+QGMDialogAnnotationTemplate::QGMDialogAnnotationTemplate(QJsonArray templatejson, QWidget *parent){
     //! Constructor
     setupUi( this );
     for(auto && i : templatejson){

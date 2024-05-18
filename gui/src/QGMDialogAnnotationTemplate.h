@@ -15,12 +15,12 @@
 #define GIGAMESH_QGMANNOTATIONTEMPLATEDIALOG_H
 
 
-class QGMAnnotationTemplateDialog  : public QDialog, private Ui::dialogAnnoTemplate {
+class QGMDialogAnnotationTemplate  : public QDialog, private Ui::dialogAnnoTemplate {
 Q_OBJECT
 
 public:
-    QGMAnnotationTemplateDialog(QString templatepath,QWidget *parent= nullptr);
-    QGMAnnotationTemplateDialog(QJsonArray templatejson,QWidget *parent = nullptr);
+    QGMDialogAnnotationTemplate(QString templatepath, QWidget *parent= nullptr);
+    QGMDialogAnnotationTemplate(QJsonArray templatejson, QWidget *parent = nullptr);
 
     QJsonArray templatejson;
 

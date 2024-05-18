@@ -6,9 +6,9 @@
 #include <QComboBox>
 #include <QJsonValue>
 #include <QJsonArray>
-#include "QGMColorTemplateDialog.h"
+#include "QGMDialogColorTemplate.h"
 
-QGMColorTemplateDialog::QGMColorTemplateDialog(QJsonArray colortemplates) {
+QGMDialogColorTemplate::QGMDialogColorTemplate(QJsonArray colortemplates) {
     /*auto * gridLayout = new QGridLayout(this);
     QComboBox templatechooseCBox;
 

@@ -458,6 +458,7 @@ class Mesh : public Primitive, public MeshIO, public MeshParams,
 				int  labelCountElements( int primitiveType );
 				bool estLabelNormalSizeCenterVert( std::vector<Vector3D>* rLabelCenters, std::vector<Vector3D>* rLabelNormals );
 				void labelVerticesNone();
+                void labelVerticesNone(std::set<Vertex*> vertices);
 				void labelVerticesBackground();
 		virtual int  labelFaces( int facesNrToRemove=0 );
 		virtual bool labelVerticesAll();

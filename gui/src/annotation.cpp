@@ -178,10 +178,6 @@ void Annotation::setLabelIDs(uint64_t labelid){
     for(auto* vert:this->vertices){
         vert->setLabel(labelid);
     }
-    //this->themesh->labelSelectedVertices(this->vertices,false);
-    //this->themesh->labelsChanged();
-
-    //this->themesh->labelVertices(this->vertices, seeds);
 }
 
 bool Annotation::pointInAnnotationBBOX3D(double x, double y, double z){
@@ -195,6 +191,55 @@ bool Annotation::pointInAnnotationBBOX2D(double x, double y){
         return true;
     }
     return false;
+}
+
+bool Annotation::getBBOXVertices(double borderThickness){
+    for(auto* vert:this->vertices){
+        if(vert->getX() >= minX && vert->getX() <= (minX+borderThickness) && vert->getY() > minY && vert->getY() < maxY){
+            this->bboxVertices.insert(vert);
+        }
+        else if(vert->getX() <= maxX && vert->getX()>=(maxX-borderThickness) && vert->getY() > minY && vert->getY() < maxY){
+            this->bboxVertices.insert(vert);
+        }
+        else if(vert->getY() >= minY && vert->getY()<=(minY+borderThickness) && vert->getX() > minX && vert->getX() < maxX){
+            this->bboxVertices.insert(vert);
+        }
+        else if(vert->getY() <= maxY && vert->getY()>=(maxY-borderThickness) && vert->getX() > minX && vert->getX() < maxX){
+            this->bboxVertices.insert(vert);
+        }
+    }
+    return true;
+}
+
+bool Annotation::getBBOXFromVertices(){
+    double lminX=DBL_MAX,lmaxX=DBL_MIN,lminY=DBL_MAX,lmaxY=DBL_MIN,lminZ=DBL_MAX,lmaxZ=DBL_MIN;
+    for(auto* vert:this->vertices){
+        if(vert->getX()<minX){
+            minX=vert->getX();
+        }
+        if(vert->getX()>maxX){
+            maxX=vert->getX();
+        }
+        if(vert->getY()<minY){
+            minY=vert->getY();
+        }
+        if(vert->getY()>maxY) {
+            maxY = vert->getY();
+        }
+        if(vert->getZ()<minZ){
+            minZ=vert->getZ();
+        }
+        if(vert->getZ()>maxZ){
+            maxZ=vert->getZ();
+        }
+    }
+    this->minX=lminX;
+    this->maxX=lmaxX;
+    this->minY=lminY;
+    this->maxY=lmaxY;
+    this->minZ=lminZ;
+    this->maxZ=lmaxZ;
+    return true;
 }
 
 std::string Annotation::toString(){

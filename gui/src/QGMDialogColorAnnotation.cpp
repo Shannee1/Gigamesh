@@ -2,11 +2,11 @@
 // Created by timo.homburg on 14.05.2024.
 //
 
-#include "QGMColorAnnotationDialog.h"
+#include "QGMDialogColorAnnotation.h"
 #include "annotation.h"
 #include <QtWidgets>
 
-QGMColorAnnotationDialog::QGMColorAnnotationDialog(MeshWidget* themesh) {
+QGMDialogColorAnnotation::QGMDialogColorAnnotation(MeshWidget* themesh) {
     this->themesh=themesh;
     std::set<std::string> fieldnames=themesh->getCommonAnnotationFieldNames();
     auto * gridLayout = new QGridLayout(this);
@@ -34,7 +34,7 @@ QGMColorAnnotationDialog::QGMColorAnnotationDialog(MeshWidget* themesh) {
     gridLayout->addWidget(cancelButton,1,1,1,1);
 }
 
-void QGMColorAnnotationDialog::colorAnnotationsByAttribute(){
+void QGMDialogColorAnnotation::colorAnnotationsByAttribute(){
    QString attribute=this->attCBox->currentText();
    this->themesh->colorAnnotationsByAttribute(attribute);
    this->close();

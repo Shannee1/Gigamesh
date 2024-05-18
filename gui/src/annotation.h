@@ -46,6 +46,10 @@ class Annotation {
 
         void setLabelIDs(uint64_t labelid);
 
+        bool getBBOXFromVertices();
+
+        bool getBBOXVertices(double borderThickness);
+
         QJsonObject getAnnotation(std::string exportFormats,Mesh* themesh,QString outpath,bool borderOnly);
 
         std::string toHTML();

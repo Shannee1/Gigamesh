@@ -6688,6 +6688,15 @@ void Mesh::labelVerticesNone() {
 	labelsChanged();
 }
 
+void Mesh::labelVerticesNone(std::set<Vertex*> vertices) {
+    cout << "[Mesh::" << __FUNCTION__ << "]" << endl;
+    Vertex* currVertex;
+    for( auto* currVertex:vertices) {
+        currVertex->setLabelNone();
+    }
+    labelsChanged();
+}
+
 void Mesh::labelVerticesBackground() {
 	//! Sets all vertices to background.
 	//! Typically called before labeling selected vertices.
@@ -6892,11 +6901,9 @@ std::set<Face*> result;
 
 double* Mesh::wktStringToBBOX(std::string wktString,double* res) {
     const vector<string> &splitted = split(wktString, ',');
-    cout << splitted[0] << "\n";
     double minX=DBL_MAX,minY=DBL_MAX,minZ=DBL_MAX,maxX=DBL_MIN,maxY=DBL_MIN,maxZ=DBL_MIN;
     for (const auto& coord : splitted) {
         const vector<string> &coordsplit = split(coord, ' ');
-        cout << coordsplit[0] << "\n";
         try{
         double curcoord=stod(coordsplit[0]);
         if(curcoord>maxX) {
@@ -6936,7 +6943,6 @@ double* Mesh::wktStringToBBOX(std::string wktString,double* res) {
 
 double* Mesh::svgStringTo2DBBOX(std::string svgString,double imgheight,double imgwidth,std::string side,double* res) {
     const vector<string> &splitted = split(svgString, ' ');
-    cout << splitted[0] << "\n";
     if(imgwidth==0.0 && imgheight==0.0){
         imgheight=832.0;
         imgwidth=827.0;
@@ -6957,7 +6963,6 @@ double* Mesh::svgStringTo2DBBOX(std::string svgString,double imgheight,double im
             curcoord=stod(coordsplit[1]);
             curcoord=rescale(curcoord,0,imgheight,this->mMinY,this->mMaxY);
             if(side=="front"){
-                std::cout << "Old: " << std::to_string(curcoord) << "New: " << std::to_string((curcoord*-1)) << endl;
                 curcoord=ylength-curcoord;
             }
             if(curcoord>maxY) {
