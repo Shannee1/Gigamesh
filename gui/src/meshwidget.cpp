@@ -5531,8 +5531,9 @@ bool MeshWidget::screenshotTiledPNG(
 }
 
 bool MeshWidget::createAnnotation(){
-    std::set<Vertex*> *selverts;
+    auto *selverts=new std::set<Vertex*>();
     this->getMesh()->getSelectedVerts(selverts);
+    std::cout << "Selected Vertices: " << selverts->size() << "\n";
     auto* anno=new Annotation();
     anno->isempty=false;
     anno->vertices=*selverts;
@@ -5541,6 +5542,7 @@ bool MeshWidget::createAnnotation(){
     this->annotationlist.push_back(anno);
     std::set<Vertex*> seeds;
     this->getMesh()->labelVertices(anno->vertices,seeds);
+    this->getMesh()->deSelMVertsAll();
     return true;
 }
 
@@ -6939,7 +6941,7 @@ bool MeshWidget::exportAnnotationAsMesh(){
 bool MeshWidget::exportAnnotationAsJSON(){
     QString fileName = QFileDialog::getSaveFileName(this, "Save File", "/home/", "Text Files (*.ply);;All Files (*.*)");
     if (!fileName.isEmpty()) {
-        QJsonObject annojson=mLastAnnotation->getAnnotation("WKTSelector",this->getMesh(),fileName,false);
+        QJsonObject annojson=mLastAnnotation->getAnnotation("WKTSelector",this->getMesh(),fileName,"",false);
         QJsonDocument doc(annojson);
         QFile jsonFile(fileName);
         jsonFile.open(QFile::WriteOnly);
@@ -6985,7 +6987,6 @@ void MeshWidget::colorAnnotationsByAttribute(const QString& attribute){
                     if(seenatts.find(thevalue)!=seenatts.end()){
                         anno->setLabelIDs(seenatts[thevalue]);
                     }else{
-                        if(labelidcounter)
                         seenatts[thevalue]=labelidcounter++;
                         anno->setLabelIDs(labelidcounter-1);
                     }

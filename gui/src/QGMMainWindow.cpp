@@ -1986,7 +1986,7 @@ void QGMMainWindow::openAnnotationWindow() {
 }
 
 void QGMMainWindow::exportAnnotations(){
-    QGMDialogExportAnnotations(mMeshWidget->getAnnotations(),mMeshWidget->getMesh(),this).exec();
+    QGMDialogExportAnnotations(mMeshWidget->getAnnotations(),mMeshWidget->getMesh(),mMeshWidget->getCommonAnnotationFieldNames(),this).exec();
 }
 
 void QGMMainWindow::loadAnnotationsFromFile() {

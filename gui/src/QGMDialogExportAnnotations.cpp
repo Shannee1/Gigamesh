@@ -9,10 +9,11 @@
 #include <QJsonDocument>
 
 
-QGMDialogExportAnnotations::QGMDialogExportAnnotations(std::list<Annotation*> annotations,Mesh* themesh,QWidget *parent){
+QGMDialogExportAnnotations::QGMDialogExportAnnotations(std::list<Annotation*> annotations,MeshQt* themesh,std::set<std::string> fieldnames,QWidget *parent){
     this->annotations=annotations;
     int linecounter=0;
     this->themesh=themesh;
+    this->fieldnames=fieldnames;
     this->setWindowTitle("Export Annotations");
     auto * gridLayout = new QGridLayout(this);
     auto* annostylecboxLabel=new QLabel();
@@ -51,8 +52,18 @@ void QGMDialogExportAnnotations::exportAnnotations(){
     std::cout << "Chosen Format: " << chosenformat.toStdString() ;
     QString fileNameSuggestion="annoexport.json";
     QString outpath="";
+    QString formatstr="";
     if(chosenformat.contains("Individual PLY Files")){
-        outpath=QFileDialog::getExistingDirectory(this,tr("Choose save directory for annotations",".",QFileDialog::ShowDirsOnly));
+        std::string titlestring="Choose file export pattern.\n No input equals to default name.\n The following variables will be replaced:\n";
+        for(const std::string& fieldname:this->fieldnames){
+            titlestring+="["+fieldname+"] ";
+        }
+        outpath=QFileDialog::getExistingDirectory(this,tr("Choose save directory for annotations",".",QFileDialog::ShowDirsOnly))+"/";
+        if(outpath==nullptr || outpath==""){
+            return;
+        }
+        bool ok;
+        formatstr=QInputDialog::getText(this,"Choose export filename pattern",QString::fromStdString(titlestring),QLineEdit::Normal);
         format="PLYFiles";
     }
     if(this->onlyBorderCheckBox->isChecked()){
@@ -75,15 +86,16 @@ void QGMDialogExportAnnotations::exportAnnotations(){
     }else if(chosenformat.contains("PLY embedded in JSON")){
         format="PLYSelector";
     }
+
     QJsonArray result=QJsonArray();
     for(Annotation* curanno:this->annotations){
-        QJsonObject curannojson = curanno->getAnnotation(format,this->themesh,outpath,this->onlyBorderCheckBox->isChecked());
+        QJsonObject curannojson = curanno->getAnnotation(format,this->themesh,outpath,formatstr,this->onlyBorderCheckBox->isChecked());
         result.append(curannojson);
     }
     if(!chosenformat.contains("Individual PLY Files")) {
         fileNameSuggestion = QString::fromStdString(this->themesh->getBaseName().string()) + "_" + fileNameSuggestion;
         QByteArray ba = QJsonDocument(result).toJson();
         QFileDialog::saveFileContent(ba, fileNameSuggestion);
-        this->close();
     }
+    this->close();
 }

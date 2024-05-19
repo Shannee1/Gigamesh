@@ -52,9 +52,11 @@ class Annotation {
 
         bool getBBOXVertices(double borderThickness);
 
-        QJsonObject getAnnotation(std::string exportFormats,Mesh* themesh,QString outpath,bool borderOnly);
+        QJsonObject getAnnotation(std::string exportFormats,Mesh* themesh,QString outpath,QString formatstr,bool borderOnly);
 
         std::string toHTML();
+
+        QString formatFileNameFromFormatString(QString formatstr);
 
         std::string toString();
 

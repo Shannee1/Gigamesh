@@ -335,7 +335,18 @@ std::string Annotation::toHTML(){
 }
 
 
-QJsonObject Annotation::getAnnotation(std::string exports,Mesh* themesh,QString outpath,bool borderOnly){
+QString Annotation::formatFileNameFromFormatString(QString formatstr){
+    for(int i=0;i<this->annotationbody.count();i++){
+        QJsonObject curitem=this->annotationbody.at(i).toObject();
+        if(curitem.contains("purpose") && curitem.contains("value")){
+            QString purpose=curitem.find("purpose")->toString();
+            formatstr=formatstr.replace("["+purpose+"]",curitem.find("value")->toString());
+        }
+    }
+    return formatstr;
+}
+
+QJsonObject Annotation::getAnnotation(std::string exports,Mesh* themesh,QString outpath,QString formatstr,bool borderOnly){
     QJsonObject result=QJsonObject();
     QString annoid=QString::fromStdString(annotationid);
     QJsonObject annotation;
@@ -354,7 +365,12 @@ QJsonObject Annotation::getAnnotation(std::string exports,Mesh* themesh,QString 
     QJsonObject selector;
     if(exports=="PLYFiles"){
         Mesh* resmesh=this->getAnnotationMesh(themesh);
-        resmesh->writeFile(themesh->getBaseName().string()+"_anno_"+this->annotationid+".ply");
+        if(formatstr==nullptr || formatstr==""){
+            resmesh->writeFile(outpath.toStdString()+themesh->getBaseName().string()+"_anno_"+this->annotationid+".ply");
+        }else{
+            QString modstr=this->formatFileNameFromFormatString(formatstr);
+            resmesh->writeFile(outpath.toStdString()+themesh->getBaseName().string()+"_"+modstr.toStdString()+".ply");
+        }
     }else if(exports=="MeshIDSelector"){
         std::cout << exports << "\n" ;
         selector["type"]="MeshIDSelector";
